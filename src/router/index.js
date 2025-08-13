@@ -1,4 +1,7 @@
 import VueRouter from "vue-router";
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
+
 import HelloWorld from '@/components/HelloWorld'
 
 const originalPush = VueRouter.prototype.push
@@ -26,5 +29,14 @@ const routes = [
 const router = new VueRouter({
   routes
 });
+
+router.beforeEach((to, from, next) => {
+  NProgress.start()
+  next()
+})
+
+router.afterEach(() => {
+  NProgress.done()
+})
 
 export default router;

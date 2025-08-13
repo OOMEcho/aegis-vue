@@ -1,4 +1,6 @@
 import axios from "axios";
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
 
 const instance = axios.create({
   baseURL: 'http://127.0.0.1:8080',
@@ -6,14 +8,18 @@ const instance = axios.create({
 });
 
 instance.interceptors.request.use(config => {
+  NProgress.start()
   return config
 }, error => {
+  NProgress.done()
   return Promise.reject(error);
 })
 
 instance.interceptors.response.use(response => {
+  NProgress.done()
   return response.data;
 }, error => {
+  NProgress.done()
   return Promise.reject(error);
 })
 
