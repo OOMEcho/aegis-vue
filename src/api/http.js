@@ -41,21 +41,3 @@ export const postRequest = (url, params) => {
     }
   })
 }
-
-export const putRequest = (url, params) => {
-  return instance({
-    method: 'PUT',
-    url: `${url}`,
-    data: params,
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  })
-}
-
-export const deleteRequest = (url) => {
-  return instance({
-    method: 'DELETE',
-    url: `${url}`
-  })
-}

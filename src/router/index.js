@@ -2,7 +2,7 @@ import VueRouter from "vue-router";
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 
-import HelloWorld from '@/components/HelloWorld'
+import Layout from '@/components/Layout.vue'
 
 const originalPush = VueRouter.prototype.push
 const originalReplace = VueRouter.prototype.replace
@@ -16,17 +16,14 @@ VueRouter.prototype.replace = function replace(location) {
 
 const routes = [
   {
-    path: '',
-    redirect: '/hello'
-  },
-  {
-    path: '/hello',
-    name: 'hello',
-    component: HelloWorld
+    path: '/',
+    name: 'layout',
+    component: Layout
   }
 ]
 
 const router = new VueRouter({
+  mode: 'history',
   routes
 });
 
