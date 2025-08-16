@@ -3,7 +3,9 @@
     <el-header>Header</el-header>
     <el-container>
       <el-aside width="200px">Aside</el-aside>
-      <el-main>Main</el-main>
+      <el-main>
+        <el-button type="primary" @click="fetchData">请求后端</el-button>
+      </el-main>
     </el-container>
   </el-container>
 </template>
@@ -11,6 +13,16 @@
 <script>
 export default {
   name: 'Layout',
+  methods: {
+    async fetchData() {
+      try {
+        const response = await this.getRequest('/hello', {});
+        console.log(response);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+  }
 }
 </script>
 
