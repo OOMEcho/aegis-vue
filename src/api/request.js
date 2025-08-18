@@ -3,12 +3,20 @@ import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 
 const instance = axios.create({
-  baseURL: '/api',
-  timeout: 5000
+  baseURL: process.env.VUE_APP_BASE_API || '/api',
+  timeout: 5000,
+  headers: {
+    'Content-Type': 'application/json;charset=UTF-8',
+    'Accept': 'application/json'
+  }
 });
 
 instance.interceptors.request.use(config => {
   NProgress.start()
+  const token = localStorage.getItem('accessToken')
+  if (token) {
+    config.headers['Authorization'] = 'Bearer ' + token
+  }
   return config
 }, error => {
   NProgress.done()
