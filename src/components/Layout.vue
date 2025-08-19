@@ -17,16 +17,11 @@ export default {
   name: 'Layout',
   methods: {
     async fetchData() {
-      try {
-        const response = await getLayout();
-        this.$message({
-          message: JSON.stringify(response), // 如果只想看后端返回的核心数据，可以改成 response.data
-          type: 'success'
-        });
-      } catch (error) {
-        this.$message.error('请求出错: ' + error);
-        console.error('Error fetching data:', error);
-      }
+      const response = await getLayout();
+      this.$message({
+        message: JSON.stringify(response),
+        type: 'success'
+      });
     }
   }
 }

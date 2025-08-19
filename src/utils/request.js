@@ -1,9 +1,10 @@
 import axios from "axios";
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
+import {Message, MessageBox} from 'element-ui'
 
 const instance = axios.create({
-  baseURL: process.env.VUE_APP_BASE_API || '/api',
+  baseURL: process.env.NODE_ENV === 'production' ? '' : '/api',
   timeout: 5000,
   headers: {
     'Content-Type': 'application/json;charset=UTF-8',
@@ -13,7 +14,13 @@ const instance = axios.create({
 
 instance.interceptors.request.use(config => {
   NProgress.start()
-  const token = localStorage.getItem('accessToken')
+  if (config.method.toLowerCase() === 'get') {
+    config.params = {
+      ...(config.params || {}),
+      _t: Date.now()
+    }
+  }
+  const token = sessionStorage.getItem('accessToken') || ''
   if (token) {
     config.headers['Authorization'] = 'Bearer ' + token
   }
@@ -24,12 +31,20 @@ instance.interceptors.request.use(config => {
 })
 
 instance.interceptors.response.use(response => {
+  const data = response.data
+  const code = response.data.code
+  const message = response.data.message
+  if (code !== 200) {
+    Message.error(message || '网络错误')
+  }
   NProgress.done()
-  return response.data;
+  return data;
 }, error => {
   NProgress.done()
+  Message.error(error.message || '网络错误')
   return Promise.reject(error);
 })
+
 
 export const getRequest = (url, params) => {
   return instance({
@@ -43,9 +58,6 @@ export const postRequest = (url, params) => {
   return instance({
     method: 'POST',
     url: `${url}`,
-    data: params,
-    headers: {
-      'Content-Type': 'application/json'
-    }
+    data: params
   })
 }
