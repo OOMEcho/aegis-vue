@@ -16,7 +16,7 @@ export default {
   methods: {
     async fetchData() {
       try {
-        const response = await this.getRequest('/hello', {});
+        const response = await this.getRequest('/captcha/generate', {});
         console.log(response);
       } catch (error) {
         console.error('Error fetching data:', error);
