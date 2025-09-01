@@ -11,16 +11,17 @@
 </template>
 
 <script>
+import {getLayout} from "@/api/layout"
+
 export default {
   name: 'Layout',
   methods: {
     async fetchData() {
-      try {
-        const response = await this.getRequest('/captcha/generate', {});
-        console.log(response);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
+      const response = await getLayout();
+      this.$message({
+        message: JSON.stringify(response),
+        type: 'success'
+      });
     }
   }
 }
