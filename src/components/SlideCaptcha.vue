@@ -1,7 +1,7 @@
 <template>
   <div class="slide-captcha-container">
     <div class="captcha-header">
-      <span>请完成安全验证</span>
+      <span>拖动滑块到缺口处完成验证</span>
       <button @click="refreshCaptcha" class="refresh-btn">🔄</button>
     </div>
 
@@ -28,7 +28,7 @@
         <div class="slide-track-bg">
           <div class="slide-progress" :style="{ width: slideProgress + '%' }"></div>
           <span class="slide-text" v-if="!isSliding && slideProgress === 0">
-            拖动滑块到缺口处完成验证
+            向右滑动
           </span>
         </div>
 
@@ -150,18 +150,7 @@ export default {
       this.sliderPosition = Math.max(0, Math.min(deltaX, this.maxSlideDistance))
       this.slideProgress = (this.sliderPosition / this.maxSlideDistance) * 100
 
-      // 实时检测是否接近目标位置（可选功能，提供视觉反馈）
-      this.checkNearTarget()
-
       event.preventDefault()
-    },
-
-    /**
-     * 检测是否接近目标位置
-     */
-    checkNearTarget() {
-      // 可以通过一个快速检测API来判断是否接近，但为了简化，这里省略
-      // 实际项目中可以添加这个功能来提供更好的用户体验
     },
 
     /**
