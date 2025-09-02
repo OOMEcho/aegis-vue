@@ -3,6 +3,8 @@ import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 
 import SlideCaptcha from '@/components/SlideCaptcha.vue'
+import Layout from '@/components/Layout.vue'
+import LoginApp from '@/components/LoginApp.vue'
 
 const originalPush = VueRouter.prototype.push
 const originalReplace = VueRouter.prototype.replace
@@ -17,8 +19,13 @@ VueRouter.prototype.replace = function replace(location) {
 const routes = [
   {
     path: '/',
-    name: 'slideCaptcha',
-    component: SlideCaptcha
+    name: 'LoginApp',
+    component: LoginApp
+  },
+  {
+    path: '/layout',
+    name: 'Layout',
+    component: Layout
   }
 ]
 
