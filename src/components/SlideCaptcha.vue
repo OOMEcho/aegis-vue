@@ -61,6 +61,8 @@
 </template>
 
 <script>
+import {generateCaptcha, verifyCaptcha,} from "@/api/slideCaptcha"
+
 export default {
   name: 'SlideCaptcha',
   data() {
@@ -91,9 +93,9 @@ export default {
      */
     async loadCaptcha() {
       try {
-        const response = await this.getRequest('/captcha/generate')
-        if (response.data.success) {
-          this.captchaData = response.data.data
+        const response = await generateCaptcha()
+        if (response.code===200) {
+          this.captchaData = response.data
           this.resetState()
         }
       } catch (error) {
@@ -193,12 +195,8 @@ export default {
      */
     async verifyCaptcha() {
       try {
-        const response = await this.postRequest('/captcha/verify', {
-          captchaKey: this.captchaData.captchaKey,
-          slideX: this.sliderPosition
-        })
-
-        if (response.data.success) {
+        const response = await verifyCaptcha(this.captchaData.captchaKey, this.sliderPosition);
+        if (response.code===200) {
           this.verifySuccess = true
           this.slideProgress = 100 // 验证成功时设置为100%
           this.resultMessage = '验证成功！'
