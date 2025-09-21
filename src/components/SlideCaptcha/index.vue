@@ -76,7 +76,6 @@ export default {
       resultMessage: '',
       startX: 0,
       maxSlideDistance: 260, // 最大滑动距离
-      isNearTarget: false, // 是否接近目标位置
       lastVerifyTime: 0, // 上次验证时间，防止频繁验证
     }
   },
@@ -118,7 +117,6 @@ export default {
       this.verifySuccess = false
       this.verifyFailed = false
       this.resultMessage = ''
-      this.isNearTarget = false
       this.lastVerifyTime = 0
     },
 
