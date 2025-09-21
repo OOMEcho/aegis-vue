@@ -93,11 +93,8 @@ export default {
      */
     async loadCaptcha() {
       try {
-        const response = await generateCaptcha()
-        if (response.code===200) {
-          this.captchaData = response.data
-          this.resetState()
-        }
+        this.captchaData = await generateCaptcha()
+        this.resetState()
       } catch (error) {
         console.error('加载验证码失败:', error)
         this.resultMessage = '加载验证码失败，请重试'
@@ -184,8 +181,8 @@ export default {
      */
     async verifyCaptcha() {
       try {
-        const response = await verifyCaptcha(this.captchaData.captchaKey, this.sliderPosition);
-        if (response.code===200) {
+        const data = await verifyCaptcha(this.captchaData.captchaKey, this.sliderPosition);
+        if (data) {
           this.verifySuccess = true
           this.slideProgress = 100 // 验证成功时设置为100%
           this.resultMessage = '验证成功！'

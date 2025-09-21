@@ -13,7 +13,8 @@ const instance = axios.create({
   headers: {
     'Content-Type': 'application/json;charset=UTF-8',
     'Accept': 'application/json'
-  }
+  },
+  validateStatus: () => true
 })
 
 // ========== 刷新 Token 相关 ==========
@@ -45,8 +46,9 @@ instance.interceptors.request.use(config => {
 
 // ========== 响应拦截器 ==========
 instance.interceptors.response.use(async response => {
-  const {code, data, message} = response.data
   NProgress.done()
+
+  const {code, data, message} = response.data
 
   if (code === 406) {
     await store.dispatch('auth/clearToken')
@@ -126,5 +128,3 @@ export const getRequest = (url, params) => request('get', url, params)
 export const postRequest = (url, params) => request('post', url, params)
 export const putRequest = (url, params) => request('put', url, params)
 export const deleteRequest = (url, params) => request('delete', url, params)
-
-export default instance

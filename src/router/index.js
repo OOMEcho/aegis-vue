@@ -2,9 +2,8 @@ import VueRouter from "vue-router";
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 
-import LayoutPage from '@/components/LayoutPage.vue'
-import LoginPage from '@/components/LoginPage.vue'
-import HomePage from '@/components/HomePage.vue'
+import layout from '@/components/Layout/index.vue'
+import slideCaptcha from '@/components/SlideCaptcha/index'
 
 const originalPush = VueRouter.prototype.push
 const originalReplace = VueRouter.prototype.replace
@@ -19,18 +18,13 @@ VueRouter.prototype.replace = function replace(location) {
 const routes = [
   {
     path: '/',
-    name: 'HomePage',
-    component: HomePage
-  },
-  {
-    path: '/login',
-    name: 'LoginApp',
-    component: LoginPage
+    name: 'slideCaptcha',
+    component: slideCaptcha
   },
   {
     path: '/layout',
-    name: 'Layout',
-    component: LayoutPage
+    name: 'layout',
+    component: layout
   }
 ]
 
