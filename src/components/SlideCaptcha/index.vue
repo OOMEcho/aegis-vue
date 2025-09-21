@@ -5,262 +5,119 @@
       <button @click="refreshCaptcha" class="refresh-btn">🔄</button>
     </div>
 
-    <!-- 验证码主体区域 -->
     <div class="captcha-main" v-if="captchaData">
-      <!-- 背景图片 -->
       <div class="background-container">
-        <img :src="captchaData.backgroundImage" alt="背景图" class="background-image">
-
-        <!-- 滑块图片 -->
+        <img :src="captchaData.backgroundImage" class="background-image"  alt="背景图"/>
         <img
           :src="captchaData.sliderImage"
-          alt="滑块"
           class="slider-image"
-          :style="{
-            top: captchaData.sliderY + 'px',
-            left: sliderPosition + 'px'
-          }"
-        >
+          :style="{ top: captchaData.sliderY + 'px', left: sliderPosition + 'px' }"
+         alt="滑块"/>
       </div>
 
-      <!-- 滑动轨道 -->
       <div class="slide-track">
         <div class="slide-track-bg">
           <div class="slide-progress" :style="{ width: slideProgress + '%' }"></div>
-          <span class="slide-text" v-if="!isSliding && slideProgress === 0">
-            向右滑动
-          </span>
+          <span class="slide-text" v-if="!isSliding && slideProgress === 0">向右滑动</span>
         </div>
 
-        <!-- 滑动按钮 -->
         <div
           class="slide-button"
-          :class="{ 'sliding': isSliding, 'success': verifySuccess, 'failed': verifyFailed }"
+          :class="{ sliding: isSliding }"
           :style="{ left: sliderPosition + 'px' }"
           @mousedown="startSlide"
           @touchstart="startSlide"
         >
-          <span v-if="!isSliding && !verifySuccess && !verifyFailed">→</span>
-          <span v-else-if="isSliding">⊙</span>
-          <span v-else-if="verifySuccess">✓</span>
-          <span v-else-if="verifyFailed">✗</span>
+          <span v-if="!isSliding">→</span>
+          <span v-else>⊙</span>
         </div>
       </div>
     </div>
 
-    <!-- 加载状态 -->
-    <div class="loading" v-else>
-      加载验证码中...
-    </div>
-
-    <!-- 结果提示 -->
-    <div class="result-message" v-if="resultMessage" :class="verifySuccess ? 'success' : 'failed'">
-      {{ resultMessage }}
-    </div>
+    <div class="loading" v-else>加载验证码中...</div>
   </div>
 </template>
 
 <script>
-import {generateCaptcha, verifyCaptcha,} from "@/api/slideCaptcha"
+import { generateCaptcha } from "@/api/slideCaptcha";
 
 export default {
-  name: 'SlideCaptcha',
+  name: "SlideCaptcha",
   data() {
     return {
       captchaData: null,
       sliderPosition: 0,
       slideProgress: 0,
       isSliding: false,
-      verifySuccess: false,
-      verifyFailed: false,
-      resultMessage: '',
       startX: 0,
-      maxSlideDistance: 260, // 最大滑动距离
-      lastVerifyTime: 0, // 上次验证时间，防止频繁验证
-    }
+      maxSlideDistance: 260
+    };
   },
   mounted() {
-    this.loadCaptcha()
-    this.addEventListeners()
+    this.addEventListeners();
   },
   beforeUnmount() {
-    this.removeEventListeners()
+    this.removeEventListeners();
   },
   methods: {
-    /**
-     * 加载验证码
-     */
     async loadCaptcha() {
-      try {
-        this.captchaData = await generateCaptcha()
-        this.resetState()
-      } catch (error) {
-        console.error('加载验证码失败:', error)
-        this.resultMessage = '加载验证码失败，请重试'
-      }
+      this.captchaData = await generateCaptcha();
+      this.sliderPosition = 0;
+      this.slideProgress = 0;
     },
 
-    /**
-     * 刷新验证码
-     */
     refreshCaptcha() {
-      this.loadCaptcha()
+      this.loadCaptcha();
     },
 
-    /**
-     * 重置组件状态
-     */
-    resetState() {
-      this.sliderPosition = 0
-      this.slideProgress = 0
-      this.isSliding = false
-      this.verifySuccess = false
-      this.verifyFailed = false
-      this.resultMessage = ''
-      this.lastVerifyTime = 0
-    },
-
-    /**
-     * 开始滑动
-     */
     startSlide(event) {
-      if (this.verifySuccess || this.verifyFailed) return
+      this.isSliding = true;
+      this.startX = this.getEventX(event);
+      event.preventDefault();
 
-      this.isSliding = true
-      this.startX = this.getEventX(event)
-
-      event.preventDefault()
+      document.addEventListener("mousemove", this.onSliding);
+      document.addEventListener("mouseup", this.stopSlide);
+      document.addEventListener("touchmove", this.onSliding);
+      document.addEventListener("touchend", this.stopSlide);
     },
 
-    /**
-     * 滑动中
-     */
     onSliding(event) {
-      if (!this.isSliding) return
-
-      const currentX = this.getEventX(event)
-      const deltaX = currentX - this.startX
-
-      // 限制滑动范围
-      this.sliderPosition = Math.max(0, Math.min(deltaX, this.maxSlideDistance))
-      this.slideProgress = (this.sliderPosition / this.maxSlideDistance) * 100
-
-      event.preventDefault()
+      if (!this.isSliding) return;
+      const deltaX = this.getEventX(event) - this.startX;
+      this.sliderPosition = Math.max(0, Math.min(deltaX, this.maxSlideDistance));
+      this.slideProgress = (this.sliderPosition / this.maxSlideDistance) * 100;
+      event.preventDefault();
     },
 
-    /**
-     * 结束滑动
-     */
-    async stopSlide() {
-      if (!this.isSliding) return
+    stopSlide() {
+      if (!this.isSliding) return;
+      this.isSliding = false;
 
-      this.isSliding = false
+      // 拖动完成后，直接触发事件，把 sliderPosition 和 captchaKey 传给父组件
+      this.$emit("verify-success", this.sliderPosition);
 
-      // 防止频繁验证，至少间隔300ms
-      const now = Date.now()
-      if (now - this.lastVerifyTime < 300) {
-        this.resetSlidePosition()
-        return
-      }
-      this.lastVerifyTime = now
-
-      // 如果滑动距离太小（小于15px），直接重置
-      if (this.sliderPosition < 15) {
-        this.resetSlidePosition()
-        return
-      }
-
-      // 无论滑到什么位置都进行验证
-      await this.verifyCaptcha()
+      this.removeEventListeners();
     },
 
-    /**
-     * 验证滑动验证码
-     */
-    async verifyCaptcha() {
-      try {
-        const data = await verifyCaptcha(this.captchaData.captchaKey, this.sliderPosition);
-        if (data) {
-          this.verifySuccess = true
-          this.slideProgress = 100 // 验证成功时设置为100%
-          this.resultMessage = '验证成功！'
-          this.$emit('verify-success')
-        } else {
-          this.verifyFailed = true
-          this.resultMessage = '验证失败，请重试'
-          // 验证失败时重置滑块位置
-          setTimeout(() => {
-            this.resetSlidePosition()
-            setTimeout(() => {
-              this.refreshCaptcha()
-            }, 500)
-          }, 1000)
-        }
-      } catch (error) {
-        console.error('验证失败:', error)
-        this.verifyFailed = true
-        this.resultMessage = '验证出错，请重试'
-        // 网络错误时也重置滑块位置
-        setTimeout(() => {
-          this.resetSlidePosition()
-          setTimeout(() => {
-            this.refreshCaptcha()
-          }, 500)
-        }, 1000)
-      }
-    },
-
-    /**
-     * 重置滑块位置
-     */
-    resetSlidePosition() {
-      const duration = 300
-      const startPosition = this.sliderPosition
-      const startTime = Date.now()
-
-      const animate = () => {
-        const elapsed = Date.now() - startTime
-        const progress = Math.min(elapsed / duration, 1)
-
-        this.sliderPosition = startPosition * (1 - progress)
-        this.slideProgress = (this.sliderPosition / this.maxSlideDistance) * 100
-
-        if (progress < 1) {
-          requestAnimationFrame(animate)
-        }
-      }
-
-      animate()
-    },
-
-    /**
-     * 获取事件的X坐标
-     */
     getEventX(event) {
-      return event.type.startsWith('touch') ? event.touches[0].clientX : event.clientX
+      return event.type.startsWith("touch") ? event.touches[0].clientX : event.clientX;
     },
 
-    /**
-     * 添加事件监听器
-     */
     addEventListeners() {
-      document.addEventListener('mousemove', this.onSliding)
-      document.addEventListener('mouseup', this.stopSlide)
-      document.addEventListener('touchmove', this.onSliding)
-      document.addEventListener('touchend', this.stopSlide)
+      document.addEventListener("mousemove", this.onSliding);
+      document.addEventListener("mouseup", this.stopSlide);
+      document.addEventListener("touchmove", this.onSliding);
+      document.addEventListener("touchend", this.stopSlide);
     },
 
-    /**
-     * 移除事件监听器
-     */
     removeEventListeners() {
-      document.removeEventListener('mousemove', this.onSliding)
-      document.removeEventListener('mouseup', this.stopSlide)
-      document.removeEventListener('touchmove', this.onSliding)
-      document.removeEventListener('touchend', this.stopSlide)
+      document.removeEventListener("mousemove", this.onSliding);
+      document.removeEventListener("mouseup", this.stopSlide);
+      document.removeEventListener("touchmove", this.onSliding);
+      document.removeEventListener("touchend", this.stopSlide);
     }
   }
-}
+};
 </script>
 
 <style scoped>
