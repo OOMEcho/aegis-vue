@@ -93,14 +93,11 @@ export default {
           this.$message.success("登录成功！");
           await this.$router.push({path: "/layout"});
         } else {
-          this.$message.error("登录失败");
           // 登录失败刷新滑块
           this.captchaLoaded = false;
           this.openCaptchaDialog();
         }
       } catch (error) {
-        console.error("登录失败:", error);
-        this.$message.error("登录请求失败，请重试");
         this.captchaLoaded = false;
         this.openCaptchaDialog();
       }
