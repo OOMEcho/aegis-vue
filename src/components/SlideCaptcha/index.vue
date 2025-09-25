@@ -42,7 +42,7 @@
 import { generateCaptcha } from "@/api/slideCaptcha";
 
 export default {
-  name: "SlideCaptcha",
+  name: "SlideCaptchaComponent",
   data() {
     return {
       captchaData: null,

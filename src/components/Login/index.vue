@@ -30,7 +30,7 @@
       :show-close="false"
     >
       <!-- 使用 v-show 防止组件重复创建 -->
-      <slide-captcha
+      <slide-captcha-component
         v-show="captchaDialogVisible"
         ref="captchaRef"
         @verify-success="onCaptchaSuccess"
@@ -43,12 +43,12 @@
 </template>
 
 <script>
-import SlideCaptcha from "@/components/SlideCaptcha/index.vue";
+import SlideCaptchaComponent from "@/components/SlideCaptcha/index.vue";
 import {login} from "@/api/login";
 
 export default {
-  name: "LoginPage",
-  components: {SlideCaptcha},
+  name: "LoginComponent",
+  components: {SlideCaptchaComponent},
   data() {
     return {
       loginForm: {
