@@ -21,8 +21,8 @@ const instance = axios.create({
 let isRefreshing = false
 let retryQueue = []
 
-const refreshTokenRequest = async () => {
-  return axios.post('/api/profile/refreshToken', {}, {withCredentials: true})
+const refreshTokenRequest = () => {
+  return instance.post('/profile/refreshToken', {})
 }
 
 // ========== 请求拦截器 ==========
@@ -66,12 +66,6 @@ instance.interceptors.response.use(async response => {
         const res = await refreshTokenRequest()
         const newAccessToken = res.data?.data
         if (!newAccessToken) {
-          await store.dispatch('auth/clearToken')
-
-          Message.warning('登录已过期，请重新登录')
-
-          await router.push('/login')
-
           return Promise.reject(new Error('刷新 Token 失败'))
         }
 
@@ -81,12 +75,21 @@ instance.interceptors.response.use(async response => {
         retryQueue.forEach(cb => cb(newAccessToken))
         retryQueue = []
 
-        // 重试当前请求
-        originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`
-        return instance(originalRequest)
+        return instance({
+          ...originalRequest,
+          headers: {
+            ...originalRequest.headers,
+            Authorization: `Bearer ${newAccessToken}`
+          }
+        })
       } catch (err) {
+        retryQueue.forEach(cb => cb(null))
+        retryQueue = []
+
         await store.dispatch('auth/clearToken')
+        Message.warning('登录已过期，请重新登录')
         await router.push('/login')
+
         return Promise.reject(err)
       } finally {
         isRefreshing = false
@@ -94,9 +97,16 @@ instance.interceptors.response.use(async response => {
     }
 
     return new Promise(resolve => {
-      retryQueue.push((token) => {
-        originalRequest.headers['Authorization'] = `Bearer ${token}`
-        resolve(instance(originalRequest))
+      retryQueue.push(token => {
+        resolve(
+          instance({
+            ...originalRequest,
+            headers: {
+              ...originalRequest.headers,
+              Authorization: `Bearer ${token}`
+            }
+          })
+        )
       })
     })
   }
