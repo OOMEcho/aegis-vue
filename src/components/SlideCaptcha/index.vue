@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { generateCaptcha } from "@/api/slideCaptcha";
+import { generateCaptcha } from "@/api/profile";
 
 export default {
   name: "SlideCaptchaComponent",

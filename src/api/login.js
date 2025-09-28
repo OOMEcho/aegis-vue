@@ -37,7 +37,3 @@ export function login(params) {
 
   return postRequest('/login', payload);
 }
-
-export function sendEmailCode(email) {
-  return postRequest('/profile/sendEmailCode', {email})
-}
