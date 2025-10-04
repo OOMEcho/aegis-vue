@@ -307,7 +307,7 @@ export default {
         this.showCaptcha = false;
 
         // 保存token
-        localStorage.setItem('token', data);
+        await this.$store.dispatch('auth/saveToken', data)
 
         // 延迟跳转
         setTimeout(() => {
@@ -332,7 +332,6 @@ export default {
     // 关闭验证码弹窗
     handleCaptchaClose() {
       if (this.isLoggingIn) {
-        this.$message.warning('正在登录中，请稍候...');
         return;
       }
       this.showCaptcha = false;
