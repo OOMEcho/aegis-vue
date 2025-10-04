@@ -3,8 +3,8 @@ import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 
 import LayoutComponent from '@/components/Layout/index.vue'
-import SlideCaptchaComponent from '@/components/SlideCaptcha/index'
 import LoginComponent from '@/components/Login/index'
+import RegisterComponent from '@/components/Register/index'
 
 const originalPush = VueRouter.prototype.push
 const originalReplace = VueRouter.prototype.replace
@@ -21,6 +21,11 @@ const routes = [
     path: '/',
     name: 'login',
     component: LoginComponent
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: RegisterComponent
   },
   {
     path: '/layout',

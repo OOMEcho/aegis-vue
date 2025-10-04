@@ -16,9 +16,17 @@ import AsideComponent from '@/components/Aside/index.vue'
 
 export default {
   name: 'LayoutComponent',
+  data() {
+    return {
+
+    }
+  },
   methods: {},
   components: {
     AsideComponent
+  },
+  created() {
+
   }
 }
 </script>
