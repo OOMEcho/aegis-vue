@@ -1,4 +1,4 @@
-import {getRequest, postRequest, putRequest, deleteRequest} from "@/api/request"
+import {getRequest, postRequest, putRequest, deleteRequest} from "@/api/index"
 
 /**
  * 新增用户

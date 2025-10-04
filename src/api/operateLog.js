@@ -1,4 +1,4 @@
-import {getRequest} from "@/api/request"
+import {getRequest} from "@/api/index"
 
 /**
  * 导出操作日志

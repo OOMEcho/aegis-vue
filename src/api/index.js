@@ -22,7 +22,7 @@ let isRefreshing = false
 let retryQueue = []
 
 const refreshTokenRequest = () => {
-  return instance.post('/profile/refreshToken', {})
+  return instance.get('/profile/refreshToken', {})
 }
 
 // ========== 请求拦截器 ==========
@@ -63,8 +63,7 @@ instance.interceptors.response.use(async response => {
     if (!isRefreshing) {
       isRefreshing = true
       try {
-        const res = await refreshTokenRequest()
-        const newAccessToken = res.data?.data
+        const newAccessToken = await refreshTokenRequest()
         if (!newAccessToken) {
           return Promise.reject(new Error('刷新 Token 失败'))
         }
@@ -72,7 +71,7 @@ instance.interceptors.response.use(async response => {
         await store.dispatch('auth/saveToken', newAccessToken)
 
         // 重新执行等待队列中的请求
-        retryQueue.forEach(cb => cb(newAccessToken))
+        retryQueue.forEach(cb => cb())
         retryQueue = []
 
         return instance({
@@ -97,13 +96,14 @@ instance.interceptors.response.use(async response => {
     }
 
     return new Promise(resolve => {
-      retryQueue.push(token => {
+      retryQueue.push(() => {
+        const latestToken = store.state.auth.accessToken // 取最新 token
         resolve(
           instance({
             ...originalRequest,
             headers: {
               ...originalRequest.headers,
-              Authorization: `Bearer ${token}`
+              Authorization: `Bearer ${latestToken }`
             }
           })
         )
@@ -124,7 +124,7 @@ instance.interceptors.response.use(async response => {
 })
 
 // ========== 通用请求封装 ==========
-const request = (method, url, params) => {
+const index = (method, url, params) => {
   const options = {method, url}
   if (method === 'get') {
     options.params = params
@@ -134,7 +134,7 @@ const request = (method, url, params) => {
   return instance(options)
 }
 
-export const getRequest = (url, params) => request('get', url, params)
-export const postRequest = (url, params) => request('post', url, params)
-export const putRequest = (url, params) => request('put', url, params)
-export const deleteRequest = (url, params) => request('delete', url, params)
+export const getRequest = (url, params) => index('get', url, params)
+export const postRequest = (url, params) => index('post', url, params)
+export const putRequest = (url, params) => index('put', url, params)
+export const deleteRequest = (url, params) => index('delete', url, params)

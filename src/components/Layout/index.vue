@@ -13,20 +13,38 @@
 
 <script>
 import AsideComponent from '@/components/Aside/index.vue'
+import {getUserInfo, getRouters} from '@/api/profile';
 
 export default {
   name: 'LayoutComponent',
-  data() {
-    return {
-
-    }
-  },
-  methods: {},
   components: {
     AsideComponent
   },
+  data() {
+    return {
+      userInfo: {},
+      routers: {}
+    }
+  },
   created() {
-
+    this.getUserInfo();
+    this.getRouters();
+  },
+  methods: {
+    async getUserInfo() {
+      try {
+        this.userInfo = await getUserInfo();
+      } catch (error) {
+        console.error('获取用户信息失败:', error);
+      }
+    },
+    async getRouters() {
+      try {
+        this.routers = await getRouters();
+      } catch (error) {
+        console.error('获取路由信息失败:', error);
+      }
+    }
   }
 }
 </script>

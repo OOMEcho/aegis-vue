@@ -1,4 +1,4 @@
-import {postRequest} from "@/api/request"
+import {postRequest} from "@/api/index"
 
 /**
  * 登录接口 - 按类型统一提交
