@@ -20,6 +20,8 @@ const instance = axios.create({
 // ========== 刷新 Token 相关 ==========
 let isRefreshing = false
 let retryQueue = []
+// 全局变量，控制是否已提示过登录过期
+let hasShownLoginExpired = false
 
 const refreshTokenRequest = () => {
   return instance.get('/profile/refreshToken', {})
@@ -51,9 +53,19 @@ instance.interceptors.response.use(async response => {
   const {code, data, message} = response.data
 
   if (code === 406) {
-    await store.dispatch('auth/clearToken')
-    Message.warning('登录已过期，请重新登录')
-    await router.push('/login')
+    if (!hasShownLoginExpired) {
+      hasShownLoginExpired = true
+      Message.warning('登录已过期，请重新登录')
+
+      // 清理登录状态
+      await store.dispatch('auth/clearToken')
+      await router.push('/')
+
+      // 一段时间后解锁
+      setTimeout(() => {
+        hasShownLoginExpired = false
+      }, 3000)
+    }
     return Promise.reject(new Error('登录过期'))
   }
 
@@ -103,7 +115,7 @@ instance.interceptors.response.use(async response => {
             ...originalRequest,
             headers: {
               ...originalRequest.headers,
-              Authorization: `Bearer ${latestToken }`
+              Authorization: `Bearer ${latestToken}`
             }
           })
         )
