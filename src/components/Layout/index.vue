@@ -4,8 +4,13 @@
       <aside-component/>
     </el-aside>
     <el-container>
-      <el-header>Header</el-header>
-      <el-main>Main</el-main>
+      <el-header>
+        <div>欢迎，{{ userInfo.username }}</div>
+      </el-header>
+      <el-main>
+        <!-- 这里渲染子路由 -->
+        <router-view/>
+      </el-main>
       <el-footer>Footer</el-footer>
     </el-container>
   </el-container>
@@ -13,7 +18,7 @@
 
 <script>
 import AsideComponent from '@/components/Aside/index.vue'
-import {getUserInfo, getRouters} from '@/api/profile';
+import {getUserInfo} from '@/api/profile'
 
 export default {
   name: 'LayoutComponent',
@@ -22,27 +27,18 @@ export default {
   },
   data() {
     return {
-      userInfo: {},
-      routers: {}
+      userInfo: {}
     }
   },
   created() {
-    this.getUserInfo();
-    this.getRouters();
+    this.getUserInfo()
   },
   methods: {
     async getUserInfo() {
       try {
-        this.userInfo = await getUserInfo();
+        this.userInfo = await getUserInfo()
       } catch (error) {
-        console.error('获取用户信息失败:', error);
-      }
-    },
-    async getRouters() {
-      try {
-        this.routers = await getRouters();
-      } catch (error) {
-        console.error('获取路由信息失败:', error);
+        console.error('获取用户信息失败:', error)
       }
     }
   }
@@ -51,7 +47,7 @@ export default {
 
 <style scoped>
 .el-container {
-  height: 100%;
+  height: 100vh;
 }
 
 .el-header, .el-footer {
@@ -64,14 +60,11 @@ export default {
 .el-aside {
   background-color: #D3DCE6;
   color: #333;
-  text-align: center;
-  line-height: 200px;
 }
 
 .el-main {
   background-color: #E9EEF3;
   color: #333;
-  text-align: center;
-  line-height: 160px;
+  padding: 20px;
 }
 </style>

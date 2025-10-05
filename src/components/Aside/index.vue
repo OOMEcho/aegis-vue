@@ -1,41 +1,54 @@
 <template>
-  <el-menu default-active="1-4-1" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose"
-           :collapse="isCollapse">
+  <el-menu
+    :default-active="activeMenu"
+    class="el-menu-vertical-demo"
+    @open="handleOpen"
+    @close="handleClose"
+    :collapse="isCollapse"
+    :unique-opened="true"
+    router>
 
-    <el-menu-item index="1">
-      <i class="el-icon-menu"></i>
-      <span>导航一</span>
-    </el-menu-item>
-
-    <el-submenu index="2">
-      <template #title>
-        <i class="el-icon-location"></i>
-        <span>导航二</span>
-      </template>
-      <el-menu-item-group>
-        <el-menu-item index="2-1">选项1</el-menu-item>
-      </el-menu-item-group>
-    </el-submenu>
+    <!-- 递归渲染菜单 -->
+    <sidebar-item
+      v-for="route in routes"
+      :key="route.path"
+      :item="route"
+      :base-path="route.path"/>
   </el-menu>
 </template>
 
 <script>
+import SidebarItem from './SidebarItem.vue'
 
 export default {
   name: 'AsideComponent',
+  components: {SidebarItem},
   data() {
     return {
       isCollapse: false
-    };
+    }
+  },
+  computed: {
+    routes() {
+      return this.$store.state.permission.routes
+    },
+    activeMenu() {
+      const route = this.$route
+      const {meta, path} = route
+      if (meta.activeMenu) {
+        return meta.activeMenu
+      }
+      return path
+    }
   },
   methods: {
     handleOpen(key, keyPath) {
-      console.log(key, keyPath);
+      console.log(key, keyPath)
     },
     handleClose(key, keyPath) {
-      console.log(key, keyPath);
+      console.log(key, keyPath)
     }
-  },
+  }
 }
 </script>
 
