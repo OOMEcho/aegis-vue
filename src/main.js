@@ -10,6 +10,8 @@ Vue.use(ElementUI);
 
 Vue.config.productionTip = false
 
+Vue.config.devtools = true
+
 Vue.use(VueRouter);
 
 new Vue({

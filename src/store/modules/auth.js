@@ -14,11 +14,13 @@ const mutations = {
 }
 
 const actions = {
-  saveToken({commit}, token) {
+  saveToken({ commit }, token) {
     commit('SET_TOKEN', token)
+    return token
   },
-  clearToken({commit}) {
+  clearToken({ commit }) {
     commit('CLEAR_TOKEN')
+    return true
   }
 }
 
