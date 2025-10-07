@@ -217,7 +217,7 @@ export default {
   width: 60px;
   height: 60px;
   transition: left 0.1s ease-out;
-  z-index: 2;
+  z-request: 2;
   filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
   user-select: none;
   pointer-events: none;
@@ -295,7 +295,7 @@ export default {
   color: #666;
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 3;
+  z-request: 3;
   touch-action: none;
   user-select: none;
 }

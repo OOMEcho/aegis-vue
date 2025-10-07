@@ -1,4 +1,4 @@
-import {getRequest} from "@/api/index"
+import {getRequest} from "@/utils/request"
 
 /**
  * 导出登录日志

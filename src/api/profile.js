@@ -1,4 +1,4 @@
-import {getRequest, postRequest, putRequest} from "@/api/index"
+import {getRequest, postRequest, putRequest} from "@/utils/request"
 
 /**
  * 生成验证码

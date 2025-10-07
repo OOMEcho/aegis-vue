@@ -2,14 +2,14 @@
   <div v-if="!item.hidden">
     <!-- 只有一个子菜单且需要显示 -->
     <template v-if="hasOneShowingChild(item.children, item) && (!onlyOneChild.children || onlyOneChild.noShowingChildren) && !item.alwaysShow">
-      <el-menu-item :index="resolvePath(onlyOneChild.path)">
+      <el-menu-item :request="resolvePath(onlyOneChild.path)">
         <i :class="onlyOneChild.meta.icon || item.meta.icon"></i>
         <span>{{ onlyOneChild.meta.title }}</span>
       </el-menu-item>
     </template>
 
     <!-- 多个子菜单 -->
-    <el-submenu v-else :index="resolvePath(item.path)">
+    <el-submenu v-else :request="resolvePath(item.path)">
       <template #title>
         <i :class="item.meta.icon"></i>
         <span>{{ item.meta.title }}</span>

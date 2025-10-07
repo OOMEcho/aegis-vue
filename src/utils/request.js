@@ -7,7 +7,7 @@ import router from '@/router'
 
 // 基础配置
 const instance = axios.create({
-  baseURL: process.env.NODE_ENV === 'production' ? '' : '/api',
+  baseURL: process.env.NODE_ENV === 'production' ? '/prod-api' : '/api',
   timeout: 15000,
   withCredentials: true, // 允许携带 cookie
   headers: {
@@ -136,7 +136,7 @@ instance.interceptors.response.use(async response => {
 })
 
 // ========== 通用请求封装 ==========
-const index = (method, url, params) => {
+const request = (method, url, params) => {
   const options = {method, url}
   if (method === 'get') {
     options.params = params
@@ -146,7 +146,7 @@ const index = (method, url, params) => {
   return instance(options)
 }
 
-export const getRequest = (url, params) => index('get', url, params)
-export const postRequest = (url, params) => index('post', url, params)
-export const putRequest = (url, params) => index('put', url, params)
-export const deleteRequest = (url, params) => index('delete', url, params)
+export const getRequest = (url, params) => request('get', url, params)
+export const postRequest = (url, params) => request('post', url, params)
+export const putRequest = (url, params) => request('put', url, params)
+export const deleteRequest = (url, params) => request('delete', url, params)

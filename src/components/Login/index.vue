@@ -130,7 +130,7 @@
 </template>
 
 <script>
-import SlideCaptcha from '@/components/SlideCaptcha/index.vue';
+import SlideCaptcha from '@/components/SlideCaptcha/request.vue';
 import {login} from '@/api/login';
 import {getPublicKey, getRouters, sendEmailCode} from '@/api/profile';
 import {rsaEncrypt} from '@/utils/encrypt';
@@ -384,12 +384,12 @@ export default {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.3);
-  z-index: 0;
+  z-request: 0;
 }
 
 .login-box {
   position: relative;
-  z-index: 1;
+  z-request: 1;
 }
 
 .login-box {

@@ -1,4 +1,4 @@
-import {getRequest, postRequest, deleteRequest} from "@/api/index"
+import {getRequest, postRequest, deleteRequest} from "@/utils/request"
 
 /**
  * 文件删除
