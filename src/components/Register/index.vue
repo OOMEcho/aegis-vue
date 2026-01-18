@@ -114,7 +114,7 @@
 </template>
 
 <script>
-import SlideCaptcha from '@/components/SlideCaptcha/request.vue';
+import SlideCaptcha from '@/components/SlideCaptcha/index.vue';
 import {register, sendEmailCode} from '@/api/profile';
 import {getPublicKey} from '@/api/profile';
 import {rsaEncrypt} from '@/utils/encrypt';
@@ -284,7 +284,7 @@ export default {
 
         // 延迟跳转到登录页
         setTimeout(() => {
-          this.$router.push('/');
+          this.$router.push('/login');
         }, 1500);
 
       } catch (error) {
@@ -319,7 +319,7 @@ export default {
 
     // 返回登录
     goToLogin() {
-      this.$router.push('/');
+      this.$router.push('/login');
     }
   }
 };
@@ -346,12 +346,12 @@ export default {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.3);
-  z-request: 0;
+  z-index: 0;
 }
 
 .register-box {
   position: relative;
-  z-request: 1;
+  z-index: 1;
   width: 420px;
   padding: 40px;
   background: #fff;

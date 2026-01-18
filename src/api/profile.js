@@ -44,13 +44,6 @@ export function register(data) {
 }
 
 /**
- * 获取路由
- */
-export function getRouters() {
-  return getRequest('/profile/routers')
-}
-
-/**
  * 发送注册验证码
  * @param {string} email 邮箱
  */
@@ -94,4 +87,11 @@ export function updateProfile(data) {
  */
 export function uploadAvatar(formData) {
   return postRequest('/profile/upload/avatar', formData)
+}
+
+/**
+ * 退出登录
+ */
+export function logout() {
+  return postRequest('/logout')
 }

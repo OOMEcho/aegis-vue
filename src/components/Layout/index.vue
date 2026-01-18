@@ -1,24 +1,54 @@
 <template>
-  <el-container>
-    <el-aside width="200px">
-      <aside-component/>
+  <el-container class="layout">
+    <el-aside class="layout-aside" :width="isCollapse ? '64px' : '220px'">
+      <div class="logo">Aegis Admin</div>
+      <aside-component :collapse="isCollapse"/>
     </el-aside>
     <el-container>
-      <el-header>
-        <div>欢迎，{{ userInfo.username }}</div>
+      <el-header class="layout-header">
+        <div class="header-left">
+          <i
+            :class="isCollapse ? 'el-icon-s-unfold' : 'el-icon-s-fold'"
+            class="collapse-trigger"
+            @click="toggleCollapse"/>
+          <el-breadcrumb separator="/" class="breadcrumb">
+            <el-breadcrumb-item
+              v-for="item in breadcrumbs"
+              :key="item.path">
+              {{ item.title }}
+            </el-breadcrumb-item>
+          </el-breadcrumb>
+        </div>
+        <div class="header-right">
+          <el-badge :value="unreadCount" :max="99" :hidden="!unreadCount" class="badge-item">
+            <el-button type="text" icon="el-icon-bell" @click="goNotice"/>
+          </el-badge>
+          <el-dropdown trigger="click">
+            <span class="user-info">
+              <el-avatar :src="avatarUrl" size="small">{{ avatarText }}</el-avatar>
+              <span class="username">{{ displayName }}</span>
+              <i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item @click.native="goProfile">个人中心</el-dropdown-item>
+              <el-dropdown-item @click.native="goNotice">我的通知</el-dropdown-item>
+              <el-dropdown-item divided @click.native="handleLogout">退出登录</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
       </el-header>
-      <el-main>
-        <!-- 这里渲染子路由 -->
+      <el-main class="layout-main">
         <router-view/>
       </el-main>
-      <el-footer>Footer</el-footer>
+      <el-footer class="layout-footer">Aegis Admin</el-footer>
     </el-container>
   </el-container>
 </template>
 
 <script>
 import AsideComponent from '@/components/Aside/index.vue'
-import {getUserInfo} from '@/api/profile'
+import {getUserInfo, logout} from '@/api/profile'
+import {getUnreadCount} from '@/api/notice'
 
 export default {
   name: 'LayoutComponent',
@@ -27,44 +57,154 @@ export default {
   },
   data() {
     return {
-      userInfo: {}
+      userInfo: {},
+      unreadCount: 0,
+      isCollapse: false
+    }
+  },
+  computed: {
+    breadcrumbs() {
+      return this.$route.matched
+        .filter(item => item.meta && item.meta.title)
+        .map(item => ({
+          path: item.path,
+          title: item.meta.title
+        }))
+    },
+    displayName() {
+      return this.userInfo.nickname || this.userInfo.username || '用户'
+    },
+    avatarUrl() {
+      return this.userInfo.avatar || ''
+    },
+    avatarText() {
+      return this.displayName ? this.displayName.charAt(0) : 'U'
     }
   },
   created() {
-    this.getUserInfo()
+    this.fetchUserInfo()
+    this.fetchUnreadCount()
+    // 个人中心更新头像/昵称后触发同步
+    this.$root.$on('user-info-updated', this.handleUserInfoUpdate)
+  },
+  beforeDestroy() {
+    this.$root.$off('user-info-updated', this.handleUserInfoUpdate)
   },
   methods: {
-    async getUserInfo() {
+    async fetchUserInfo() {
       try {
         this.userInfo = await getUserInfo()
       } catch (error) {
         console.error('获取用户信息失败:', error)
       }
+    },
+    async fetchUnreadCount() {
+      try {
+        const count = await getUnreadCount()
+        this.unreadCount = Number(count) || 0
+      } catch (error) {
+        console.error('获取未读消息数失败:', error)
+      }
+    },
+    handleUserInfoUpdate(info) {
+      this.userInfo = {
+        ...this.userInfo,
+        ...(info || {})
+      }
+    },
+    toggleCollapse() {
+      this.isCollapse = !this.isCollapse
+    },
+    goNotice() {
+      this.$router.push('/notice/user')
+    },
+    goProfile() {
+      this.$router.push('/profile')
+    },
+    async handleLogout() {
+      try {
+        await logout()
+      } catch (error) {
+        console.error('退出登录失败:', error)
+      }
+      await this.$store.dispatch('auth/clearToken')
+      this.$store.commit('permission/SET_ROUTES', [])
+      this.$store.commit('permission/SET_PERMISSIONS', [])
+      this.$router.replace('/login')
     }
   }
 }
 </script>
 
 <style scoped>
-.el-container {
+.layout {
   height: 100vh;
 }
 
-.el-header, .el-footer {
-  background-color: #B3C0D1;
-  color: #333;
-  text-align: center;
+.layout-aside {
+  background-color: #1f2d3d;
+  color: #fff;
+  transition: width 0.2s;
+}
+
+.logo {
+  height: 60px;
   line-height: 60px;
+  text-align: center;
+  font-weight: 600;
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.el-aside {
-  background-color: #D3DCE6;
-  color: #333;
+.layout-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #fff;
+  border-bottom: 1px solid #ebeef5;
 }
 
-.el-main {
-  background-color: #E9EEF3;
-  color: #333;
-  padding: 20px;
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.collapse-trigger {
+  font-size: 18px;
+  margin-right: 12px;
+  cursor: pointer;
+  color: #606266;
+}
+
+.breadcrumb {
+  font-size: 14px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.username {
+  font-size: 14px;
+}
+
+.layout-main {
+  background-color: #f5f7fb;
+  padding: 16px;
+}
+
+.layout-footer {
+  text-align: center;
+  color: #999;
+  font-size: 12px;
 }
 </style>

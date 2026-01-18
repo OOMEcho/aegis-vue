@@ -71,6 +71,14 @@ export function resetUserPassword(id) {
 }
 
 /**
+ * 踢用户下线
+ * @param {number} id 用户ID
+ */
+export function kickUser(id) {
+  return putRequest(`/user/kick/${id}`)
+}
+
+/**
  * 修改用户
  * @param {Object} data 用户数据
  * @param {string} data.beginTime 开始时间

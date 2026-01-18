@@ -7,8 +7,6 @@ import {getRequest, postRequest, putRequest, deleteRequest} from "@/utils/reques
  * @param {number} data.deptCheckStrictly 部门树选择项是否关联显示
  * @param {Array} data.deptIds 部门组(数据权限)
  * @param {number} data.id 主键ID
- * @param {number} data.menuCheckStrictly 菜单树选择项是否关联显示
- * @param {Array} data.menuIds 菜单组
  * @param {number} data.orderNum 显示顺序
  * @param {number} data.pageNum 页数
  * @param {number} data.pageSize 当前页大小
@@ -81,8 +79,6 @@ export function getRoleDetail(id) {
  * @param {number} params.deptCheckStrictly 部门树选择项是否关联显示
  * @param {Array} params.deptIds 部门组(数据权限)
  * @param {number} params.id 主键ID
- * @param {number} params.menuCheckStrictly 菜单树选择项是否关联显示
- * @param {Array} params.menuIds 菜单组
  * @param {number} params.orderNum 显示顺序
  * @param {number} params.pageNum 页数
  * @param {number} params.pageSize 当前页大小
@@ -106,11 +102,20 @@ export function getRoleWithDeptTree(roleId) {
 }
 
 /**
- * 获取对应角色菜单树
+ * 获取角色权限列表
  * @param {number} roleId 角色ID
  */
-export function getRoleWithMenuTree(roleId) {
-  return getRequest(`/role/roleWithMenuTree/${roleId}`)
+export function getRolePermissions(roleId) {
+  return getRequest(`/role/${roleId}/permissions`)
+}
+
+/**
+ * 给角色分配权限
+ * @param {number} roleId 角色ID
+ * @param {Array} permCodes 权限编码列表
+ */
+export function assignRolePermissions(roleId, permCodes) {
+  return postRequest(`/role/${roleId}/permissions`, permCodes)
 }
 
 /**
@@ -145,8 +150,6 @@ export function getUnallocatedList(params) {
  * @param {number} data.deptCheckStrictly 部门树选择项是否关联显示
  * @param {Array} data.deptIds 部门组(数据权限)
  * @param {number} data.id 主键ID
- * @param {number} data.menuCheckStrictly 菜单树选择项是否关联显示
- * @param {Array} data.menuIds 菜单组
  * @param {number} data.orderNum 显示顺序
  * @param {number} data.pageNum 页数
  * @param {number} data.pageSize 当前页大小
@@ -168,8 +171,6 @@ export function updateRole(data) {
  * @param {number} data.deptCheckStrictly 部门树选择项是否关联显示
  * @param {Array} data.deptIds 部门组(数据权限)
  * @param {number} data.id 主键ID
- * @param {number} data.menuCheckStrictly 菜单树选择项是否关联显示
- * @param {Array} data.menuIds 菜单组
  * @param {number} data.orderNum 显示顺序
  * @param {number} data.pageNum 页数
  * @param {number} data.pageSize 当前页大小

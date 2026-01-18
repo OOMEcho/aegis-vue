@@ -2,6 +2,9 @@
   <el-menu
     :default-active="activeMenu"
     class="el-menu-vertical-demo"
+    background-color="#1f2d3d"
+    text-color="#bfcbd9"
+    active-text-color="#409EFF"
     @open="handleOpen"
     @close="handleClose"
     :collapse="isCollapse"
@@ -23,12 +26,16 @@ import SidebarItem from './SidebarItem.vue'
 export default {
   name: 'AsideComponent',
   components: {SidebarItem},
-  data() {
-    return {
-      isCollapse: false
+  props: {
+    collapse: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
+    isCollapse() {
+      return this.collapse
+    },
     routes() {
       return this.$store.state.permission.routes
     },

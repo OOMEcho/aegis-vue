@@ -2,25 +2,30 @@ import VueRouter from "vue-router";
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import store from '@/store'
-import {getRouters} from '@/api/profile';
+import {getUserInfo} from '@/api/profile';
 
 import LayoutComponent from '@/components/Layout/index.vue'
 import LoginComponent from '@/components/Login/index'
 import RegisterComponent from '@/components/Register/index'
+import DashboardPage from '@/views/dashboard/index.vue'
+import ProfilePage from '@/views/profile/index.vue'
 
 const originalPush = VueRouter.prototype.push
 const originalReplace = VueRouter.prototype.replace
 
 VueRouter.prototype.push = function push(location) {
+  // 兼容重复跳转导致的报错
   return originalPush.call(this, location).catch(err => err)
 }
 VueRouter.prototype.replace = function replace(location) {
+  // 兼容重复跳转导致的报错
   return originalReplace.call(this, location).catch(err => err);
 }
 
+// 静态路由：登录/注册/布局 + 首页/个人中心
 const routes = [
   {
-    path: '/',
+    path: '/login',
     name: 'login',
     component: LoginComponent
   },
@@ -30,9 +35,28 @@ const routes = [
     component: RegisterComponent
   },
   {
-    path: '/layout',
+    path: '/',
     name: 'layout',
-    component: LayoutComponent
+    component: LayoutComponent,
+    redirect: '/dashboard',
+    children: [
+      {
+        path: 'dashboard',
+        name: 'Dashboard',
+        component: DashboardPage,
+        meta: {
+          title: '首页'
+        }
+      },
+      {
+        path: 'profile',
+        name: 'Profile',
+        component: ProfilePage,
+        meta: {
+          title: '个人中心'
+        }
+      }
+    ]
   }
 ]
 
@@ -47,7 +71,7 @@ router.beforeEach(async (to, from, next) => {
   const accessToken = sessionStorage.getItem('accessToken')
 
   if (accessToken) {
-    if (to.path === '/login') {
+    if (to.path === '/login' || to.path === '/register') {
       next({path: '/'})
       NProgress.done()
     } else {
@@ -58,12 +82,12 @@ router.beforeEach(async (to, from, next) => {
         next()
       } else {
         try {
-          // 获取后端返回的路由数据
-          const accessRoutes = await store.dispatch('permission/generateRoutes', await getRouters())
+          const userInfo = await getUserInfo()
+          const accessRoutes = await store.dispatch('permission/generateRoutes', userInfo)
 
-          // 动态添加路由
+          // 动态添加路由（后端返回的菜单结构）
           accessRoutes.forEach(route => {
-            router.addRoute(route)
+            router.addRoute('layout', route)
           })
 
           // 重要：使用 replace 避免留下历史记录
@@ -76,10 +100,10 @@ router.beforeEach(async (to, from, next) => {
       }
     }
   } else {
-    if (to.path === '/' || to.path === '/register') {
+    if (to.path === '/login' || to.path === '/register') {
       next()
     } else {
-      next('/')
+      next('/login')
       NProgress.done()
     }
   }

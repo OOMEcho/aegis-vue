@@ -5,7 +5,7 @@ import {getRequest, postRequest, deleteRequest} from "@/utils/request"
  * @param {string} filePath 文件路径
  */
 export function deleteFile(filePath) {
-  return deleteRequest('/file/delete', {filePath})
+  return deleteRequest('/file/delete', null, {params: {filePath}})
 }
 
 /**
@@ -13,7 +13,7 @@ export function deleteFile(filePath) {
  * @param {string} filePath 文件路径
  */
 export function downloadFile(filePath) {
-  return getRequest('/file/download', {filePath})
+  return getRequest('/file/download', {filePath}, {responseType: 'blob'})
 }
 
 /**
@@ -21,7 +21,21 @@ export function downloadFile(filePath) {
  * @param {string} path 文件路径参数
  */
 export function localDownloadFile(path) {
-  return getRequest(`/file/localDownload/${path}`)
+  if (!path) {
+    return null
+  }
+  const isFullUrl = /^https?:\/\//.test(path)
+  const isLocalPath = path.startsWith('/file/localDownload')
+  if (isFullUrl || isLocalPath) {
+    return getRequest(path, {}, {responseType: 'blob'})
+  }
+  return getTemporaryDownloadUrl(path).then(data => {
+    const url = data?.downloadUrl || data?.url || Object.values(data || {})[0]
+    if (!url) {
+      return null
+    }
+    return getRequest(url, {}, {responseType: 'blob'})
+  })
 }
 
 /**

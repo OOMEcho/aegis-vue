@@ -19,9 +19,12 @@ const instance = axios.create({
 
 // ========== 刷新 Token 相关 ==========
 let isRefreshing = false
+// 待重放的请求队列（refresh 成功后统一重放）
 let retryQueue = []
 // 全局变量，控制是否已提示过登录过期
 let hasShownLoginExpired = false
+let lastErrorMessage = ''
+let lastErrorTime = 0
 
 const refreshTokenRequest = () => {
   return instance.get('/profile/refreshToken', {})
@@ -50,7 +53,16 @@ instance.interceptors.request.use(config => {
 instance.interceptors.response.use(async response => {
   NProgress.done()
 
-  const {code, data, message} = response.data
+  // 文件下载场景直接返回二进制
+  if (response.config && response.config.responseType === 'blob') {
+    return response.data
+  }
+
+  const payload = response.data
+  if (!payload || typeof payload !== 'object') {
+    return payload
+  }
+  const {code, data, message} = payload
 
   if (code === 406) {
     if (!hasShownLoginExpired) {
@@ -59,7 +71,7 @@ instance.interceptors.response.use(async response => {
 
       // 清理登录状态
       await store.dispatch('auth/clearToken')
-      await router.push('/')
+      await router.push('/login')
 
       // 一段时间后解锁
       setTimeout(() => {
@@ -69,6 +81,7 @@ instance.interceptors.response.use(async response => {
     return Promise.reject(new Error('登录过期'))
   }
 
+  // access token 过期，尝试刷新并重放请求
   if (code === 401) {
     const originalRequest = response.config
 
@@ -107,6 +120,7 @@ instance.interceptors.response.use(async response => {
       }
     }
 
+    // refresh 进行中时，当前请求先入队
     return new Promise(resolve => {
       retryQueue.push(() => {
         const latestToken = store.state.auth.accessToken // 取最新 token
@@ -124,29 +138,48 @@ instance.interceptors.response.use(async response => {
   }
 
   if (code !== 200) {
-    Message.error(message || '网络错误')
+    showError(message || '网络错误')
     return Promise.reject(new Error(message || '网络错误'))
   }
 
   return data
 }, error => {
   NProgress.done()
-  Message.error(error.message || '网络错误')
+  showError(error.message || '网络错误')
   return Promise.reject(error)
 })
 
 // ========== 通用请求封装 ==========
-const request = (method, url, params) => {
-  const options = {method, url}
+const request = (method, url, params, config = {}) => {
+  const options = {method, url, ...config}
   if (method === 'get') {
     options.params = params
   } else {
     options.data = params
   }
+
+  if (params instanceof FormData) {
+    options.headers = {
+      ...(options.headers || {}),
+      'Content-Type': 'multipart/form-data'
+    }
+  }
+
   return instance(options)
 }
 
-export const getRequest = (url, params) => request('get', url, params)
-export const postRequest = (url, params) => request('post', url, params)
-export const putRequest = (url, params) => request('put', url, params)
-export const deleteRequest = (url, params) => request('delete', url, params)
+export const getRequest = (url, params, config) => request('get', url, params, config)
+export const postRequest = (url, params, config) => request('post', url, params, config)
+export const putRequest = (url, params, config) => request('put', url, params, config)
+export const deleteRequest = (url, params, config) => request('delete', url, params, config)
+
+function showError(message) {
+  const now = Date.now()
+  if (message === lastErrorMessage && now - lastErrorTime < 2000) {
+    return
+  }
+  // 避免短时间内重复弹错
+  lastErrorMessage = message
+  lastErrorTime = now
+  Message.error(message)
+}

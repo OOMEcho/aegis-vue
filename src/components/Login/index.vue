@@ -130,9 +130,9 @@
 </template>
 
 <script>
-import SlideCaptcha from '@/components/SlideCaptcha/request.vue';
+import SlideCaptcha from '@/components/SlideCaptcha/index.vue';
 import {login} from '@/api/login';
-import {getPublicKey, getRouters, sendEmailCode} from '@/api/profile';
+import {getPublicKey, getUserInfo, sendEmailCode} from '@/api/profile';
 import {rsaEncrypt} from '@/utils/encrypt';
 
 export default {
@@ -315,14 +315,15 @@ export default {
         // 保存token
         await this.$store.dispatch('auth/saveToken', data)
 
-        const accessRoutes = await this.$store.dispatch('permission/generateRoutes', await getRouters())
+        const userInfo = await getUserInfo()
+        const accessRoutes = await this.$store.dispatch('permission/generateRoutes', userInfo)
         accessRoutes.forEach(route => {
-          this.$router.addRoute(route)
+          this.$router.addRoute('layout', route)
         })
 
         // 延迟跳转
         setTimeout(() => {
-          this.$router.push('/layout');
+          this.$router.push('/');
         }, 500);
 
       } catch (error) {
@@ -384,12 +385,12 @@ export default {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.3);
-  z-request: 0;
+  z-index: 0;
 }
 
 .login-box {
   position: relative;
-  z-request: 1;
+  z-index: 1;
 }
 
 .login-box {

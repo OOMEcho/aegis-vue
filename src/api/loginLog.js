@@ -14,7 +14,7 @@ import {getRequest} from "@/utils/request"
  * @param {string} params.sortOrder 排序方式 ASC DESC
  */
 export function exportLoginLog(params) {
-  return getRequest('/loginLog/export', params)
+  return getRequest('/loginLog/export', params, {responseType: 'blob'})
 }
 
 /**
