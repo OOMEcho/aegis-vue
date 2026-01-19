@@ -11,6 +11,7 @@
         </div>
         <el-upload
           class="avatar-upload"
+          action="#"
           :show-file-list="false"
           :http-request="handleAvatarUpload">
           <el-button size="small" type="primary">上传头像</el-button>

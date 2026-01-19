@@ -1,5 +1,7 @@
 import ParentView from '@/components/ParentView/index.vue'
 
+const viewModules = require.context('@/views', true, /index\.vue$/, 'lazy')
+
 const state = {
   routes: [],
   addRoutes: [],
@@ -63,8 +65,10 @@ function normalizePath(path) {
 
 function loadView(path) {
   const viewPath = path.replace(/\/$/, '')
+  const modulePath = `.${viewPath}/index.vue`
   // 路由 path 与 views 目录结构保持一致
-  return () => import(`@/views${viewPath}/index.vue`)
+  return () =>
+    viewModules(modulePath).then(mod => mod.default || mod)
 }
 
 export default {

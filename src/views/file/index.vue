@@ -15,6 +15,7 @@
             <el-option label="TENCENT_COS" value="TENCENT_COS"/>
           </el-select>
           <el-upload
+            action="#"
             :show-file-list="false"
             :http-request="handleSingleUpload">
             <el-button type="primary" size="small" v-perm="'system:file:upload'">单文件上传</el-button>
@@ -23,6 +24,7 @@
         <div class="upload-row">
           <el-upload
             ref="batchUpload"
+            action="#"
             multiple
             :auto-upload="false"
             :file-list="batchFileList"

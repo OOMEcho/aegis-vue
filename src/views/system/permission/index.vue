@@ -175,7 +175,7 @@ export default {
       try {
         const data = await getPermissionPageList(this.queryParams)
         this.tableData = data.records || []
-        this.total = data.total || 0
+        this.total = Number(data.total || 0)
       } catch (error) {
         console.error(error)
       } finally {
