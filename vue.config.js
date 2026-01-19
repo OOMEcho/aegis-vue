@@ -28,7 +28,7 @@ module.exports = defineConfig({
         pathRewrite: { ['^' + process.env.VUE_APP_BASE_PRE]: '' }
       }
     },
-    disableHostCheck: true
+    allowedHosts: 'all'
   },
 
   css: {
