@@ -11,7 +11,8 @@
         <img
           :src="captchaData.sliderImage"
           class="slider-image"
-          :style="{ top: captchaData.sliderY + 'px', left: sliderPosition + 'px' }"
+          :class="{ sliding: isSliding }"
+          :style="sliderImageStyle"
           alt="滑块"/>
       </div>
 
@@ -19,8 +20,8 @@
         <div class="slide-track-bg">
           <div
             class="slide-progress"
-            :class="{ 'verifying': isVerifying }"
-            :style="{ width: slideProgress + '%' }">
+            :class="{ 'verifying': isVerifying, sliding: isSliding }"
+            :style="slideProgressStyle">
           </div>
           <span class="slide-text" v-if="!isSliding && slideProgress === 0 && !isVerifying">
             向右滑动验证
@@ -33,7 +34,7 @@
         <div
           class="slide-button"
           :class="{ sliding: isSliding, verifying: isVerifying }"
-          :style="{ left: sliderPosition + 'px' }"
+          :style="sliderButtonStyle"
           @mousedown="startSlide"
           @touchstart="startSlide"
         >
@@ -68,6 +69,26 @@ export default {
       maxSlideDistance: 260,
       loadError: false
     };
+  },
+  computed: {
+    sliderImageStyle() {
+      const top = this.captchaData ? `${this.captchaData.sliderY}px` : "0px";
+      return {
+        top,
+        transform: `translate3d(${this.sliderPosition}px, 0, 0)`
+      };
+    },
+    sliderButtonStyle() {
+      const scale = this.isSliding ? " scale(1.1)" : "";
+      return {
+        transform: `translate3d(${this.sliderPosition}px, 0, 0)${scale}`
+      };
+    },
+    slideProgressStyle() {
+      return {
+        transform: `scaleX(${this.slideProgress / 100})`
+      };
+    }
   },
   mounted() {
     this.loadCaptcha();
@@ -121,8 +142,9 @@ export default {
       if (!this.isSliding) return;
 
       const deltaX = this.getEventX(event) - this.startX;
-      this.sliderPosition = Math.max(0, Math.min(deltaX, this.maxSlideDistance));
-      this.slideProgress = (this.sliderPosition / this.maxSlideDistance) * 100;
+      const nextX = Math.max(0, Math.min(deltaX, this.maxSlideDistance));
+      this.sliderPosition = nextX;
+      this.slideProgress = (nextX / this.maxSlideDistance) * 100;
       event.preventDefault();
     },
 
@@ -216,11 +238,17 @@ export default {
   position: absolute;
   width: 60px;
   height: 60px;
-  transition: left 0.1s ease-out;
+  transition: transform 0.1s ease-out;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
   z-index: 2;
   filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
   user-select: none;
   pointer-events: none;
+}
+
+.slider-image.sliding {
+  transition: none;
 }
 
 .slide-track {
@@ -245,7 +273,13 @@ export default {
   height: 100%;
   background: linear-gradient(90deg, #4CAF50, #45a049);
   border-radius: 20px;
-  transition: width 0.1s ease-out;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.1s ease-out;
+}
+
+.slide-progress.sliding {
+  transition: none;
 }
 
 .slide-progress.verifying {
@@ -293,11 +327,12 @@ export default {
   justify-content: center;
   font-size: 18px;
   color: #666;
-  transition: all 0.2s ease;
+  transition: transform 0.1s ease-out, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 3;
   touch-action: none;
   user-select: none;
+  will-change: transform;
 }
 
 .slide-button:hover:not(.verifying) {
@@ -309,13 +344,16 @@ export default {
   cursor: grabbing;
   border-color: #2196F3;
   color: #2196F3;
-  transform: scale(1.1);
 }
 
 .slide-button.verifying {
   border-color: #2196F3;
   color: #2196F3;
   cursor: not-allowed;
+}
+
+.slide-button.verifying span {
+  display: inline-block;
   animation: rotate 1s linear infinite;
 }
 
