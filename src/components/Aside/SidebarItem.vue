@@ -1,9 +1,11 @@
 <template>
   <div v-if="!item.hidden">
     <!-- 只有一个子菜单且需要显示 -->
-    <template v-if="hasOneShowingChild(item.children, item) && (!onlyOneChild.children || onlyOneChild.noShowingChildren) && !item.alwaysShow">
+    <template
+      v-if="hasOneShowingChild(item.children, item) && (!onlyOneChild.children || onlyOneChild.noShowingChildren) && !item.alwaysShow">
       <el-menu-item :index="resolvePath(onlyOneChild.path)">
-        <i v-if="(onlyOneChild.meta && onlyOneChild.meta.icon) || (item.meta && item.meta.icon)" :class="onlyOneChild.meta.icon || item.meta.icon" class="menu-icon iconfont"></i>
+        <i v-if="(onlyOneChild.meta && onlyOneChild.meta.icon) || (item.meta && item.meta.icon)"
+           :class="onlyOneChild.meta.icon || item.meta.icon" class="menu-icon iconfont"></i>
         <span>{{ onlyOneChild.meta.title }}</span>
       </el-menu-item>
     </template>
@@ -18,7 +20,7 @@
       <sidebar-item
         v-for="child in item.children"
         :key="child.path"
-        :item="child" />
+        :item="child"/>
     </el-submenu>
   </div>
 </template>
@@ -53,21 +55,14 @@ export default {
       }
 
       if (showingChildren.length === 0) {
-        this.onlyOneChild = { ...parent, path: parent.path, noShowingChildren: true }
+        this.onlyOneChild = {...parent, path: parent.path, noShowingChildren: true}
         return true
       }
 
       return false
     },
     resolvePath(routePath) {
-      // 处理外部链接
-      if (this.isExternalLink(routePath)) {
-        return routePath
-      }
       return routePath || '/'
-    },
-    isExternalLink(path) {
-      return /^(https?:|mailto:|tel:)/.test(path)
     }
   }
 }

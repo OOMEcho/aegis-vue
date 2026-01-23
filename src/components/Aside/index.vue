@@ -5,8 +5,6 @@
     background-color="#1f2d3d"
     text-color="#bfcbd9"
     active-text-color="#409EFF"
-    @open="handleOpen"
-    @close="handleClose"
     :collapse="isCollapse"
     :unique-opened="true"
     router>
@@ -45,14 +43,6 @@ export default {
         return meta.activeMenu
       }
       return path
-    }
-  },
-  methods: {
-    handleOpen(key, keyPath) {
-      console.log(key, keyPath)
-    },
-    handleClose(key, keyPath) {
-      console.log(key, keyPath)
     }
   }
 }
