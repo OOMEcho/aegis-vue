@@ -60,10 +60,12 @@ const routes = [
   }
 ]
 
-const router = new VueRouter({
+const createRouter = () => new VueRouter({
   mode: 'history',
   routes
 });
+
+const router = createRouter();
 
 router.beforeEach(async (to, from, next) => {
   NProgress.start()
@@ -112,5 +114,9 @@ router.beforeEach(async (to, from, next) => {
 router.afterEach(() => {
   NProgress.done()
 })
+
+export function resetRouter() {
+  router.matcher = createRouter().matcher
+}
 
 export default router;
