@@ -1,7 +1,7 @@
 <template>
   <el-container class="layout">
     <el-aside class="layout-aside" :width="isCollapse ? '64px' : '220px'">
-      <div class="logo">Aegis Admin</div>
+      <div class="logo">Aegis</div>
       <aside-component :collapse="isCollapse"/>
     </el-aside>
     <el-container>
@@ -144,9 +144,10 @@ export default {
 }
 
 .layout-aside {
-  background-color: #1f2d3d;
-  color: #fff;
+  background: #f5f7ff;
+  color: #1f2d3d;
   transition: width 0.2s;
+  border-right: 1px solid #e2e9ff;
 }
 
 .logo {
@@ -154,16 +155,18 @@ export default {
   line-height: 60px;
   text-align: center;
   font-weight: 600;
-  color: #fff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #1f2d3d;
+  border-bottom: 1px solid #e2e9ff;
+  background: linear-gradient(135deg, #eef3ff 0%, #ffffff 100%);
 }
 
 .layout-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #fff;
-  border-bottom: 1px solid #ebeef5;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e9ff;
+  box-shadow: 0 10px 30px rgba(31, 45, 61, 0.06);
 }
 
 .header-left {
@@ -175,7 +178,7 @@ export default {
   font-size: 18px;
   margin-right: 12px;
   cursor: pointer;
-  color: #606266;
+  color: #4f70ff;
 }
 
 .breadcrumb {
@@ -200,13 +203,15 @@ export default {
 }
 
 .layout-main {
-  background-color: #f5f7fb;
-  padding: 16px;
+  background-color: #f4f7ff;
+  padding: 20px;
+  min-height: calc(100vh - 110px);
 }
 
 .layout-footer {
   text-align: center;
-  color: #999;
+  color: #8b97ad;
   font-size: 12px;
+  background: #f4f7ff;
 }
 </style>

@@ -115,10 +115,11 @@ export default {
 
 .stats-row .stat-card {
   text-align: center;
+  background: #ffffff;
 }
 
 .stat-title {
-  color: #999;
+  color: #8b97ad;
   font-size: 14px;
   margin-bottom: 8px;
 }
@@ -126,11 +127,12 @@ export default {
 .stat-value {
   font-size: 28px;
   font-weight: 600;
-  color: #303133;
+  color: #1f2d3d;
 }
 
 .card-header {
   font-weight: 600;
+  color: #1f2d3d;
 }
 
 .quick-actions {
@@ -141,7 +143,7 @@ export default {
 
 .tips-list {
   padding-left: 18px;
-  color: #666;
+  color: #6b7a99;
   line-height: 1.8;
 }
 </style>

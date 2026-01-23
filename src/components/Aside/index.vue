@@ -2,9 +2,9 @@
   <el-menu
     :default-active="activeMenu"
     class="el-menu-vertical-demo"
-    background-color="#1f2d3d"
-    text-color="#bfcbd9"
-    active-text-color="#409EFF"
+    background-color="#f5f7ff"
+    text-color="#3b4a66"
+    active-text-color="#4f70ff"
     :collapse="isCollapse"
     :unique-opened="true"
     router>
@@ -49,8 +49,8 @@ export default {
 </script>
 
 <style scoped>
-.el-menu-vertical-demo:not(.el-menu--collapse) {
-  width: 200px;
-  min-height: 400px;
-}
+  .el-menu-vertical-demo:not(.el-menu--collapse) {
+    width: 200px;
+    min-height: 400px;
+  }
 </style>

@@ -20,6 +20,7 @@
 
       <section class="login-panel">
         <div class="login-box">
+          <h2 class="login-title">用户登录</h2>
 
       <!-- 登录方式切换 -->
       <el-tabs v-model="loginType" @tab-click="handleTabChange">
@@ -538,10 +539,12 @@ export default {
 
 .login-box {
   width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
 }
 
 .login-title {
-  text-align: left;
+  text-align: center;
   margin-bottom: 24px;
   color: #202c44;
   font-size: 26px;
@@ -563,13 +566,14 @@ export default {
 }
 
 .register-link {
-  text-align: left;
+  text-align: center;
   margin-top: 20px;
   color: #666;
   font-size: 14px;
   display: flex;
   align-items: center;
   gap: 6px;
+  justify-content: center;
 }
 
 .register-link span {

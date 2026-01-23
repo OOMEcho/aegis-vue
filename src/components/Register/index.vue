@@ -498,10 +498,12 @@ export default {
 
 .register-box {
   width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
 }
 
 .register-title {
-  text-align: left;
+  text-align: center;
   margin-bottom: 24px;
   color: #202c44;
   font-size: 26px;
@@ -523,13 +525,14 @@ export default {
 }
 
 .back-to-login {
-  text-align: left;
+  text-align: center;
   margin-top: 20px;
   color: #666;
   font-size: 14px;
   display: flex;
   align-items: center;
   gap: 6px;
+  justify-content: center;
 }
 
 .back-to-login span {
