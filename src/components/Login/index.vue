@@ -1,7 +1,25 @@
 <template>
   <div class="login-container">
-    <div class="login-box">
-      <h2 class="login-title">用户登录</h2>
+    <div class="login-shell">
+      <section class="login-hero">
+        <div class="brand">
+          <img class="brand-logo" src="@/assets/images/logo.png" alt="Aegis" />
+          <span class="brand-name">Aegis</span>
+        </div>
+        <div class="hero-content">
+          <h1 class="hero-title">欢迎回来</h1>
+          <p class="hero-subtitle">高效、安全、清晰的后台管理体验</p>
+          <div class="hero-illustration">
+            <div class="panel-card"></div>
+            <div class="panel-card"></div>
+            <div class="panel-card"></div>
+          </div>
+        </div>
+        <div class="hero-caption">让协作更轻松，让管理更稳定</div>
+      </section>
+
+      <section class="login-panel">
+        <div class="login-box">
 
       <!-- 登录方式切换 -->
       <el-tabs v-model="loginType" @tab-click="handleTabChange">
@@ -98,10 +116,12 @@
       </el-form>
 
       <!-- 注册入口 -->
-      <div class="register-link">
-        <span>还没有账号？</span>
-        <el-link type="primary" @click="goToRegister">立即注册</el-link>
-      </div>
+          <div class="register-link">
+            <span>还没有账号？</span>
+            <el-link type="primary" @click="goToRegister">立即注册</el-link>
+          </div>
+        </div>
+      </section>
     </div>
 
     <!-- 滑块验证码弹窗 -->
@@ -367,46 +387,165 @@ export default {
 <style scoped>
 .login-container {
   min-height: 100vh;
+  height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  background-image: url('~@/assets/images/login-bg.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: linear-gradient(135deg, #f4f7ff 0%, #e9efff 45%, #f7f9ff 100%);
+  padding: 32px;
   position: relative;
+  overflow: hidden;
+  font-family: "Manrope", "Noto Sans SC", "PingFang SC", sans-serif;
+  box-sizing: border-box;
 }
 
-.login-container::before {
+.login-container::before,
+.login-container::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  background: rgba(102, 126, 234, 0.08);
   z-index: 0;
 }
 
-.login-box {
+.login-container::before {
+  width: 420px;
+  height: 420px;
+  top: -120px;
+  left: -120px;
+}
+
+.login-container::after {
+  width: 520px;
+  height: 520px;
+  right: -180px;
+  top: 40px;
+}
+
+.login-shell {
   position: relative;
   z-index: 1;
+  width: min(1200px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(360px, 480px);
+  background: #f7f9ff;
+  border-radius: 28px;
+  box-shadow: 0 30px 80px rgba(26, 36, 64, 0.12);
+  overflow: hidden;
+  min-height: calc(100vh - 64px);
+}
+
+
+.login-hero {
+  padding: 48px 56px;
+  background: linear-gradient(145deg, #eef3ff 0%, #f6f8ff 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  position: relative;
+}
+
+.login-hero::after {
+  content: '';
+  position: absolute;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: rgba(103, 128, 255, 0.12);
+  right: -80px;
+  top: 40px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  color: #1f2d3d;
+}
+
+
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.brand-name {
+  font-size: 18px;
+  letter-spacing: 0.4px;
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hero-title {
+  font-size: 32px;
+  color: #23314a;
+  margin: 0;
+}
+
+.hero-subtitle {
+  font-size: 14px;
+  color: #6b7a99;
+  margin: 0;
+}
+
+.hero-illustration {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.panel-card {
+  height: 90px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 16px 30px rgba(58, 82, 160, 0.12);
+  position: relative;
+}
+
+.panel-card::after {
+  content: '';
+  position: absolute;
+  width: 50%;
+  height: 6px;
+  left: 16px;
+  top: 18px;
+  border-radius: 6px;
+  background: #d7e0ff;
+  box-shadow: 0 14px 0 #e7ecff, 0 28px 0 #f0f3ff;
+}
+
+.hero-caption {
+  margin-top: auto;
+  color: #7c8aa5;
+  font-size: 13px;
+}
+
+.login-panel {
+  background: #ffffff;
+  padding: 56px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
 .login-box {
-  width: 420px;
-  padding: 40px;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  width: 100%;
 }
 
 .login-title {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #333;
-  font-size: 24px;
-  font-weight: 500;
+  text-align: left;
+  margin-bottom: 24px;
+  color: #202c44;
+  font-size: 26px;
+  font-weight: 600;
 }
 
 .code-input-wrapper {
@@ -424,14 +563,17 @@ export default {
 }
 
 .register-link {
-  text-align: center;
+  text-align: left;
   margin-top: 20px;
   color: #666;
   font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .register-link span {
-  margin-right: 5px;
+  margin-right: 0;
 }
 
 .dialog-footer {
@@ -454,23 +596,46 @@ export default {
 }
 
 ::v-deep .el-tabs__item.is-active {
-  color: #667eea;
+  color: #4f70ff;
   font-weight: 500;
 }
 
 ::v-deep .el-tabs__active-bar {
-  background-color: #667eea;
+  background-color: #4f70ff;
 }
 
 /* 移动端适配 */
-@media (max-width: 480px) {
-  .login-box {
-    width: 90%;
-    padding: 30px 20px;
+@media (max-width: 1024px) {
+  .login-shell {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: auto;
   }
 
-  .login-title {
-    font-size: 20px;
+  .login-hero {
+    padding: 40px;
+  }
+
+  .login-panel {
+    padding: 40px;
+  }
+}
+
+@media (max-width: 640px) {
+  .login-container {
+    padding: 16px;
+    height: auto;
+  }
+
+  .login-hero {
+    padding: 32px 24px;
+  }
+
+  .login-panel {
+    padding: 32px 24px;
+  }
+
+  .hero-title {
+    font-size: 24px;
   }
 
   .send-code-btn {
@@ -479,7 +644,7 @@ export default {
   }
 
   ::v-deep .el-tabs__item {
-    padding: 0 20px;
+    padding: 0 18px;
     font-size: 14px;
   }
 }
