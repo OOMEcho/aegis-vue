@@ -3,7 +3,7 @@
     <!-- 只有一个子菜单且需要显示 -->
     <template v-if="hasOneShowingChild(item.children, item) && (!onlyOneChild.children || onlyOneChild.noShowingChildren) && !item.alwaysShow">
       <el-menu-item :index="resolvePath(onlyOneChild.path)">
-        <i :class="onlyOneChild.meta.icon || item.meta.icon"></i>
+        <i v-if="(onlyOneChild.meta && onlyOneChild.meta.icon) || (item.meta && item.meta.icon)" :class="onlyOneChild.meta.icon || item.meta.icon" class="menu-icon iconfont"></i>
         <span>{{ onlyOneChild.meta.title }}</span>
       </el-menu-item>
     </template>
@@ -11,15 +11,14 @@
     <!-- 多个子菜单 -->
     <el-submenu v-else :index="resolvePath(item.path)">
       <template #title>
-        <i :class="item.meta.icon"></i>
+        <i v-if="item.meta && item.meta.icon" :class="item.meta.icon" class="menu-icon iconfont"></i>
         <span>{{ item.meta.title }}</span>
       </template>
 
       <sidebar-item
         v-for="child in item.children"
         :key="child.path"
-        :item="child"
-        :base-path="resolvePath(child.path)" />
+        :item="child" />
     </el-submenu>
   </div>
 </template>
@@ -32,10 +31,6 @@ export default {
       type: Object,
       required: true
     },
-    basePath: {
-      type: String,
-      default: ''
-    }
   },
   data() {
     return {
@@ -58,7 +53,7 @@ export default {
       }
 
       if (showingChildren.length === 0) {
-        this.onlyOneChild = { ...parent, path: '', noShowingChildren: true }
+        this.onlyOneChild = { ...parent, path: parent.path, noShowingChildren: true }
         return true
       }
 
@@ -69,25 +64,7 @@ export default {
       if (this.isExternalLink(routePath)) {
         return routePath
       }
-      if (this.isExternalLink(this.basePath)) {
-        return this.basePath
-      }
-
-      // 如果是绝对路径，直接返回
-      if (routePath.startsWith('/')) {
-        return routePath
-      }
-
-      // 拼接路径
-      return this.joinPath(this.basePath, routePath)
-    },
-    joinPath(base, path) {
-      // 移除 base 结尾的斜杠
-      base = base.replace(/\/$/, '')
-      // 移除 path 开头的斜杠
-      path = path.replace(/^\//, '')
-      // 拼接
-      return base ? `${base}/${path}` : `/${path}`
+      return routePath || '/'
     },
     isExternalLink(path) {
       return /^(https?:|mailto:|tel:)/.test(path)

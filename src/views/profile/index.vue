@@ -73,6 +73,7 @@
 
 <script>
 import {getPublicKey, getUserInfo, logout, updatePassword, updateProfile, uploadAvatar} from '@/api/profile'
+import {resetRouter} from '@/router'
 import {rsaEncrypt} from '@/utils/encrypt'
 import {Message} from 'element-ui'
 import dictMixin from '@/mixins/dict'
@@ -224,7 +225,8 @@ export default {
           await this.$store.dispatch('auth/clearToken')
           this.$store.commit('permission/SET_ROUTES', [])
           this.$store.commit('permission/SET_PERMISSIONS', [])
-          this.$router.replace('/login')
+          resetRouter()
+          await this.$router.replace('/login')
         } catch (error) {
           console.error(error)
         }

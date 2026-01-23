@@ -48,6 +48,7 @@
 <script>
 import AsideComponent from '@/components/Aside/index.vue'
 import {getUserInfo, logout} from '@/api/profile'
+import {resetRouter} from '@/router'
 import {getUnreadCount} from '@/api/notice'
 
 export default {
@@ -130,7 +131,8 @@ export default {
       await this.$store.dispatch('auth/clearToken')
       this.$store.commit('permission/SET_ROUTES', [])
       this.$store.commit('permission/SET_PERMISSIONS', [])
-      this.$router.replace('/login')
+      resetRouter()
+      await this.$router.replace('/login')
     }
   }
 }

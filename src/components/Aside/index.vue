@@ -15,8 +15,7 @@
     <sidebar-item
       v-for="route in routes"
       :key="route.path"
-      :item="route"
-      :base-path="route.path"/>
+      :item="route"/>
   </el-menu>
 </template>
 

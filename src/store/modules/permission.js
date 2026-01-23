@@ -4,13 +4,11 @@ const viewModules = require.context('@/views', true, /index\.vue$/, 'lazy')
 
 const state = {
   routes: [],
-  addRoutes: [],
   permissions: []
 }
 
 const mutations = {
   SET_ROUTES(state, routes) {
-    state.addRoutes = routes
     state.routes = routes
   },
   SET_PERMISSIONS(state, permissions) {

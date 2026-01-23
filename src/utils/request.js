@@ -3,7 +3,7 @@ import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import {Message} from 'element-ui'
 import store from '@/store'
-import router from '@/router'
+import router, {resetRouter} from '@/router'
 
 // 基础配置
 const instance = axios.create({
@@ -25,6 +25,13 @@ let retryQueue = []
 let hasShownLoginExpired = false
 let lastErrorMessage = ''
 let lastErrorTime = 0
+
+const clearAuthState = async () => {
+  await store.dispatch('auth/clearToken')
+  store.commit('permission/SET_ROUTES', [])
+  store.commit('permission/SET_PERMISSIONS', [])
+  resetRouter()
+}
 
 const refreshTokenRequest = () => {
   return instance.get('/profile/refreshToken', {})
@@ -70,7 +77,7 @@ instance.interceptors.response.use(async response => {
       Message.warning('登录已过期，请重新登录')
 
       // 清理登录状态
-      await store.dispatch('auth/clearToken')
+      await clearAuthState()
       await router.push('/login')
 
       // 一段时间后解锁
@@ -110,7 +117,7 @@ instance.interceptors.response.use(async response => {
         retryQueue.forEach(cb => cb(null))
         retryQueue = []
 
-        await store.dispatch('auth/clearToken')
+        await clearAuthState()
         Message.warning('登录已过期，请重新登录')
         await router.push('/login')
 
