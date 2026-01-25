@@ -16,6 +16,7 @@ const mutations = {
       meta: view.meta || {},
       title: (view.meta && view.meta.title) || view.name
     })
+    this.commit('tagsView/SORT_VISITED_VIEWS')
   },
   ADD_CACHED_VIEW(state, view) {
     if (!view.name) return
@@ -25,18 +26,26 @@ const mutations = {
   },
   DEL_VISITED_VIEW(state, view) {
     state.visitedViews = state.visitedViews.filter(v => v.path !== view.path)
+    this.commit('tagsView/SORT_VISITED_VIEWS')
   },
   DEL_CACHED_VIEW(state, view) {
     state.cachedViews = state.cachedViews.filter(name => name !== view.name)
   },
   DEL_OTHERS_VISITED(state, view) {
     state.visitedViews = state.visitedViews.filter(v => v.meta && v.meta.affix || v.path === view.path)
+    this.commit('tagsView/SORT_VISITED_VIEWS')
   },
   DEL_OTHERS_CACHED(state, view) {
     state.cachedViews = state.cachedViews.filter(name => name === view.name)
   },
   DEL_ALL_VISITED(state) {
     state.visitedViews = state.visitedViews.filter(v => v.meta && v.meta.affix)
+    this.commit('tagsView/SORT_VISITED_VIEWS')
+  },
+  SORT_VISITED_VIEWS(state) {
+    const affixViews = state.visitedViews.filter(v => v.meta && v.meta.affix)
+    const normalViews = state.visitedViews.filter(v => !v.meta || !v.meta.affix)
+    state.visitedViews = [...affixViews, ...normalViews]
   },
   DEL_ALL_CACHED(state) {
     state.cachedViews = []
