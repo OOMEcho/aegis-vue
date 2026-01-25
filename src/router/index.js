@@ -9,6 +9,7 @@ import LoginComponent from '@/components/Login/index'
 import RegisterComponent from '@/components/Register/index'
 import DashboardPage from '@/views/dashboard/index.vue'
 import ProfilePage from '@/views/profile/index.vue'
+import NotFoundPage from '@/views/404/index.vue'
 
 const originalPush = VueRouter.prototype.push
 const originalReplace = VueRouter.prototype.replace
@@ -55,6 +56,15 @@ const routes = [
         meta: {
           title: '个人中心'
         }
+      },
+      {
+        path: '404',
+        name: 'NotFound',
+        component: NotFoundPage,
+        meta: {
+          title: '页面不存在'
+        },
+        hidden: true
       }
     ]
   }
@@ -66,6 +76,7 @@ const createRouter = () => new VueRouter({
 });
 
 const router = createRouter();
+let is404Added = false
 
 router.beforeEach(async (to, from, next) => {
   NProgress.start()
@@ -91,6 +102,14 @@ router.beforeEach(async (to, from, next) => {
           accessRoutes.forEach(route => {
             router.addRoute('layout', route)
           })
+
+          if (!is404Added) {
+            router.addRoute({
+              path: '*',
+              redirect: '/404'
+            })
+            is404Added = true
+          }
 
           // 重要：使用 replace 避免留下历史记录
           next({...to, replace: true})

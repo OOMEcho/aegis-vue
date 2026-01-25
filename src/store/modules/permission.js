@@ -67,7 +67,9 @@ function loadView(path) {
   const modulePath = `.${viewPath}/index.vue`
   // 路由 path 与 views 目录结构保持一致
   return () =>
-    viewModules(modulePath).then(mod => mod.default || mod)
+    viewModules(modulePath)
+      .then(mod => mod.default || mod)
+      .catch(() => import('@/views/404/index.vue').then(mod => mod.default || mod))
 }
 
 export default {
