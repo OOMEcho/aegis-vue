@@ -267,13 +267,6 @@ export default {
 </script>
 
 <style scoped>
-.page-container {
-  padding: 10px;
-}
-
-.card-header {
-  font-weight: 600;
-}
 
 .upload-section {
   margin-bottom: 16px;

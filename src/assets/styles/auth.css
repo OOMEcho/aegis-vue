@@ -1,0 +1,8 @@
+.code-input-wrapper {
+  display: flex;
+  gap: 10px;
+}
+
+.code-input-wrapper .el-input {
+  flex: 1;
+}

@@ -1,7 +1,10 @@
 <template>
   <el-container class="layout">
-    <el-aside class="layout-aside" :width="isCollapse ? '64px' : '220px'">
-      <div class="logo">Aegis</div>
+    <el-aside class="layout-aside" :width="isCollapse ? '64px' : '190px'">
+      <div class="logo">
+        <img src="@/assets/images/logo.png" alt="Aegis" class="logo-image" />
+        <span v-if="!isCollapse" class="logo-text">Aegis</span>
+      </div>
       <aside-component :collapse="isCollapse"/>
     </el-aside>
     <el-container>
@@ -60,7 +63,7 @@ export default {
     return {
       userInfo: {},
       unreadCount: 0,
-      isCollapse: false
+      isCollapse: localStorage.getItem('sidebarCollapsed') === '1'
     }
   },
   computed: {
@@ -115,6 +118,7 @@ export default {
     },
     toggleCollapse() {
       this.isCollapse = !this.isCollapse
+      localStorage.setItem('sidebarCollapsed', this.isCollapse ? '1' : '0')
     },
     goNotice() {
       this.$router.push('/notice/user')
@@ -141,23 +145,52 @@ export default {
 <style scoped>
 .layout {
   height: 100vh;
+  overflow: hidden;
+}
+
+.layout > .el-container {
+  height: 100%;
 }
 
 .layout-aside {
-  background: #f5f7ff;
-  color: #1f2d3d;
+  background: #1b2430;
+  color: #d7e1f2;
   transition: width 0.2s;
-  border-right: 1px solid #e2e9ff;
+  border-right: none !important;
+  border: none !important;
+  box-shadow: 8px 0 20px rgba(16, 24, 55, 0.35);
+  position: relative;
+  z-index: 2;
+}
+
+::v-deep .el-aside {
+  border-right: none !important;
+  border: none !important;
+  overflow-x: hidden;
 }
 
 .logo {
   height: 60px;
   line-height: 60px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   font-weight: 600;
-  color: #1f2d3d;
-  border-bottom: 1px solid #e2e9ff;
-  background: linear-gradient(135deg, #eef3ff 0%, #ffffff 100%);
+  color: #d7e1f2;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.logo-image {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.logo-text {
+  font-size: 14px;
+  letter-spacing: 0.4px;
 }
 
 .layout-header {
@@ -205,7 +238,9 @@ export default {
 .layout-main {
   background-color: #f4f7ff;
   padding: 20px;
-  min-height: calc(100vh - 110px);
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
 }
 
 .layout-footer {

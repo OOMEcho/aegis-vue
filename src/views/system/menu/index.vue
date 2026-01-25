@@ -105,8 +105,10 @@
               v-for="item in parentOptions"
               :key="item.id"
               :label="item.menuName"
-              :value="item.id"/>
+              :value="item.id"
+              :disabled="item.menuType === 'M'"/>
           </el-select>
+          <div class="form-hint">菜单不能创建子菜单，请选择目录作为上级</div>
         </el-form-item>
         <el-form-item label="排序" prop="orderNum">
           <el-input-number v-model="form.orderNum" :min="0"/>
@@ -115,7 +117,9 @@
           <el-input v-model="form.name" placeholder="请输入路由名称"/>
         </el-form-item>
         <el-form-item label="路由地址" prop="path">
-          <el-input v-model="form.path" placeholder="请输入路由地址"/>
+          <el-input v-model="form.path" placeholder="如 user 或 /user"/>
+          <div class="form-hint">仅支持英文字母；不带“/”将自动拼接父级路径，带“/”视为完整路径</div>
+          <div v-if="parentPathHint" class="form-hint">当前父级：{{ parentPathHint }}</div>
         </el-form-item>
         <el-form-item label="菜单类型" prop="menuType">
           <el-radio-group v-model="form.menuType">
@@ -212,6 +216,35 @@ export default {
   name: 'MenuPage',
   mixins: [dictMixin],
   data() {
+    const validateParent = (rule, value, callback) => {
+      if (value === undefined || value === null) {
+        callback(new Error('请选择上级菜单'))
+        return
+      }
+      if (value === 0) {
+        callback()
+        return
+      }
+      const parent = this.menuOptions.find(item => item.id === value)
+      if (parent && parent.menuType === 'M') {
+        callback(new Error('菜单不能创建子菜单，请选择目录作为上级'))
+        return
+      }
+      callback()
+    }
+
+    const validatePath = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('请输入路由地址'))
+        return
+      }
+      if (!/^\/?[A-Za-z]+$/.test(value)) {
+        callback(new Error('路由地址仅支持英文字母，允许以“/”开头'))
+        return
+      }
+      callback()
+    }
+
     return {
       loading: false,
       queryParams: {
@@ -230,10 +263,13 @@ export default {
       rules: {
         menuName: [{required: true, message: '请输入菜单名称', trigger: 'blur'}],
         menuCode: [{required: true, message: '请输入菜单编码', trigger: 'blur'}],
-        parentId: [{required: true, message: '请选择上级菜单', trigger: 'change'}],
+        parentId: [{required: true, validator: validateParent, trigger: 'change'}],
         orderNum: [{required: true, message: '请输入排序', trigger: 'change'}],
         name: [{required: true, message: '请输入路由名称', trigger: 'blur'}],
-        path: [{required: true, message: '请输入路由地址', trigger: 'blur'}],
+        path: [
+          {required: true, message: '请输入路由地址', trigger: 'blur'},
+          {validator: validatePath, trigger: 'blur'}
+        ],
         menuType: [{required: true, message: '请选择菜单类型', trigger: 'change'}]
       },
       permDialogVisible: false,
@@ -251,6 +287,13 @@ export default {
         return this.menuOptions
       }
       return this.menuOptions.filter(item => item.id !== this.form.id)
+    },
+    parentPathHint() {
+      const parent = this.menuOptions.find(item => item.id === this.form.parentId)
+      if (!parent || !parent.path) {
+        return ''
+      }
+      return parent.path
     },
     filteredIconOptions() {
       const keyword = this.iconKeyword.trim().toLowerCase()
@@ -490,22 +533,6 @@ export default {
 </script>
 
 <style scoped>
-.page-container {
-  padding: 10px;
-}
-
-.card-header {
-  font-weight: 600;
-}
-
-.search-form {
-  margin-bottom: 10px;
-}
-
-.table-toolbar {
-  margin: 10px 0;
-}
-
 .table-icon {
   font-size: 18px;
   color: #4f70ff;
@@ -546,6 +573,12 @@ export default {
 
 .icon-input {
   flex: 1;
+}
+
+.form-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #8b97ad;
 }
 
 .icon-dialog {

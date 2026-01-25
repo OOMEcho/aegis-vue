@@ -1,26 +1,43 @@
 <template>
   <div v-if="!item.hidden">
-    <!-- 只有一个子菜单且需要显示 -->
-    <template
-      v-if="hasOneShowingChild(item.children, item) && (!onlyOneChild.children || onlyOneChild.noShowingChildren) && !item.alwaysShow">
-      <el-menu-item :index="resolvePath(onlyOneChild.path)">
-        <i v-if="(onlyOneChild.meta && onlyOneChild.meta.icon) || (item.meta && item.meta.icon)"
-           :class="onlyOneChild.meta.icon || item.meta.icon" class="menu-icon iconfont"></i>
-        <span>{{ onlyOneChild.meta.title }}</span>
+    <el-menu-item
+      v-if="!item.children || item.children.length === 0"
+      :index="resolvePath(item.path)"
+      :class="{'submenu-title-noDropdown':!isNest}"
+      :title="item.meta && item.meta.title">
+      <i v-if="item.meta && item.meta.icon" :class="item.meta.icon" class="menu-icon iconfont"></i>
+      <span v-if="!collapse || isNest" slot="title">{{ item.meta.title }}</span>
+    </el-menu-item>
+
+    <template v-else-if="collapse && isNest && item.children && item.children.length">
+      <el-menu-item
+        v-for="node in flattenChildren(item.children)"
+        :key="node.path"
+        :index="resolvePath(node.path)"
+        :title="node.meta && node.meta.title">
+        <i v-if="node.meta && node.meta.icon" :class="node.meta.icon" class="menu-icon iconfont"></i>
+        <span>{{ node.meta.title }}</span>
       </el-menu-item>
     </template>
 
-    <!-- 多个子菜单 -->
-    <el-submenu v-else :index="resolvePath(item.path)">
-      <template #title>
+    <el-submenu
+      v-else
+      ref="subMenu"
+      :index="resolvePath(item.path)"
+      :popper-class="collapse ? 'sidebar-submenu-popper' : ''">
+      <template slot="title">
         <i v-if="item.meta && item.meta.icon" :class="item.meta.icon" class="menu-icon iconfont"></i>
-        <span>{{ item.meta.title }}</span>
+        <span v-if="!collapse || isNest">{{ item.meta.title }}</span>
       </template>
-
       <sidebar-item
         v-for="child in item.children"
         :key="child.path"
-        :item="child"/>
+        :is-nest="true"
+        :item="child"
+        :base-path="resolvePath(item.path)"
+        :collapse="collapse"
+        class="nest-menu"
+      />
     </el-submenu>
   </div>
 </template>
@@ -33,36 +50,46 @@ export default {
       type: Object,
       required: true
     },
-  },
-  data() {
-    return {
-      onlyOneChild: null
+    isNest: {
+      type: Boolean,
+      default: false
+    },
+    basePath: {
+      type: String,
+      default: ''
+    },
+    collapse: {
+      type: Boolean,
+      default: false
     }
   },
   methods: {
-    hasOneShowingChild(children = [], parent) {
-      const showingChildren = children.filter(item => {
-        if (item.hidden) {
-          return false
+    flattenChildren(children = []) {
+      const list = []
+      children.forEach(child => {
+        if (child.children && child.children.length) {
+          list.push(...this.flattenChildren(child.children))
         } else {
-          this.onlyOneChild = item
-          return true
+          list.push(child)
         }
       })
-
-      if (showingChildren.length === 1) {
-        return true
-      }
-
-      if (showingChildren.length === 0) {
-        this.onlyOneChild = {...parent, path: parent.path, noShowingChildren: true}
-        return true
-      }
-
-      return false
+      return list
     },
     resolvePath(routePath) {
-      return routePath || '/'
+      if (routePath && /^(https?:|mailto:|tel:)/.test(routePath)) {
+        return routePath
+      }
+      if (!routePath) {
+        return this.basePath || '/'
+      }
+      if (routePath && routePath.startsWith('/')) {
+        return routePath.length > 1 ? routePath.replace(/\/+$/, '') : routePath
+      }
+
+      const basePath = this.basePath.replace(/\/+$/, '')
+      const path = routePath ? routePath.replace(/^\/+/, '') : ''
+      const fullPath = basePath ? `${basePath}/${path}` : `/${path}`
+      return fullPath.length > 1 ? fullPath.replace(/\/+$/, '') : fullPath
     }
   }
 }

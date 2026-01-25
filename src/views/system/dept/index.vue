@@ -282,19 +282,4 @@ export default {
 </script>
 
 <style scoped>
-.page-container {
-  padding: 10px;
-}
-
-.card-header {
-  font-weight: 600;
-}
-
-.search-form {
-  margin-bottom: 10px;
-}
-
-.table-toolbar {
-  margin: 10px 0;
-}
 </style>

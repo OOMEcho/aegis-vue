@@ -551,14 +551,6 @@ export default {
   font-weight: 600;
 }
 
-.code-input-wrapper {
-  display: flex;
-  gap: 10px;
-}
-
-.code-input-wrapper .el-input {
-  flex: 1;
-}
 
 .send-code-btn {
   width: 120px;

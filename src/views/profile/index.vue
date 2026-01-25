@@ -238,7 +238,6 @@ export default {
 
 <style scoped>
 .page-container {
-  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 16px;
