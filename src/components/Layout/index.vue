@@ -40,8 +40,11 @@
           </el-dropdown>
         </div>
       </el-header>
+      <tags-view />
       <el-main class="layout-main">
-        <router-view/>
+        <keep-alive :include="cachedViews">
+          <router-view :key="`${$route.fullPath}-${viewKey}`"/>
+        </keep-alive>
       </el-main>
       <el-footer class="layout-footer">Aegis Admin</el-footer>
     </el-container>
@@ -50,6 +53,7 @@
 
 <script>
 import AsideComponent from '@/components/Aside/index.vue'
+import TagsView from '@/components/TagsView/index.vue'
 import {getUserInfo, logout} from '@/api/profile'
 import {resetRouter} from '@/router'
 import {getUnreadCount} from '@/api/notice'
@@ -57,7 +61,8 @@ import {getUnreadCount} from '@/api/notice'
 export default {
   name: 'LayoutComponent',
   components: {
-    AsideComponent
+    AsideComponent,
+    TagsView
   },
   data() {
     return {
@@ -83,6 +88,12 @@ export default {
     },
     avatarText() {
       return this.displayName ? this.displayName.charAt(0) : 'U'
+    },
+    cachedViews() {
+      return this.$store.state.tagsView.cachedViews
+    },
+    viewKey() {
+      return this.$store.state.tagsView.viewKey
     }
   },
   created() {

@@ -46,7 +46,8 @@ const routes = [
         name: 'Dashboard',
         component: DashboardPage,
         meta: {
-          title: '首页'
+          title: '首页',
+          affix: true
         }
       },
       {
@@ -130,7 +131,12 @@ router.beforeEach(async (to, from, next) => {
   }
 })
 
-router.afterEach(() => {
+router.afterEach((to) => {
+  if (to.path !== '/login' && to.path !== '/register' && to.path !== '/404') {
+    if (to.meta && to.meta.title) {
+      store.dispatch('tagsView/addView', to)
+    }
+  }
   NProgress.done()
 })
 
