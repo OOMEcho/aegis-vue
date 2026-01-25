@@ -169,7 +169,6 @@ export default {
   transition: width 0.2s;
   border-right: none !important;
   border: none !important;
-  box-shadow: 8px 0 20px rgba(16, 24, 55, 0.35);
   position: relative;
   z-index: 2;
 }
