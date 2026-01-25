@@ -31,6 +31,7 @@ function buildRoutes(routes = []) {
   return routes.map(route => {
     const path = normalizePath(route.path)
     const hasChildren = route.children && route.children.length > 0
+    const icon = route.icon && route.icon !== '#' ? route.icon : ''
     const tmp = {
       path,
       name: route.name,
@@ -38,7 +39,7 @@ function buildRoutes(routes = []) {
       component: hasChildren ? ParentView : loadView(path),
       meta: {
         title: route.title,
-        icon: route.icon
+        icon
       },
       hidden: !!route.hidden
     }

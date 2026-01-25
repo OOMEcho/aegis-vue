@@ -37,14 +37,26 @@
         <el-button type="primary" size="small" icon="el-icon-plus" v-perm="'system:menu:add'" @click="handleAdd">
           新增
         </el-button>
+        <el-button size="small" icon="el-icon-s-fold" @click="toggleExpand">
+          {{ expandAll ? '折叠全部' : '展开全部' }}
+        </el-button>
       </div>
 
-      <el-table :data="tableData" border stripe v-loading="loading">
+      <el-table
+        :data="tableData"
+        :key="tableKey"
+        row-key="id"
+        border
+        stripe
+        v-loading="loading"
+        :default-expand-all="expandAll"
+        :tree-props="{children: 'children'}">
         <el-table-column prop="menuName" label="菜单名称" min-width="160"/>
         <el-table-column prop="menuCode" label="菜单编码" min-width="160"/>
-        <el-table-column prop="parentId" label="上级菜单" min-width="140">
+        <el-table-column label="图标" width="100">
           <template slot-scope="scope">
-            {{ getParentName(scope.row.parentId) }}
+            <i v-if="scope.row.icon && scope.row.icon !== '#'" class="iconfont table-icon" :class="scope.row.icon"></i>
+            <span v-else class="icon-placeholder">-</span>
           </template>
         </el-table-column>
         <el-table-column prop="orderNum" label="排序" width="80"/>
@@ -112,7 +124,14 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="菜单图标" prop="icon">
-          <el-input v-model="form.icon" placeholder="请输入图标"/>
+          <div class="icon-field">
+            <div class="icon-preview">
+              <i v-if="form.icon && form.icon !== '#'" class="iconfont" :class="form.icon"></i>
+              <span v-else>无</span>
+            </div>
+            <el-button size="small" @click="iconDialogVisible = true">选择图标</el-button>
+            <el-input v-model="form.icon" placeholder="请输入图标 class" class="icon-input"/>
+          </div>
         </el-form-item>
         <el-form-item label="是否隐藏" prop="hidden">
           <el-switch v-model="form.hidden"/>
@@ -147,6 +166,31 @@
         <el-button type="primary" @click="saveMenuPermissions">保存</el-button>
       </div>
     </el-dialog>
+
+    <el-dialog title="选择菜单图标" :visible.sync="iconDialogVisible" width="720px">
+      <div class="icon-dialog">
+        <el-input
+          v-model="iconKeyword"
+          placeholder="搜索图标"
+          size="small"
+          clearable
+          class="icon-search"
+          @focus="loadIconOptions"
+        />
+        <div v-if="filteredIconOptions.length" class="icon-grid">
+          <button
+            v-for="icon in filteredIconOptions"
+            :key="icon"
+            type="button"
+            class="icon-item"
+            @click="selectIcon(icon)">
+            <i class="iconfont" :class="icon"></i>
+            <span>{{ icon }}</span>
+          </button>
+        </div>
+        <div v-else class="icon-empty">未检测到 iconfont 图标</div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -178,6 +222,8 @@ export default {
       },
       tableData: [],
       menuOptions: [],
+      expandAll: true,
+      tableKey: 0,
       dialogVisible: false,
       dialogTitle: '',
       form: this.getDefaultForm(),
@@ -193,7 +239,10 @@ export default {
       permDialogVisible: false,
       permOptions: [],
       permChecked: [],
-      currentMenuId: null
+      currentMenuId: null,
+      iconDialogVisible: false,
+      iconKeyword: '',
+      iconOptions: []
     }
   },
   computed: {
@@ -202,12 +251,29 @@ export default {
         return this.menuOptions
       }
       return this.menuOptions.filter(item => item.id !== this.form.id)
+    },
+    filteredIconOptions() {
+      const keyword = this.iconKeyword.trim().toLowerCase()
+      if (!keyword) {
+        return this.iconOptions
+      }
+      return this.iconOptions.filter(icon => icon.toLowerCase().includes(keyword))
     }
   },
   created() {
     this.loadDictOptions('DATA_STATUS')
     this.fetchList()
     this.fetchPermissionOptions()
+  },
+  mounted() {
+    this.loadIconOptions()
+  },
+  watch: {
+    iconDialogVisible(value) {
+      if (value) {
+        this.loadIconOptions()
+      }
+    }
   },
   methods: {
     getDefaultForm() {
@@ -228,8 +294,9 @@ export default {
     async fetchList() {
       this.loading = true
       try {
-        this.tableData = await getMenuList(this.queryParams)
-        this.menuOptions = this.tableData || []
+        const list = await getMenuList(this.queryParams)
+        this.menuOptions = list || []
+        this.tableData = this.buildTree(list || [])
       } catch (error) {
         console.error(error)
       } finally {
@@ -252,12 +319,9 @@ export default {
       }
       this.fetchList()
     },
-    getParentName(parentId) {
-      if (!parentId || parentId === 0) {
-        return '顶级目录'
-      }
-      const target = this.menuOptions.find(item => item.id === parentId)
-      return target ? target.menuName : parentId
+    toggleExpand() {
+      this.expandAll = !this.expandAll
+      this.tableKey += 1
     },
     handleAdd() {
       this.dialogTitle = '新增菜单'
@@ -337,6 +401,89 @@ export default {
     },
     statusTagType(value) {
       return value === '0' ? 'success' : 'info'
+    },
+    async loadIconOptions() {
+      const icons = new Set()
+      const sheets = Array.from(document.styleSheets || [])
+      sheets.forEach(sheet => {
+        let rules
+        try {
+          rules = sheet.cssRules || sheet.rules
+        } catch (error) {
+          return
+        }
+        if (!rules) {
+          return
+        }
+        Array.from(rules).forEach(rule => {
+          if (!rule.selectorText) {
+            return
+          }
+          rule.selectorText.split(',').forEach(selector => {
+            const trimmed = selector.trim()
+            if (!/\.icon-[\w-]+::?before$/.test(trimmed)) {
+              return
+            }
+            const match = trimmed.match(/^\.icon-[\w-]+/)
+            if (match) {
+              icons.add(match[0].slice(1))
+            }
+          })
+        })
+      })
+
+      if (icons.size === 0) {
+        const iconSheet = sheets.find(sheet => sheet.href && sheet.href.includes('iconfont.css'))
+        if (iconSheet && iconSheet.href) {
+          try {
+            const response = await fetch(iconSheet.href)
+            const cssText = await response.text()
+            const matches = cssText.match(/\.icon-[\w-]+::?before/g) || []
+            matches.forEach(item => {
+              icons.add(item.replace(/^\./, '').replace(/::?before$/, ''))
+            })
+          } catch (error) {
+            // ignore fetch errors
+          }
+        }
+      }
+
+      this.iconOptions = Array.from(icons).sort()
+    },
+    selectIcon(icon) {
+      this.form.icon = icon
+      this.iconDialogVisible = false
+    },
+    buildTree(list) {
+      const nodeMap = new Map()
+      const roots = []
+      const nodes = list.map(item => ({...item, children: []}))
+
+      nodes.forEach(item => {
+        nodeMap.set(item.id, item)
+      })
+
+      nodes.forEach(item => {
+        const parentId = item.parentId
+        const isRoot = parentId === 0 || parentId === '0' || parentId === null || parentId === undefined
+        if (isRoot || !nodeMap.has(parentId)) {
+          roots.push(item)
+        } else {
+          nodeMap.get(parentId).children.push(item)
+        }
+      })
+
+      const sortTree = items => {
+        items.sort((a, b) => (a.orderNum || 0) - (b.orderNum || 0))
+        items.forEach(child => {
+          if (child.children && child.children.length) {
+            sortTree(child.children)
+          }
+        })
+      }
+
+      sortTree(roots)
+      return roots
     }
   }
 }
@@ -357,6 +504,103 @@ export default {
 
 .table-toolbar {
   margin: 10px 0;
+}
+
+.table-icon {
+  font-size: 18px;
+  color: #4f70ff;
+}
+
+.icon-placeholder {
+  color: #9aa6bf;
+}
+
+.icon-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon-preview {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #e1e8ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9aa6bf;
+  background: #f7f9ff;
+}
+
+.icon-preview span {
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.icon-preview i {
+  font-size: 18px;
+  color: #4f70ff;
+}
+
+.icon-input {
+  flex: 1;
+}
+
+.icon-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.icon-search {
+  max-width: 280px;
+}
+
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  max-height: 360px;
+  overflow: auto;
+  padding-right: 6px;
+}
+
+.icon-item {
+  border: 1px solid #e1e8ff;
+  border-radius: 10px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.icon-item i {
+  font-size: 20px;
+  color: #4f70ff;
+}
+
+.icon-item span {
+  font-size: 12px;
+  color: #6b7a99;
+  text-align: center;
+  word-break: break-all;
+}
+
+.icon-item:hover {
+  border-color: #4f70ff;
+  box-shadow: 0 10px 20px rgba(79, 112, 255, 0.15);
+}
+
+.icon-empty {
+  color: #9aa6bf;
+  text-align: center;
+  padding: 30px 0;
 }
 
 .perm-checkbox-group {

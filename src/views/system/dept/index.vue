@@ -28,15 +28,21 @@
         <el-button type="primary" size="small" icon="el-icon-plus" v-perm="'system:dept:add'" @click="handleAdd">
           新增
         </el-button>
+        <el-button size="small" icon="el-icon-s-fold" @click="toggleExpand">
+          {{ expandAll ? '折叠全部' : '展开全部' }}
+        </el-button>
       </div>
 
-      <el-table :data="tableData" border stripe v-loading="loading">
+      <el-table
+        :data="tableData"
+        :key="tableKey"
+        row-key="id"
+        border
+        stripe
+        v-loading="loading"
+        :default-expand-all="expandAll"
+        :tree-props="{children: 'children'}">
         <el-table-column prop="deptName" label="部门名称" min-width="160"/>
-        <el-table-column prop="parentId" label="上级部门" min-width="140">
-          <template slot-scope="scope">
-            {{ getParentName(scope.row.parentId) }}
-          </template>
-        </el-table-column>
         <el-table-column prop="orderNum" label="排序" width="80"/>
         <el-table-column prop="leader" label="负责人" min-width="120"/>
         <el-table-column prop="phone" label="电话" min-width="140"/>
@@ -125,6 +131,8 @@ export default {
       },
       tableData: [],
       deptOptions: [],
+      expandAll: true,
+      tableKey: 0,
       dialogVisible: false,
       dialogTitle: '',
       form: this.getDefaultForm(),
@@ -163,8 +171,9 @@ export default {
     async fetchList() {
       this.loading = true
       try {
-        this.tableData = await getDeptList(this.queryParams)
-        this.deptOptions = this.tableData || []
+        const list = await getDeptList(this.queryParams)
+        this.deptOptions = list || []
+        this.tableData = this.buildTree(list || [])
       } catch (error) {
         console.error(error)
       } finally {
@@ -175,12 +184,9 @@ export default {
       this.queryParams = {deptName: '', status: ''}
       this.fetchList()
     },
-    getParentName(parentId) {
-      if (!parentId || parentId === 0) {
-        return '顶级部门'
-      }
-      const target = this.deptOptions.find(item => item.id === parentId)
-      return target ? target.deptName : parentId
+    toggleExpand() {
+      this.expandAll = !this.expandAll
+      this.tableKey += 1
     },
     handleAdd() {
       this.dialogTitle = '新增部门'
@@ -239,6 +245,37 @@ export default {
     },
     statusTagType(value) {
       return value === '0' ? 'success' : 'info'
+    },
+    buildTree(list) {
+      const nodeMap = new Map()
+      const roots = []
+      const nodes = list.map(item => ({...item, children: []}))
+
+      nodes.forEach(item => {
+        nodeMap.set(item.id, item)
+      })
+
+      nodes.forEach(item => {
+        const parentId = item.parentId
+        const isRoot = parentId === 0 || parentId === '0' || parentId === null || parentId === undefined
+        if (isRoot || !nodeMap.has(parentId)) {
+          roots.push(item)
+        } else {
+          nodeMap.get(parentId).children.push(item)
+        }
+      })
+
+      const sortTree = items => {
+        items.sort((a, b) => (a.orderNum || 0) - (b.orderNum || 0))
+        items.forEach(child => {
+          if (child.children && child.children.length) {
+            sortTree(child.children)
+          }
+        })
+      }
+
+      sortTree(roots)
+      return roots
     }
   }
 }
