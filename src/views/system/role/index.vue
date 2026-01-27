@@ -51,13 +51,17 @@
         </el-table-column>
         <el-table-column label="操作" min-width="260" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" type="primary" v-perm="'system:role:update'" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button size="mini" type="primary" v-perm="'system:role:update'" @click="handleEdit(scope.row)">编辑
+            </el-button>
             <el-button size="mini" v-perm="'system:role:status'" @click="handleStatus(scope.row)">
               {{ scope.row.status === '0' ? '停用' : '启用' }}
             </el-button>
-            <el-button size="mini" v-perm="'system:role:perm:list'" @click="openPermDialog(scope.row)">权限配置</el-button>
-            <el-button size="mini" v-perm="'system:role:dataScope'" @click="openDataScopeDialog(scope.row)">数据权限</el-button>
-            <el-button size="mini" type="danger" v-perm="'system:role:delete'" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button size="mini" v-perm="'system:role:perm:list'" @click="openPermDialog(scope.row)">权限配置
+            </el-button>
+            <el-button size="mini" v-perm="'system:role:dataScope'" @click="openDataScopeDialog(scope.row)">数据权限
+            </el-button>
+            <el-button size="mini" type="danger" v-perm="'system:role:delete'" @click="handleDelete(scope.row)">删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -312,7 +316,8 @@ export default {
           Message.success('删除成功')
           this.fetchList()
         })
-        .catch(() => {})
+        .catch(() => {
+        })
     },
     handleStatus(row) {
       const actionText = row.status === '0' ? '停用' : '启用'
@@ -322,7 +327,8 @@ export default {
           Message.success('操作成功')
           this.fetchList()
         })
-        .catch(() => {})
+        .catch(() => {
+        })
     },
     async openPermDialog(row) {
       this.currentRoleId = row.id

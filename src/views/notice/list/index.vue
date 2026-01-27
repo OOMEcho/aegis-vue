@@ -57,8 +57,10 @@
         <el-table-column prop="publishTime" label="发布时间" min-width="160"/>
         <el-table-column label="操作" min-width="240" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" type="primary" v-perm="'system:notice:update'" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button size="mini" type="danger" v-perm="'system:notice:delete'" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button size="mini" type="primary" v-perm="'system:notice:update'" @click="handleEdit(scope.row)">编辑
+            </el-button>
+            <el-button size="mini" type="danger" v-perm="'system:notice:delete'" @click="handleDelete(scope.row)">删除
+            </el-button>
             <el-button
               v-if="scope.row.status === '0'"
               size="mini"
@@ -340,7 +342,8 @@ export default {
           Message.success('删除成功')
           this.fetchList()
         })
-        .catch(() => {})
+        .catch(() => {
+        })
     },
     handlePublish(row) {
       this.$confirm(`确认发布通知 ${row.noticeTitle} 吗？`, '提示', {type: 'warning'})
@@ -349,7 +352,8 @@ export default {
           Message.success('发布成功')
           this.fetchList()
         })
-        .catch(() => {})
+        .catch(() => {
+        })
     },
     handleRevoke(row) {
       this.$confirm(`确认撤销通知 ${row.noticeTitle} 吗？`, '提示', {type: 'warning'})
@@ -358,7 +362,8 @@ export default {
           Message.success('撤销成功')
           this.fetchList()
         })
-        .catch(() => {})
+        .catch(() => {
+        })
     }
   }
 }

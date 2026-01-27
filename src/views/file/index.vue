@@ -66,9 +66,11 @@
         <el-table-column label="操作" min-width="220" fixed="right">
           <template slot-scope="scope">
             <el-button size="mini" @click="copyPath(scope.row.filePath)">复制路径</el-button>
-            <el-button size="mini" v-perm="'system:file:tempDownload'" @click="handleTempDownload(scope.row)">临时下载</el-button>
+            <el-button size="mini" v-perm="'system:file:tempDownload'" @click="handleTempDownload(scope.row)">临时下载
+            </el-button>
             <el-button size="mini" v-perm="'system:file:download'" @click="handleDownload(scope.row)">下载</el-button>
-            <el-button size="mini" type="danger" v-perm="'system:file:delete'" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button size="mini" type="danger" v-perm="'system:file:delete'" @click="handleDelete(scope.row)">删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -238,7 +240,8 @@ export default {
           this.fileRecords = this.fileRecords.filter(item => item.filePath !== row.filePath)
           Message.success('删除成功')
         })
-        .catch(() => {})
+        .catch(() => {
+        })
     },
     copyPath(path) {
       if (!path) {

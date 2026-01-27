@@ -10,7 +10,7 @@ import {postRequest} from "@/utils/request"
  *   slideX: 滑块位置
  */
 export function login(params) {
-  const { loginType, username, password, email, code, phone, captchaKey, slideX } = params;
+  const {loginType, username, password, email, code, phone, captchaKey, slideX} = params;
 
   const payload = {
     loginType,

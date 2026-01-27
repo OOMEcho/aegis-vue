@@ -17,7 +17,7 @@ const mutations = {
 }
 
 const actions = {
-  generateRoutes({ commit }, userInfo) {
+  generateRoutes({commit}, userInfo) {
     const routerVoList = userInfo?.routerVoList || []
     const permissions = userInfo?.permissions || []
     const accessedRoutes = buildRoutes(routerVoList)

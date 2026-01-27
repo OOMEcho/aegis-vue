@@ -109,13 +109,15 @@ export default {
         ],
         confirmPassword: [
           {required: true, message: '请输入确认密码', trigger: 'blur'},
-          {validator: (rule, value, callback) => {
-            if (value !== this.passwordForm.password) {
-              callback(new Error('两次密码不一致'))
-            } else {
-              callback()
-            }
-          }, trigger: 'blur'}
+          {
+            validator: (rule, value, callback) => {
+              if (value !== this.passwordForm.password) {
+                callback(new Error('两次密码不一致'))
+              } else {
+                callback()
+              }
+            }, trigger: 'blur'
+          }
         ]
       }
     }

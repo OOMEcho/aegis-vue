@@ -42,7 +42,9 @@
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" @click="handleSearch">查询</el-button>
           <el-button icon="el-icon-refresh" @click="handleReset">重置</el-button>
-          <el-button type="success" icon="el-icon-download" v-perm="'system:operateLog:export'" @click="handleExport">导出</el-button>
+          <el-button type="success" icon="el-icon-download" v-perm="'system:operateLog:export'" @click="handleExport">
+            导出
+          </el-button>
         </el-form-item>
       </el-form>
 

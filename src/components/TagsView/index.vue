@@ -36,7 +36,7 @@ export default {
       menuTop: 0,
       selectedTag: null,
       affixTags: [
-        { path: '/dashboard', name: 'Dashboard', meta: { title: '首页', affix: true } }
+        {path: '/dashboard', name: 'Dashboard', meta: {title: '首页', affix: true}}
       ]
     }
   },

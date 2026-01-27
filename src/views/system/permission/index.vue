@@ -58,7 +58,9 @@
         </el-table-column>
         <el-table-column label="操作" min-width="180" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" type="primary" v-perm="'system:permission:update'" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button size="mini" type="primary" v-perm="'system:permission:update'" @click="handleEdit(scope.row)">
+              编辑
+            </el-button>
             <el-button size="mini" v-perm="'system:permission:effective'" @click="handleStatus(scope.row)">
               {{ scope.row.status === '0' ? '停用' : '启用' }}
             </el-button>
@@ -253,7 +255,8 @@ export default {
           Message.success('操作成功')
           this.fetchList()
         })
-        .catch(() => {})
+        .catch(() => {
+        })
     },
     statusTagType(value) {
       return value === '0' ? 'success' : 'info'

@@ -3,7 +3,7 @@
     <div class="register-shell">
       <section class="register-hero">
         <div class="brand">
-          <img class="brand-logo" src="@/assets/images/logo.png" alt="Aegis" />
+          <img class="brand-logo" src="@/assets/images/logo.png" alt="Aegis"/>
           <span class="brand-name">Aegis</span>
         </div>
         <div class="hero-content">
@@ -22,85 +22,85 @@
         <div class="register-box">
           <h2 class="register-title">用户注册</h2>
 
-      <!-- 注册表单 -->
-      <el-form
-        ref="registerForm"
-        :model="registerForm"
-        :rules="registerRules"
-      >
-        <el-form-item prop="username">
-          <el-input
-            v-model="registerForm.username"
-            placeholder="请输入用户名"
-            prefix-icon="el-icon-user"
-            :disabled="showCaptcha"
-          />
-        </el-form-item>
-
-        <el-form-item prop="email">
-          <el-input
-            v-model="registerForm.email"
-            placeholder="请输入邮箱"
-            prefix-icon="el-icon-message"
-            :disabled="showCaptcha"
-          />
-        </el-form-item>
-
-        <el-form-item prop="code">
-          <div class="code-input-wrapper">
-            <el-input
-              v-model="registerForm.code"
-              placeholder="请输入验证码"
-              prefix-icon="el-icon-key"
-              :disabled="showCaptcha"
-            />
-            <el-button
-              class="send-code-btn"
-              :disabled="countdown > 0 || showCaptcha"
-              @click="handleSendCode"
-            >
-              {{ countdown > 0 ? `${countdown}秒后重试` : '发送验证码' }}
-            </el-button>
-          </div>
-        </el-form-item>
-
-        <el-form-item prop="password">
-          <el-input
-            v-model="registerForm.password"
-            type="password"
-            placeholder="请输入密码"
-            prefix-icon="el-icon-lock"
-            show-password
-            :disabled="showCaptcha"
-          />
-        </el-form-item>
-
-        <el-form-item prop="confirmPassword">
-          <el-input
-            v-model="registerForm.confirmPassword"
-            type="password"
-            placeholder="请确认密码"
-            prefix-icon="el-icon-lock"
-            show-password
-            :disabled="showCaptcha"
-            @keyup.enter.native="handleRegisterClick"
-          />
-        </el-form-item>
-
-        <el-form-item>
-          <el-button
-            type="primary"
-            @click="handleRegisterClick"
-            :loading="isRegistering"
-            :disabled="showCaptcha"
-            style="width: 100%"
+          <!-- 注册表单 -->
+          <el-form
+            ref="registerForm"
+            :model="registerForm"
+            :rules="registerRules"
           >
-            注册
-          </el-button>
-        </el-form-item>
-      </el-form>
+            <el-form-item prop="username">
+              <el-input
+                v-model="registerForm.username"
+                placeholder="请输入用户名"
+                prefix-icon="el-icon-user"
+                :disabled="showCaptcha"
+              />
+            </el-form-item>
 
-      <!-- 返回登录 -->
+            <el-form-item prop="email">
+              <el-input
+                v-model="registerForm.email"
+                placeholder="请输入邮箱"
+                prefix-icon="el-icon-message"
+                :disabled="showCaptcha"
+              />
+            </el-form-item>
+
+            <el-form-item prop="code">
+              <div class="code-input-wrapper">
+                <el-input
+                  v-model="registerForm.code"
+                  placeholder="请输入验证码"
+                  prefix-icon="el-icon-key"
+                  :disabled="showCaptcha"
+                />
+                <el-button
+                  class="send-code-btn"
+                  :disabled="countdown > 0 || showCaptcha"
+                  @click="handleSendCode"
+                >
+                  {{ countdown > 0 ? `${countdown}秒后重试` : '发送验证码' }}
+                </el-button>
+              </div>
+            </el-form-item>
+
+            <el-form-item prop="password">
+              <el-input
+                v-model="registerForm.password"
+                type="password"
+                placeholder="请输入密码"
+                prefix-icon="el-icon-lock"
+                show-password
+                :disabled="showCaptcha"
+              />
+            </el-form-item>
+
+            <el-form-item prop="confirmPassword">
+              <el-input
+                v-model="registerForm.confirmPassword"
+                type="password"
+                placeholder="请确认密码"
+                prefix-icon="el-icon-lock"
+                show-password
+                :disabled="showCaptcha"
+                @keyup.enter.native="handleRegisterClick"
+              />
+            </el-form-item>
+
+            <el-form-item>
+              <el-button
+                type="primary"
+                @click="handleRegisterClick"
+                :loading="isRegistering"
+                :disabled="showCaptcha"
+                style="width: 100%"
+              >
+                注册
+              </el-button>
+            </el-form-item>
+          </el-form>
+
+          <!-- 返回登录 -->
           <div class="back-to-login">
             <span>已有账号？</span>
             <el-link type="primary" @click="goToLogin">立即登录</el-link>

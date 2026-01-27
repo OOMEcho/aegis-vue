@@ -82,12 +82,16 @@
         <el-table-column prop="lastLoginIp" label="最后登录IP" min-width="140"/>
         <el-table-column label="操作" min-width="260" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" type="primary" v-perm="'system:user:update'" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button size="mini" type="warning" v-perm="'system:user:resetPwd'" @click="handleResetPwd(scope.row)">重置密码</el-button>
+            <el-button size="mini" type="primary" v-perm="'system:user:update'" @click="handleEdit(scope.row)">编辑
+            </el-button>
+            <el-button size="mini" type="warning" v-perm="'system:user:resetPwd'" @click="handleResetPwd(scope.row)">
+              重置密码
+            </el-button>
             <el-button size="mini" v-perm="'system:user:status'" @click="handleStatus(scope.row)">
               {{ scope.row.status === '0' ? '停用' : '启用' }}
             </el-button>
-            <el-button size="mini" type="danger" v-perm="'system:user:delete'" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button size="mini" type="danger" v-perm="'system:user:delete'" @click="handleDelete(scope.row)">删除
+            </el-button>
             <el-button
               v-if="scope.row.online"
               size="mini"
@@ -350,7 +354,8 @@ export default {
           Message.success('删除成功')
           this.fetchList()
         })
-        .catch(() => {})
+        .catch(() => {
+        })
     },
     handleResetPwd(row) {
       this.$confirm(`确认重置 ${row.username} 的密码吗？`, '提示', {type: 'warning'})
@@ -358,7 +363,8 @@ export default {
           await resetUserPassword(row.id)
           Message.success('重置成功')
         })
-        .catch(() => {})
+        .catch(() => {
+        })
     },
     handleStatus(row) {
       const actionText = row.status === '0' ? '停用' : '启用'
@@ -368,7 +374,8 @@ export default {
           Message.success('操作成功')
           this.fetchList()
         })
-        .catch(() => {})
+        .catch(() => {
+        })
     },
     handleKick(row) {
       this.$confirm(`确认踢下线用户 ${row.username} 吗？`, '提示', {type: 'warning'})
@@ -377,7 +384,8 @@ export default {
           Message.success('已踢下线')
           this.fetchList()
         })
-        .catch(() => {})
+        .catch(() => {
+        })
     },
     statusTagType(value) {
       return value === '0' ? 'success' : 'info'

@@ -2,7 +2,7 @@
   <el-container class="layout">
     <el-aside class="layout-aside" :width="isCollapse ? '64px' : '190px'">
       <div class="logo">
-        <img src="@/assets/images/logo.png" alt="Aegis" class="logo-image" />
+        <img src="@/assets/images/logo.png" alt="Aegis" class="logo-image"/>
         <span v-if="!isCollapse" class="logo-text">Aegis</span>
       </div>
       <aside-component :collapse="isCollapse"/>
@@ -40,7 +40,7 @@
           </el-dropdown>
         </div>
       </el-header>
-      <tags-view />
+      <tags-view/>
       <el-main class="layout-main">
         <keep-alive :include="cachedViews">
           <router-view :key="`${$route.fullPath}-${viewKey}`"/>
@@ -167,15 +167,11 @@ export default {
   background: #1b2430;
   color: #d7e1f2;
   transition: width 0.2s;
-  border-right: none !important;
-  border: none !important;
   position: relative;
   z-index: 2;
 }
 
 ::v-deep .el-aside {
-  border-right: none !important;
-  border: none !important;
   overflow-x: hidden;
 }
 

@@ -52,8 +52,10 @@
         <el-table-column prop="remark" label="备注" min-width="160"/>
         <el-table-column label="操作" min-width="180" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" type="primary" v-perm="'system:dict:update'" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button size="mini" type="danger" v-perm="'system:dict:delete'" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button size="mini" type="primary" v-perm="'system:dict:update'" @click="handleEdit(scope.row)">编辑
+            </el-button>
+            <el-button size="mini" type="danger" v-perm="'system:dict:delete'" @click="handleDelete(scope.row)">删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -247,7 +249,8 @@ export default {
           Message.success('删除成功')
           this.fetchList()
         })
-        .catch(() => {})
+        .catch(() => {
+        })
     },
     statusTagType(value) {
       return value === '0' ? 'success' : 'info'

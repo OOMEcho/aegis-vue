@@ -3,7 +3,7 @@
     <div class="login-shell">
       <section class="login-hero">
         <div class="brand">
-          <img class="brand-logo" src="@/assets/images/logo.png" alt="Aegis" />
+          <img class="brand-logo" src="@/assets/images/logo.png" alt="Aegis"/>
           <span class="brand-name">Aegis</span>
         </div>
         <div class="hero-content">
@@ -22,101 +22,101 @@
         <div class="login-box">
           <h2 class="login-title">用户登录</h2>
 
-      <!-- 登录方式切换 -->
-      <el-tabs v-model="loginType" @tab-click="handleTabChange">
-        <el-tab-pane label="账号登录" name="password"></el-tab-pane>
-        <el-tab-pane label="邮箱登录" name="email"></el-tab-pane>
-      </el-tabs>
+          <!-- 登录方式切换 -->
+          <el-tabs v-model="loginType" @tab-click="handleTabChange">
+            <el-tab-pane label="账号登录" name="password"></el-tab-pane>
+            <el-tab-pane label="邮箱登录" name="email"></el-tab-pane>
+          </el-tabs>
 
-      <!-- 账号密码登录 -->
-      <el-form
-        v-if="loginType === 'password'"
-        ref="passwordForm"
-        :model="passwordForm"
-        :rules="passwordRules"
-      >
-        <el-form-item prop="username">
-          <el-input
-            v-model="passwordForm.username"
-            placeholder="请输入用户名"
-            prefix-icon="el-icon-user"
-            :disabled="showCaptcha"
-          />
-        </el-form-item>
-
-        <el-form-item prop="password">
-          <el-input
-            v-model="passwordForm.password"
-            type="password"
-            placeholder="请输入密码"
-            prefix-icon="el-icon-lock"
-            :disabled="showCaptcha"
-            @keyup.enter.native="handleLoginClick"
-          />
-        </el-form-item>
-
-        <el-form-item>
-          <el-button
-            type="primary"
-            @click="handleLoginClick"
-            :loading="isLoggingIn"
-            :disabled="showCaptcha"
-            style="width: 100%"
+          <!-- 账号密码登录 -->
+          <el-form
+            v-if="loginType === 'password'"
+            ref="passwordForm"
+            :model="passwordForm"
+            :rules="passwordRules"
           >
-            登录
-          </el-button>
-        </el-form-item>
-      </el-form>
+            <el-form-item prop="username">
+              <el-input
+                v-model="passwordForm.username"
+                placeholder="请输入用户名"
+                prefix-icon="el-icon-user"
+                :disabled="showCaptcha"
+              />
+            </el-form-item>
 
-      <!-- 邮箱验证码登录 -->
-      <el-form
-        v-if="loginType === 'email'"
-        ref="emailForm"
-        :model="emailForm"
-        :rules="emailRules"
-      >
-        <el-form-item prop="email">
-          <el-input
-            v-model="emailForm.email"
-            placeholder="请输入邮箱"
-            prefix-icon="el-icon-message"
-            :disabled="showCaptcha"
-          />
-        </el-form-item>
+            <el-form-item prop="password">
+              <el-input
+                v-model="passwordForm.password"
+                type="password"
+                placeholder="请输入密码"
+                prefix-icon="el-icon-lock"
+                :disabled="showCaptcha"
+                @keyup.enter.native="handleLoginClick"
+              />
+            </el-form-item>
 
-        <el-form-item prop="code">
-          <div class="code-input-wrapper">
-            <el-input
-              v-model="emailForm.code"
-              placeholder="请输入验证码"
-              prefix-icon="el-icon-key"
-              :disabled="showCaptcha"
-              @keyup.enter.native="handleLoginClick"
-            />
-            <el-button
-              class="send-code-btn"
-              :disabled="countdown > 0 || showCaptcha"
-              @click="handleSendCode"
-            >
-              {{ countdown > 0 ? `${countdown}秒后重试` : '发送验证码' }}
-            </el-button>
-          </div>
-        </el-form-item>
+            <el-form-item>
+              <el-button
+                type="primary"
+                @click="handleLoginClick"
+                :loading="isLoggingIn"
+                :disabled="showCaptcha"
+                style="width: 100%"
+              >
+                登录
+              </el-button>
+            </el-form-item>
+          </el-form>
 
-        <el-form-item>
-          <el-button
-            type="primary"
-            @click="handleLoginClick"
-            :loading="isLoggingIn"
-            :disabled="showCaptcha"
-            style="width: 100%"
+          <!-- 邮箱验证码登录 -->
+          <el-form
+            v-if="loginType === 'email'"
+            ref="emailForm"
+            :model="emailForm"
+            :rules="emailRules"
           >
-            登录
-          </el-button>
-        </el-form-item>
-      </el-form>
+            <el-form-item prop="email">
+              <el-input
+                v-model="emailForm.email"
+                placeholder="请输入邮箱"
+                prefix-icon="el-icon-message"
+                :disabled="showCaptcha"
+              />
+            </el-form-item>
 
-      <!-- 注册入口 -->
+            <el-form-item prop="code">
+              <div class="code-input-wrapper">
+                <el-input
+                  v-model="emailForm.code"
+                  placeholder="请输入验证码"
+                  prefix-icon="el-icon-key"
+                  :disabled="showCaptcha"
+                  @keyup.enter.native="handleLoginClick"
+                />
+                <el-button
+                  class="send-code-btn"
+                  :disabled="countdown > 0 || showCaptcha"
+                  @click="handleSendCode"
+                >
+                  {{ countdown > 0 ? `${countdown}秒后重试` : '发送验证码' }}
+                </el-button>
+              </div>
+            </el-form-item>
+
+            <el-form-item>
+              <el-button
+                type="primary"
+                @click="handleLoginClick"
+                :loading="isLoggingIn"
+                :disabled="showCaptcha"
+                style="width: 100%"
+              >
+                登录
+              </el-button>
+            </el-form-item>
+          </el-form>
+
+          <!-- 注册入口 -->
           <div class="register-link">
             <span>还没有账号？</span>
             <el-link type="primary" @click="goToRegister">立即注册</el-link>

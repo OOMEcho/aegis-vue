@@ -1,4 +1,4 @@
-const { defineConfig } = require('@vue/cli-service')
+const {defineConfig} = require('@vue/cli-service')
 const path = require('path')
 
 function resolve(dir) {
@@ -22,7 +22,7 @@ module.exports = defineConfig({
       [process.env.VUE_APP_BASE_PRE]: {
         target: process.env.VUE_APP_BASE_API,
         changeOrigin: true,
-        pathRewrite: { ['^' + process.env.VUE_APP_BASE_PRE]: '' }
+        pathRewrite: {['^' + process.env.VUE_APP_BASE_PRE]: ''}
       }
     },
     allowedHosts: 'all'
@@ -30,7 +30,7 @@ module.exports = defineConfig({
 
   configureWebpack: {
     resolve: {
-      alias: { '@': resolve('src') }
+      alias: {'@': resolve('src')}
     }
   }
 })
