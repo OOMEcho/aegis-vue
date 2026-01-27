@@ -539,7 +539,6 @@ export default {
 <style scoped>
 .table-icon {
   font-size: 18px;
-  color: #4f70ff;
 }
 
 .icon-placeholder {
@@ -572,7 +571,6 @@ export default {
 
 .icon-preview i {
   font-size: 18px;
-  color: #4f70ff;
 }
 
 .icon-input {
@@ -619,7 +617,6 @@ export default {
 
 .icon-item i {
   font-size: 20px;
-  color: #4f70ff;
 }
 
 .icon-item span {
