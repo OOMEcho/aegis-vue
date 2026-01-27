@@ -70,6 +70,10 @@ instance.interceptors.response.use(async response => {
 
   const payload = response.data
   if (!payload || typeof payload !== 'object') {
+    if (response.status >= 400) {
+      showError('服务不可用，请稍后重试')
+      return Promise.reject(new Error('服务不可用，请稍后重试'))
+    }
     return payload
   }
   const {code, data, message} = payload
@@ -179,7 +183,21 @@ instance.interceptors.response.use(async response => {
   return data
 }, error => {
   NProgress.done()
-  showError(error.message || '网络错误')
+
+  const status = error?.response?.status
+  if (status && status >= 400) {
+    showError('服务不可用，请稍后重试')
+    return Promise.reject(error)
+  }
+
+  const errorMessage = error?.message || ''
+  const errorCode = error?.code || ''
+  if (errorCode === 'ECONNREFUSED' || errorMessage.includes('Network Error')) {
+    showError('服务不可用，请稍后重试')
+    return Promise.reject(error)
+  }
+
+  showError(errorMessage || '网络错误')
   return Promise.reject(error)
 })
 
