@@ -34,7 +34,10 @@ const clearAuthState = async () => {
 }
 
 const refreshTokenRequest = () => {
-  return instance.get('/profile/refreshToken', {})
+  // 添加标记防止递归
+  return instance.get('/profile/refreshToken', {
+    __isRefreshRequest: true
+  })
 }
 
 // ========== 请求拦截器 ==========
@@ -92,6 +95,20 @@ instance.interceptors.response.use(async response => {
   if (code === 401) {
     const originalRequest = response.config
 
+    // 如果是刷新接口自身返回401，直接登出
+    if (originalRequest.__isRefreshRequest) {
+      if (!hasShownLoginExpired) {
+        hasShownLoginExpired = true
+        Message.warning('登录已过期，请重新登录')
+        await clearAuthState()
+        await router.push('/login')
+        setTimeout(() => {
+          hasShownLoginExpired = false
+        }, 3000)
+      }
+      return Promise.reject(new Error('刷新Token过期'))
+    }
+
     if (!isRefreshing) {
       isRefreshing = true
       try {
@@ -102,10 +119,20 @@ instance.interceptors.response.use(async response => {
 
         await store.dispatch('auth/saveToken', newAccessToken)
 
-        // 重新执行等待队列中的请求
-        retryQueue.forEach(cb => cb())
+        // 正确处理队列中的请求（成功场景）
+        const latestToken = store.state.auth.accessToken
+        retryQueue.forEach(({resolve, config}) => {
+          resolve(instance({
+            ...config,
+            headers: {
+              ...config.headers,
+              Authorization: `Bearer ${latestToken}`
+            }
+          }))
+        })
         retryQueue = []
 
+        // 重试当前请求
         return instance({
           ...originalRequest,
           headers: {
@@ -114,12 +141,19 @@ instance.interceptors.response.use(async response => {
           }
         })
       } catch (err) {
-        retryQueue.forEach(cb => cb(null))
+        // 正确拒绝队列中的请求（失败场景）
+        retryQueue.forEach(({reject}) => reject(err))
         retryQueue = []
 
-        await clearAuthState()
-        Message.warning('登录已过期，请重新登录')
-        await router.push('/login')
+        if (!hasShownLoginExpired) {
+          hasShownLoginExpired = true
+          Message.warning('登录已过期，请重新登录')
+          await clearAuthState()
+          await router.push('/login')
+          setTimeout(() => {
+            hasShownLoginExpired = false
+          }, 3000)
+        }
 
         return Promise.reject(err)
       } finally {
@@ -127,19 +161,12 @@ instance.interceptors.response.use(async response => {
       }
     }
 
-    // refresh 进行中时，当前请求先入队
-    return new Promise(resolve => {
-      retryQueue.push(() => {
-        const latestToken = store.state.auth.accessToken // 取最新 token
-        resolve(
-          instance({
-            ...originalRequest,
-            headers: {
-              ...originalRequest.headers,
-              Authorization: `Bearer ${latestToken}`
-            }
-          })
-        )
+    // 队列中存储 resolve、reject 和原始配置
+    return new Promise((resolve, reject) => {
+      retryQueue.push({
+        resolve,
+        reject,
+        config: originalRequest
       })
     })
   }
@@ -190,3 +217,5 @@ function showError(message) {
   lastErrorTime = now
   Message.error(message)
 }
+
+export default instance

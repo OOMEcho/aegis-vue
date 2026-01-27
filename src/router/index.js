@@ -116,7 +116,11 @@ router.beforeEach(async (to, from, next) => {
           next({...to, replace: true})
         } catch (error) {
           console.error('获取路由失败', error)
-          next('/')
+          await store.dispatch('auth/clearToken')
+          store.commit('permission/SET_ROUTES', [])
+          store.commit('permission/SET_PERMISSIONS', [])
+          resetRouter()
+          next('/login')
           NProgress.done()
         }
       }

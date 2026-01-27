@@ -93,7 +93,7 @@ export default {
   mounted() {
     this.loadCaptcha();
   },
-  beforeUnmount() {
+  beforeDestroy() {
     this.cleanupListeners();
   },
   methods: {

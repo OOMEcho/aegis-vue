@@ -3,6 +3,7 @@ import {getDictionaryList} from '@/api/dictionary'
 // 简单内存缓存 + 请求去重
 const dictCache = {}
 const dictPending = {}
+const DICT_CACHE_TTL = 30 * 60 * 1000
 
 function normalizeDict(list) {
   return (list || [])
@@ -11,8 +12,12 @@ function normalizeDict(list) {
 }
 
 export async function loadDict(dictType) {
-  if (dictCache[dictType]) {
-    return dictCache[dictType]
+  const cached = dictCache[dictType]
+  if (cached && Date.now() - cached.ts < DICT_CACHE_TTL) {
+    return cached.data
+  }
+  if (cached) {
+    delete dictCache[dictType]
   }
   if (dictPending[dictType]) {
     return dictPending[dictType]
@@ -21,7 +26,7 @@ export async function loadDict(dictType) {
   dictPending[dictType] = getDictionaryList(dictType)
     .then(list => {
       const normalized = normalizeDict(list)
-      dictCache[dictType] = normalized
+      dictCache[dictType] = {data: normalized, ts: Date.now()}
       delete dictPending[dictType]
       return normalized
     })
