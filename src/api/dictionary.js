@@ -29,14 +29,6 @@ export function deleteDictionary(id) {
 }
 
 /**
- * 字典详情
- * @param {number} id 字典ID
- */
-export function getDictionaryDetail(id) {
-  return getRequest(`/dictionary/detail/${id}`)
-}
-
-/**
  * 根据类型获取字典列表
  * @param {string} dictType 字典类型
  */
