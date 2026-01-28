@@ -65,14 +65,6 @@ export function deleteRole(id) {
 }
 
 /**
- * 角色详情
- * @param {number} id 角色ID
- */
-export function getRoleDetail(id) {
-  return getRequest(`/role/detail/${id}`)
-}
-
-/**
  * 角色分页列表
  * @param {Object} params 查询参数
  * @param {string} params.dataScope 数据范围(1-全部数据权限,2-自定数据权限,3-本部门数据权限,4-本部门及以下数据权限)

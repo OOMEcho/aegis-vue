@@ -23,14 +23,6 @@ export function getPermissionList(params) {
 }
 
 /**
- * 权限详情
- * @param {number} id 权限ID
- */
-export function getPermissionDetail(id) {
-  return getRequest(`/permissions/detail/${id}`)
-}
-
-/**
  * 新增权限
  * @param {Object} data 权限数据
  * @param {string} data.permCode 权限编码

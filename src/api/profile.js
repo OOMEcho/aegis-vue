@@ -22,13 +22,6 @@ export function getPublicKey() {
 }
 
 /**
- * 刷新token
- */
-export function refreshToken() {
-  return getRequest('/profile/refreshToken')
-}
-
-/**
  * 注册用户
  * @param {Object} data 用户注册数据
  * @param {string} data.captchaKey 验证码key

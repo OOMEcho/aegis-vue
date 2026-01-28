@@ -49,14 +49,6 @@ export function getMenuList(params) {
 }
 
 /**
- * 获取树形结构菜单
- * @param {Object} params 查询参数
- */
-export function getMenuTree(params) {
-  return getRequest('/menu/tree', params)
-}
-
-/**
  * 获取菜单权限
  * @param {number} id 菜单ID
  */
