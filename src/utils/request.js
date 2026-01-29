@@ -235,5 +235,3 @@ function showError(message) {
   lastErrorTime = now
   Message.error(message)
 }
-
-export default instance

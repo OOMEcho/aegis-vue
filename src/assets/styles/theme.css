@@ -60,13 +60,11 @@ body {
 
 .el-menu {
   border-right: none !important;
-  border: none !important;
   background: transparent;
 }
 
 .el-aside {
   border-right: none !important;
-  border: none !important;
   overflow-x: hidden !important;
 }
 
@@ -116,7 +114,6 @@ body {
 
 .sidebar-submenu-popper .el-menu {
   background: transparent !important;
-  background-color: transparent !important;
   border-right: none;
   padding: 0;
   width: 100%;
@@ -126,7 +123,6 @@ body {
 .sidebar-submenu-popper .el-menu--popup,
 .sidebar-submenu-popper .el-menu--popup-container {
   background: transparent !important;
-  background-color: transparent !important;
   border: none;
   min-width: 0;
   width: 100%;
@@ -145,7 +141,6 @@ body {
   width: 100%;
   margin: 0;
   background: transparent !important;
-  background-color: transparent !important;
 }
 
 .sidebar-submenu-popper .el-menu-item .menu-icon,
