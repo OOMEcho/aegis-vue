@@ -9,6 +9,11 @@
         @click="handleClick(tag)"
         @contextmenu.prevent="openMenu(tag, $event)"
       >
+        <i
+          v-if="tag.meta && tag.meta.icon"
+          class="iconfont tag-icon"
+          :class="tag.meta.icon"
+        />
         <span class="tag-title">{{ tag.title }}</span>
         <i
           v-if="!isAffix(tag)"
@@ -175,6 +180,11 @@ export default {
   color: #1f2d3d;
   border-color: rgba(90, 122, 214, 0.5);
   background: rgba(90, 122, 214, 0.12);
+}
+
+.tag-icon {
+  font-size: 14px;
+  color: inherit;
 }
 
 .tag-close {

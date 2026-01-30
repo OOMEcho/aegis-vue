@@ -47,7 +47,8 @@ const routes = [
         component: DashboardPage,
         meta: {
           title: '首页',
-          affix: true
+          affix: true,
+          icon: 'icon-pingtaizijiankong'
         }
       },
       {
@@ -55,7 +56,8 @@ const routes = [
         name: 'Profile',
         component: ProfilePage,
         meta: {
-          title: '个人中心'
+          title: '个人中心',
+          icon: 'icon-baimingdanguanli'
         }
       },
       {
