@@ -54,7 +54,7 @@
 <script>
 import AsideComponent from '@/components/Aside/index.vue'
 import TagsView from '@/components/TagsView/index.vue'
-import {logout} from '@/api/profile'
+import {getAvatarPreview, logout} from '@/api/profile'
 import {resetRouter} from '@/router'
 import {getUnreadCount} from '@/api/notice'
 
@@ -66,6 +66,7 @@ export default {
   },
   data() {
     return {
+      avatarPreviewUrl: '',
       unreadCount: 0,
       isCollapse: localStorage.getItem('sidebarCollapsed') === '1'
     }
@@ -86,7 +87,7 @@ export default {
       return this.userInfo.nickname || this.userInfo.username || '用户'
     },
     avatarUrl() {
-      return this.userInfo.avatar || ''
+      return this.avatarPreviewUrl
     },
     avatarText() {
       return this.displayName ? this.displayName.charAt(0) : 'U'
@@ -102,12 +103,47 @@ export default {
     this.fetchUserInfo()
     this.fetchUnreadCount()
   },
+  beforeDestroy() {
+    this.revokeAvatarPreview()
+  },
+  watch: {
+    'userInfo.avatar': {
+      immediate: true,
+      handler() {
+        this.loadAvatarPreview()
+      }
+    }
+  },
   methods: {
     async fetchUserInfo() {
       try {
         await this.$store.dispatch('auth/fetchUserInfo')
       } catch (error) {
         console.error('获取用户信息失败:', error)
+      }
+    },
+    revokeAvatarPreview() {
+      if (this.avatarPreviewUrl) {
+        URL.revokeObjectURL(this.avatarPreviewUrl)
+        this.avatarPreviewUrl = ''
+      }
+    },
+    async loadAvatarPreview() {
+      if (!this.userInfo.avatar) {
+        this.revokeAvatarPreview()
+        return
+      }
+      try {
+        const blob = await getAvatarPreview()
+        if (!blob || !blob.size) {
+          this.revokeAvatarPreview()
+          return
+        }
+        this.revokeAvatarPreview()
+        this.avatarPreviewUrl = URL.createObjectURL(blob)
+      } catch (error) {
+        console.error('加载头像失败:', error)
+        this.revokeAvatarPreview()
       }
     },
     async fetchUnreadCount() {

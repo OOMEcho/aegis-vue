@@ -15,6 +15,13 @@ export function getUserInfo() {
 }
 
 /**
+ * 预览用户头像
+ */
+export function getAvatarPreview() {
+  return getRequest('/profile/avatar/preview', null, {responseType: 'blob'})
+}
+
+/**
  * 获取RSA公钥
  */
 export function getPublicKey() {

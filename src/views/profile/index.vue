@@ -72,7 +72,7 @@
 </template>
 
 <script>
-import {getPublicKey, logout, updatePassword, updateProfile, uploadAvatar} from '@/api/profile'
+import {getAvatarPreview, getPublicKey, logout, updatePassword, updateProfile, uploadAvatar} from '@/api/profile'
 import {resetRouter} from '@/router'
 import {rsaEncrypt} from '@/utils/encrypt'
 import {Message} from 'element-ui'
@@ -84,6 +84,7 @@ export default {
   data() {
     return {
       activeTab: 'profile',
+      avatarPreviewUrl: '',
       publicKey: '',
       profileForm: {
         username: '',
@@ -132,7 +133,7 @@ export default {
       return this.displayName ? this.displayName.charAt(0) : 'U'
     },
     avatarUrl() {
-      return this.userInfo.avatar || ''
+      return this.avatarPreviewUrl
     },
     roleText() {
       if (!this.userInfo.roleList || !this.userInfo.roleList.length) {
@@ -153,12 +154,21 @@ export default {
           sex: info.sex || '0'
         }
       }
+    },
+    'userInfo.avatar': {
+      immediate: true,
+      handler() {
+        this.loadAvatarPreview()
+      }
     }
   },
   created() {
     this.loadDictOptions('USER_GENDER')
     this.fetchUserInfo()
     this.fetchPublicKey()
+  },
+  beforeDestroy() {
+    this.revokeAvatarPreview()
   },
   methods: {
     async fetchUserInfo() {
@@ -173,6 +183,30 @@ export default {
         this.publicKey = await getPublicKey()
       } catch (error) {
         console.error(error)
+      }
+    },
+    revokeAvatarPreview() {
+      if (this.avatarPreviewUrl) {
+        URL.revokeObjectURL(this.avatarPreviewUrl)
+        this.avatarPreviewUrl = ''
+      }
+    },
+    async loadAvatarPreview() {
+      if (!this.userInfo.avatar) {
+        this.revokeAvatarPreview()
+        return
+      }
+      try {
+        const blob = await getAvatarPreview()
+        if (!blob || !blob.size) {
+          this.revokeAvatarPreview()
+          return
+        }
+        this.revokeAvatarPreview()
+        this.avatarPreviewUrl = URL.createObjectURL(blob)
+      } catch (error) {
+        console.error('加载头像失败:', error)
+        this.revokeAvatarPreview()
       }
     },
     async handleAvatarUpload(option) {
