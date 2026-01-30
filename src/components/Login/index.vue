@@ -153,7 +153,7 @@
 <script>
 import SlideCaptcha from '@/components/SlideCaptcha/index.vue';
 import {login} from '@/api/login';
-import {getPublicKey, getUserInfo, sendEmailCode} from '@/api/profile';
+import {getPublicKey, sendEmailCode} from '@/api/profile';
 import {rsaEncrypt} from '@/utils/encrypt';
 
 export default {
@@ -336,7 +336,7 @@ export default {
         // 保存token
         await this.$store.dispatch('auth/saveToken', data)
 
-        const userInfo = await getUserInfo()
+        const userInfo = await this.$store.dispatch('auth/fetchUserInfo')
         const accessRoutes = await this.$store.dispatch('permission/generateRoutes', userInfo)
         accessRoutes.forEach(route => {
           this.$router.addRoute('layout', route)

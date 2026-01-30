@@ -54,7 +54,7 @@
 <script>
 import AsideComponent from '@/components/Aside/index.vue'
 import TagsView from '@/components/TagsView/index.vue'
-import {getUserInfo, logout} from '@/api/profile'
+import {logout} from '@/api/profile'
 import {resetRouter} from '@/router'
 import {getUnreadCount} from '@/api/notice'
 
@@ -66,12 +66,14 @@ export default {
   },
   data() {
     return {
-      userInfo: {},
       unreadCount: 0,
       isCollapse: localStorage.getItem('sidebarCollapsed') === '1'
     }
   },
   computed: {
+    userInfo() {
+      return this.$store.state.auth.userInfo || {}
+    },
     breadcrumbs() {
       return this.$route.matched
         .filter(item => item.meta && item.meta.title)
@@ -99,16 +101,11 @@ export default {
   created() {
     this.fetchUserInfo()
     this.fetchUnreadCount()
-    // 个人中心更新头像/昵称后触发同步
-    this.$root.$on('user-info-updated', this.handleUserInfoUpdate)
-  },
-  beforeDestroy() {
-    this.$root.$off('user-info-updated', this.handleUserInfoUpdate)
   },
   methods: {
     async fetchUserInfo() {
       try {
-        this.userInfo = await getUserInfo()
+        await this.$store.dispatch('auth/fetchUserInfo')
       } catch (error) {
         console.error('获取用户信息失败:', error)
       }
@@ -119,12 +116,6 @@ export default {
         this.unreadCount = Number(count) || 0
       } catch (error) {
         console.error('获取未读消息数失败:', error)
-      }
-    },
-    handleUserInfoUpdate(info) {
-      this.userInfo = {
-        ...this.userInfo,
-        ...(info || {})
       }
     },
     toggleCollapse() {

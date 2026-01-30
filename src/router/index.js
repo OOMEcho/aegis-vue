@@ -2,7 +2,6 @@ import VueRouter from "vue-router";
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import store from '@/store'
-import {getUserInfo} from '@/api/profile';
 
 import LayoutComponent from '@/components/Layout/index.vue'
 import LoginComponent from '@/components/Login/index'
@@ -98,7 +97,7 @@ router.beforeEach(async (to, from, next) => {
         next()
       } else {
         try {
-          const userInfo = await getUserInfo()
+          const userInfo = await store.dispatch('auth/fetchUserInfo')
           const accessRoutes = await store.dispatch('permission/generateRoutes', userInfo)
 
           // 动态添加路由（后端返回的菜单结构）

@@ -72,7 +72,7 @@
 </template>
 
 <script>
-import {getPublicKey, getUserInfo, logout, updatePassword, updateProfile, uploadAvatar} from '@/api/profile'
+import {getPublicKey, logout, updatePassword, updateProfile, uploadAvatar} from '@/api/profile'
 import {resetRouter} from '@/router'
 import {rsaEncrypt} from '@/utils/encrypt'
 import {Message} from 'element-ui'
@@ -84,7 +84,6 @@ export default {
   data() {
     return {
       activeTab: 'profile',
-      userInfo: {},
       publicKey: '',
       profileForm: {
         username: '',
@@ -123,6 +122,9 @@ export default {
     }
   },
   computed: {
+    userInfo() {
+      return this.$store.state.auth.userInfo || {}
+    },
     displayName() {
       return this.userInfo.nickname || this.userInfo.username || '用户'
     },
@@ -139,6 +141,20 @@ export default {
       return this.userInfo.roleList.map(item => item.roleName).join('、')
     }
   },
+  watch: {
+    userInfo: {
+      immediate: true,
+      handler(info) {
+        this.profileForm = {
+          username: info.username || '',
+          nickname: info.nickname || '',
+          email: info.email || '',
+          phone: info.phone || '',
+          sex: info.sex || '0'
+        }
+      }
+    }
+  },
   created() {
     this.loadDictOptions('USER_GENDER')
     this.fetchUserInfo()
@@ -147,14 +163,7 @@ export default {
   methods: {
     async fetchUserInfo() {
       try {
-        this.userInfo = await getUserInfo()
-        this.profileForm = {
-          username: this.userInfo.username || '',
-          nickname: this.userInfo.nickname || '',
-          email: this.userInfo.email || '',
-          phone: this.userInfo.phone || '',
-          sex: this.userInfo.sex || '0'
-        }
+        await this.$store.dispatch('auth/fetchUserInfo', {force: true})
       } catch (error) {
         console.error(error)
       }
@@ -173,7 +182,6 @@ export default {
         await uploadAvatar(formData)
         Message.success('头像上传成功')
         await this.fetchUserInfo()
-        this.$root.$emit('user-info-updated', this.userInfo)
         if (option.onSuccess) {
           option.onSuccess()
         }
@@ -199,7 +207,6 @@ export default {
           await updateProfile(payload)
           Message.success('保存成功')
           await this.fetchUserInfo()
-          this.$root.$emit('user-info-updated', this.userInfo)
         } catch (error) {
           console.error(error)
         }
