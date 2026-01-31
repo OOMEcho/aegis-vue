@@ -30,7 +30,7 @@
       </el-form>
 
       <div class="table-toolbar">
-        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="'system:notice:add'" @click="handleAdd">
+        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="PERMS.notice.add" @click="handleAdd">
           新增
         </el-button>
       </div>
@@ -58,7 +58,7 @@
         <el-table-column label="操作" min-width="220" fixed="right">
           <template slot-scope="scope">
             <div class="action-buttons">
-              <el-tooltip v-perm="'system:notice:update'" content="编辑" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-perm="PERMS.notice.update" content="编辑" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
                   size="mini"
@@ -68,7 +68,7 @@
               </el-tooltip>
               <el-tooltip
                 v-if="scope.row.status === '0'"
-                v-perm="'system:notice:publish'"
+                v-perm="PERMS.notice.publish"
                 content="发布"
                 placement="top"
                 popper-class="action-tooltip">
@@ -81,7 +81,7 @@
               </el-tooltip>
               <el-tooltip
                 v-if="scope.row.status === '1'"
-                v-perm="'system:notice:revoke'"
+                v-perm="PERMS.notice.revoke"
                 content="撤销"
                 placement="top"
                 popper-class="action-tooltip">
@@ -92,7 +92,7 @@
                   class="action-icon is-warning"
                   @click="handleRevoke(scope.row)"/>
               </el-tooltip>
-              <el-tooltip v-perm="'system:notice:delete'" content="删除" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-perm="PERMS.notice.delete" content="删除" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
                   size="mini"
@@ -179,6 +179,7 @@ import {
 import {getUserPageList} from '@/api/user'
 import {getRolePageList} from '@/api/role'
 import {getDeptList} from '@/api/dept'
+import {PERMS} from '@/utils/permCode'
 import {Message} from 'element-ui'
 
 export default {
@@ -206,7 +207,8 @@ export default {
       },
       userOptions: [],
       roleOptions: [],
-      deptOptions: []
+      deptOptions: [],
+      PERMS
     }
   },
   computed: {

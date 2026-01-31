@@ -28,7 +28,7 @@
       </el-form>
 
       <div class="table-toolbar">
-        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="'system:role:add'" @click="handleAdd">
+        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="PERMS.role.add" @click="handleAdd">
           新增
         </el-button>
       </div>
@@ -52,7 +52,7 @@
         <el-table-column label="操作" min-width="220" fixed="right">
           <template slot-scope="scope">
             <div class="action-buttons">
-              <el-tooltip v-perm="'system:role:update'" content="编辑" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-perm="PERMS.role.update" content="编辑" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
                   size="mini"
@@ -61,7 +61,7 @@
                   @click="handleEdit(scope.row)"/>
               </el-tooltip>
               <el-tooltip
-                v-perm="'system:role:status'"
+                v-perm="PERMS.role.status"
                 :content="scope.row.status === '0' ? '停用' : '启用'"
                 placement="top"
                 popper-class="action-tooltip">
@@ -72,7 +72,7 @@
                   :class="['action-icon', scope.row.status === '0' ? 'is-warning' : 'is-success']"
                   @click="handleStatus(scope.row)"/>
               </el-tooltip>
-              <el-tooltip v-perm="'system:role:perm:list'" content="权限配置" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-perm="PERMS.role.permList" content="权限配置" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
                   size="mini"
@@ -81,7 +81,7 @@
                   @click="openPermDialog(scope.row)"/>
               </el-tooltip>
               <el-dropdown
-                v-perm="['system:role:dataScope','system:role:delete']"
+                v-perm="[PERMS.role.dataScope, PERMS.role.delete]"
                 trigger="click"
                 popper-class="action-dropdown">
                 <span class="action-dropdown-trigger">
@@ -90,10 +90,10 @@
                   </el-tooltip>
                 </span>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item v-perm="'system:role:dataScope'" @click.native="openDataScopeDialog(scope.row)">
+                  <el-dropdown-item v-perm="PERMS.role.dataScope" @click.native="openDataScopeDialog(scope.row)">
                     数据权限
                   </el-dropdown-item>
-                  <el-dropdown-item v-perm="'system:role:delete'" class="danger-item" @click.native="handleDelete(scope.row)">
+                  <el-dropdown-item v-perm="PERMS.role.delete" class="danger-item" @click.native="handleDelete(scope.row)">
                     <span class="danger-dot"></span>
                     删除
                   </el-dropdown-item>
@@ -202,6 +202,7 @@ import {
   assignRolePermissions
 } from '@/api/role'
 import {getPermissionList} from '@/api/permission'
+import {PERMS} from '@/utils/permCode'
 import {Message} from 'element-ui'
 import dictMixin from '@/mixins/dict'
 
@@ -238,7 +239,8 @@ export default {
         id: null,
         dataScope: '1',
         deptCheckStrictly: 1
-      }
+      },
+      PERMS
     }
   },
   created() {

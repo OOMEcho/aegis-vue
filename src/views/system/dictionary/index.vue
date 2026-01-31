@@ -31,7 +31,7 @@
       </el-form>
 
       <div class="table-toolbar">
-        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="'system:dict:add'" @click="handleAdd">
+        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="PERMS.dict.add" @click="handleAdd">
           新增
         </el-button>
       </div>
@@ -53,7 +53,7 @@
         <el-table-column label="操作" min-width="140" fixed="right">
           <template slot-scope="scope">
             <div class="action-buttons">
-              <el-tooltip v-perm="'system:dict:update'" content="编辑" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-perm="PERMS.dict.update" content="编辑" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
                   size="mini"
@@ -61,7 +61,7 @@
                   class="action-icon is-primary"
                   @click="handleEdit(scope.row)"/>
               </el-tooltip>
-              <el-tooltip v-perm="'system:dict:delete'" content="删除" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-perm="PERMS.dict.delete" content="删除" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
                   size="mini"
@@ -132,6 +132,7 @@ import {
   getDictionaryPageList,
   updateDictionary
 } from '@/api/dictionary'
+import {PERMS} from '@/utils/permCode'
 import {Message} from 'element-ui'
 import dictMixin from '@/mixins/dict'
 
@@ -159,7 +160,8 @@ export default {
         dictType: [{required: true, message: '请输入字典类型', trigger: 'blur'}],
         dictLabel: [{required: true, message: '请输入字典标签', trigger: 'blur'}],
         dictValue: [{required: true, message: '请输入字典键值', trigger: 'blur'}]
-      }
+      },
+      PERMS
     }
   },
   created() {

@@ -34,7 +34,7 @@
       </el-form>
 
       <div class="table-toolbar">
-        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="'system:menu:add'" @click="handleAdd">
+        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="PERMS.menu.add" @click="handleAdd">
           新增
         </el-button>
         <el-button size="small" icon="el-icon-s-fold" @click="toggleExpand">
@@ -83,7 +83,7 @@
         <el-table-column label="操作" min-width="200" fixed="right">
           <template slot-scope="scope">
             <div class="action-buttons">
-              <el-tooltip v-perm="'system:menu:update'" content="编辑" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-perm="PERMS.menu.update" content="编辑" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
                   size="mini"
@@ -91,7 +91,7 @@
                   class="action-icon is-primary"
                   @click="handleEdit(scope.row)"/>
               </el-tooltip>
-              <el-tooltip v-perm="'system:menu:perm:list'" content="权限配置" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-perm="PERMS.menu.permList" content="权限配置" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
                   size="mini"
@@ -99,7 +99,7 @@
                   class="action-icon is-primary"
                   @click="openPermDialog(scope.row)"/>
               </el-tooltip>
-              <el-tooltip v-perm="'system:menu:delete'" content="删除" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-perm="PERMS.menu.delete" content="删除" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
                   size="mini"
@@ -314,6 +314,7 @@ import {
   assignMenuPermissions
 } from '@/api/menu'
 import {getPermissionList} from '@/api/permission'
+import {PERMS} from '@/utils/permCode'
 import {Message} from 'element-ui'
 import dictMixin from '@/mixins/dict'
 
@@ -385,7 +386,8 @@ export default {
       currentMenuId: null,
       iconDialogVisible: false,
       iconKeyword: '',
-      iconOptions: []
+      iconOptions: [],
+      PERMS
     }
   },
   computed: {

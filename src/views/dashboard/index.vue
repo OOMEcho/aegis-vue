@@ -34,12 +34,12 @@
             <span>快捷入口</span>
           </div>
           <div class="quick-actions">
-            <el-button v-perm="'system:user:page'" @click="go('/system/user')">用户管理</el-button>
-            <el-button v-perm="'system:role:page'" @click="go('/system/role')">角色管理</el-button>
-            <el-button v-perm="'system:permission:page'" @click="go('/system/permission')">权限管理</el-button>
-            <el-button v-perm="'system:menu:page'" @click="go('/system/menu')">菜单管理</el-button>
-            <el-button v-perm="'system:notice:page'" @click="go('/notice/list')">通知公告</el-button>
-            <el-button v-perm="'system:loginLog:page'" @click="go('/log/login')">登录日志</el-button>
+            <el-button v-perm="PERMS.user.page" @click="go('/system/user')">用户管理</el-button>
+            <el-button v-perm="PERMS.role.page" @click="go('/system/role')">角色管理</el-button>
+            <el-button v-perm="PERMS.permission.page" @click="go('/system/permission')">权限管理</el-button>
+            <el-button v-perm="PERMS.menu.page" @click="go('/system/menu')">菜单管理</el-button>
+            <el-button v-perm="PERMS.notice.page" @click="go('/notice/list')">通知公告</el-button>
+            <el-button v-perm="PERMS.log.loginPage" @click="go('/log/login')">登录日志</el-button>
           </div>
         </el-card>
       </el-col>
@@ -64,6 +64,7 @@ import {getUserPageList} from '@/api/user'
 import {getRolePageList} from '@/api/role'
 import {getPermissionPageList} from '@/api/permission'
 import {getNoticePageList} from '@/api/notice'
+import {PERMS} from '@/utils/permCode'
 
 export default {
   name: 'DashboardPage',
@@ -74,7 +75,8 @@ export default {
         role: 0,
         permission: 0,
         notice: 0
-      }
+      },
+      PERMS
     }
   },
   created() {

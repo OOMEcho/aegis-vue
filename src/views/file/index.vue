@@ -18,7 +18,7 @@
             action="#"
             :show-file-list="false"
             :http-request="handleSingleUpload">
-            <el-button type="primary" size="small" v-perm="'system:file:upload'">单文件上传</el-button>
+            <el-button type="primary" size="small" v-perm="PERMS.file.upload">单文件上传</el-button>
           </el-upload>
         </div>
         <div class="upload-row">
@@ -30,9 +30,9 @@
             :file-list="batchFileList"
             :on-change="handleBatchChange"
             :on-remove="handleBatchRemove">
-            <el-button size="small" v-perm="'system:file:uploadBatch'">选择批量文件</el-button>
+            <el-button size="small" v-perm="PERMS.file.uploadBatch">选择批量文件</el-button>
           </el-upload>
-          <el-button type="success" size="small" v-perm="'system:file:uploadBatch'" @click="submitBatchUpload">
+          <el-button type="success" size="small" v-perm="PERMS.file.uploadBatch" @click="submitBatchUpload">
             批量上传
           </el-button>
         </div>
@@ -90,7 +90,7 @@
                   class="action-icon is-neutral"
                   @click="copyPath(scope.row.filePath)"/>
               </el-tooltip>
-              <el-tooltip v-perm="'system:file:tempDownload'" content="临时下载" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-perm="PERMS.file.tempDownload" content="临时下载" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
                   size="mini"
@@ -98,7 +98,7 @@
                   class="action-icon is-neutral"
                   @click="handleTempDownload(scope.row)"/>
               </el-tooltip>
-              <el-tooltip v-perm="'system:file:download'" content="下载" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-perm="PERMS.file.download" content="下载" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
                   size="mini"
@@ -106,7 +106,7 @@
                   class="action-icon is-neutral"
                   @click="handleDownload(scope.row)"/>
               </el-tooltip>
-              <el-dropdown v-perm="'system:file:delete'" trigger="click" popper-class="action-dropdown">
+              <el-dropdown v-perm="PERMS.file.delete" trigger="click" popper-class="action-dropdown">
                 <span class="action-dropdown-trigger">
                   <el-tooltip content="更多操作" placement="top" popper-class="action-tooltip">
                     <el-button type="text" size="mini" icon="el-icon-more" class="action-icon is-neutral"/>
@@ -137,6 +137,7 @@ import {
   uploadFilesBatch,
   uploadFileToPlatform
 } from '@/api/file'
+import {PERMS} from '@/utils/permCode'
 import {Message} from 'element-ui'
 
 export default {
@@ -147,7 +148,8 @@ export default {
       uploadPlatform: '',
       batchFileList: [],
       fileRecords: [],
-      failedUploads: []
+      failedUploads: [],
+      PERMS
     }
   },
   methods: {

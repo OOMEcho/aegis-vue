@@ -37,7 +37,7 @@
       </el-form>
 
       <div class="table-toolbar">
-        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="'system:resource:add'" @click="handleAdd">
+        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="PERMS.resource.add" @click="handleAdd">
           新增
         </el-button>
       </div>
@@ -57,7 +57,7 @@
         <el-table-column label="操作" min-width="140" fixed="right">
           <template slot-scope="scope">
             <div class="action-buttons">
-              <el-tooltip v-perm="'system:resource:update'" content="编辑" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-perm="PERMS.resource.update" content="编辑" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
                   size="mini"
@@ -65,7 +65,7 @@
                   class="action-icon is-primary"
                   @click="handleEdit(scope.row)"/>
               </el-tooltip>
-              <el-tooltip v-perm="'system:resource:delete'" content="删除" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-perm="PERMS.resource.delete" content="删除" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
                   size="mini"
@@ -144,6 +144,7 @@ import {
   updateResource
 } from '@/api/resource'
 import {getPermissionList} from '@/api/permission'
+import {PERMS} from '@/utils/permCode'
 import {Message} from 'element-ui'
 import dictMixin from '@/mixins/dict'
 
@@ -171,7 +172,8 @@ export default {
         requestMethod: [{required: true, message: '请选择请求方法', trigger: 'change'}],
         requestUri: [{required: true, message: '请输入URI', trigger: 'blur'}],
         permCode: [{required: true, message: '请选择权限编码', trigger: 'change'}]
-      }
+      },
+      PERMS
     }
   },
   created() {

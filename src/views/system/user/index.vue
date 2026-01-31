@@ -81,7 +81,7 @@
       </el-form>
 
       <div class="table-toolbar">
-        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="'system:user:add'" @click="handleAdd">
+        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="PERMS.user.add" @click="handleAdd">
           新增
         </el-button>
       </div>
@@ -118,7 +118,7 @@
         <el-table-column label="操作" min-width="200" fixed="right">
           <template slot-scope="scope">
             <div class="action-buttons">
-              <el-tooltip v-perm="'system:user:update'" content="编辑" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-perm="PERMS.user.update" content="编辑" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
                   size="mini"
@@ -126,7 +126,7 @@
                   class="action-icon is-primary"
                   @click="handleEdit(scope.row)"/>
               </el-tooltip>
-              <el-tooltip v-perm="'system:user:resetPwd'" content="重置密码" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-perm="PERMS.user.resetPwd" content="重置密码" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
                   size="mini"
@@ -135,7 +135,7 @@
                   @click="handleResetPwd(scope.row)"/>
               </el-tooltip>
               <el-tooltip
-                v-perm="'system:user:status'"
+                v-perm="PERMS.user.status"
                 :content="scope.row.status === '0' ? '停用' : '启用'"
                 placement="top"
                 popper-class="action-tooltip">
@@ -161,13 +161,13 @@
                   </el-tooltip>
                 </span>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item v-perm="'system:user:delete'" command="delete" class="danger-item">
+                  <el-dropdown-item v-perm="PERMS.user.delete" command="delete" class="danger-item">
                     <span class="danger-dot"></span>
                     删除
                   </el-dropdown-item>
                   <el-dropdown-item
                     v-if="scope.row.online"
-                    v-perm="'system:user:kick'"
+                    v-perm="PERMS.user.kick"
                     command="kick"
                     class="danger-item">
                     <span class="danger-dot"></span>
@@ -293,6 +293,7 @@ import {
 } from '@/api/user'
 import {getRolePageList} from '@/api/role'
 import {getDeptTree} from '@/api/dept'
+import {PERMS} from '@/utils/permCode'
 import {Message} from 'element-ui'
 import dictMixin from '@/mixins/dict'
 
@@ -332,7 +333,8 @@ export default {
       rules: {
         username: [{required: true, message: '请输入用户名', trigger: 'blur'}],
         nickname: [{required: true, message: '请输入昵称', trigger: 'blur'}]
-      }
+      },
+      PERMS
     }
   },
   created() {
@@ -639,8 +641,8 @@ export default {
     },
     hasMoreActions(row) {
       const permissions = this.$store.state.permission.permissions || []
-      const canDelete = permissions.includes('system:user:delete')
-      const canKick = permissions.includes('system:user:kick') && row && row.online
+      const canDelete = permissions.includes(PERMS.user.delete)
+      const canKick = permissions.includes(PERMS.user.kick) && row && row.online
       return canDelete || canKick
     },
     statusTagType(value) {

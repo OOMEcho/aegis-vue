@@ -35,7 +35,7 @@
       </el-form>
 
       <div class="table-toolbar">
-        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="'system:permission:add'" @click="handleAdd">
+        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="PERMS.permission.add" @click="handleAdd">
           新增
         </el-button>
       </div>
@@ -59,7 +59,7 @@
         <el-table-column label="操作" min-width="160" fixed="right">
           <template slot-scope="scope">
             <div class="action-buttons">
-              <el-tooltip v-perm="'system:permission:update'" content="编辑" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-perm="PERMS.permission.update" content="编辑" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
                   size="mini"
@@ -68,7 +68,7 @@
                   @click="handleEdit(scope.row)"/>
               </el-tooltip>
               <el-tooltip
-                v-perm="'system:permission:effective'"
+                v-perm="PERMS.permission.effective"
                 :content="scope.row.status === '0' ? '停用' : '启用'"
                 placement="top"
                 popper-class="action-tooltip">
@@ -140,6 +140,7 @@ import {
   getPermissionPageList,
   updatePermission
 } from '@/api/permission'
+import {PERMS} from '@/utils/permCode'
 import {Message} from 'element-ui'
 import dictMixin from '@/mixins/dict'
 
@@ -166,7 +167,8 @@ export default {
         permName: [{required: true, message: '请输入权限名称', trigger: 'blur'}],
         permCode: [{required: true, message: '请输入权限编码', trigger: 'blur'}],
         permType: [{required: true, message: '请选择权限类型', trigger: 'change'}]
-      }
+      },
+      PERMS
     }
   },
   created() {

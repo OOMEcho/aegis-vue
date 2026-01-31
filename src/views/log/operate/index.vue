@@ -42,7 +42,7 @@
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" @click="handleSearch">查询</el-button>
           <el-button icon="el-icon-refresh" @click="handleReset">重置</el-button>
-          <el-button type="success" icon="el-icon-download" v-perm="'system:operateLog:export'" @click="handleExport">
+          <el-button type="success" icon="el-icon-download" v-perm="PERMS.log.operateExport" @click="handleExport">
             导出
           </el-button>
         </el-form-item>
@@ -87,6 +87,7 @@
 
 <script>
 import {exportOperateLog, getOperateLogPageList} from '@/api/operateLog'
+import {PERMS} from '@/utils/permCode'
 import dictMixin from '@/mixins/dict'
 
 export default {
@@ -105,7 +106,8 @@ export default {
         businessType: undefined,
         operateStatus: ''
       },
-      tableData: []
+      tableData: [],
+      PERMS
     }
   },
   created() {

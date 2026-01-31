@@ -25,7 +25,7 @@
       </el-form>
 
       <div class="table-toolbar">
-        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="'system:dept:add'" @click="handleAdd">
+        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="PERMS.dept.add" @click="handleAdd">
           新增
         </el-button>
         <el-button size="small" icon="el-icon-s-fold" @click="toggleExpand">
@@ -57,7 +57,7 @@
         <el-table-column label="操作" min-width="140" fixed="right">
           <template slot-scope="scope">
             <div class="action-buttons">
-              <el-tooltip v-perm="'system:dept:update'" content="编辑" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-perm="PERMS.dept.update" content="编辑" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
                   size="mini"
@@ -65,7 +65,7 @@
                   class="action-icon is-primary"
                   @click="handleEdit(scope.row)"/>
               </el-tooltip>
-              <el-tooltip v-perm="'system:dept:delete'" content="删除" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-perm="PERMS.dept.delete" content="删除" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
                   size="mini"
@@ -167,6 +167,7 @@ import {
   getDeptTree,
   updateDept
 } from '@/api/dept'
+import {PERMS} from '@/utils/permCode'
 import {Message} from 'element-ui'
 import dictMixin from '@/mixins/dict'
 
@@ -200,7 +201,8 @@ export default {
         deptName: [{required: true, message: '请输入部门名称', trigger: 'blur'}],
         parentId: [{required: true, message: '请选择上级部门', trigger: 'change'}],
         orderNum: [{required: true, message: '请输入排序', trigger: 'change'}]
-      }
+      },
+      PERMS
     }
   },
   computed: {
