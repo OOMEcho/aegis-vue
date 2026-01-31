@@ -3,7 +3,7 @@ import {getRequest, postRequest, putRequest, deleteRequest} from "@/utils/reques
 /**
  * 新增角色
  * @param {Object} data 角色数据
- * @param {string} data.dataScope 数据范围(1-全部数据权限,2-自定数据权限,3-本部门数据权限,4-本部门及以下数据权限)
+ * @param {string} data.dataScope 数据范围(1-全部数据权限,2-自定数据权限,3-本部门数据权限,4-本部门及以下数据权限,5-仅本人数据权限)
  * @param {number} data.deptCheckStrictly 部门树选择项是否关联显示
  * @param {Array} data.deptIds 部门组(数据权限)
  * @param {number} data.id 主键ID
@@ -67,7 +67,7 @@ export function deleteRole(id) {
 /**
  * 角色分页列表
  * @param {Object} params 查询参数
- * @param {string} params.dataScope 数据范围(1-全部数据权限,2-自定数据权限,3-本部门数据权限,4-本部门及以下数据权限)
+ * @param {string} params.dataScope 数据范围(1-全部数据权限,2-自定数据权限,3-本部门数据权限,4-本部门及以下数据权限,5-仅本人数据权限)
  * @param {number} params.deptCheckStrictly 部门树选择项是否关联显示
  * @param {Array} params.deptIds 部门组(数据权限)
  * @param {number} params.id 主键ID
@@ -138,7 +138,7 @@ export function getUnallocatedList(params) {
 /**
  * 修改角色
  * @param {Object} data 角色数据
- * @param {string} data.dataScope 数据范围(1-全部数据权限,2-自定数据权限,3-本部门数据权限,4-本部门及以下数据权限)
+ * @param {string} data.dataScope 数据范围(1-全部数据权限,2-自定数据权限,3-本部门数据权限,4-本部门及以下数据权限,5-仅本人数据权限)
  * @param {number} data.deptCheckStrictly 部门树选择项是否关联显示
  * @param {Array} data.deptIds 部门组(数据权限)
  * @param {number} data.id 主键ID
@@ -159,7 +159,7 @@ export function updateRole(data) {
 /**
  * 修改角色数据权限
  * @param {Object} data 角色数据
- * @param {string} data.dataScope 数据范围(1-全部数据权限,2-自定数据权限,3-本部门数据权限,4-本部门及以下数据权限)
+ * @param {string} data.dataScope 数据范围(1-全部数据权限,2-自定数据权限,3-本部门数据权限,4-本部门及以下数据权限,5-仅本人数据权限)
  * @param {number} data.deptCheckStrictly 部门树选择项是否关联显示
  * @param {Array} data.deptIds 部门组(数据权限)
  * @param {number} data.id 主键ID

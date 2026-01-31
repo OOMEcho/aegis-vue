@@ -244,7 +244,7 @@
       </div>
     </el-dialog>
 
-    <el-dialog title="数据权限" :visible.sync="dataScopeDialogVisible" width="600px">
+    <el-dialog title="分配数据权限" :visible.sync="dataScopeDialogVisible" width="600px">
       <el-form label-width="100px">
         <el-form-item label="数据范围">
           <el-select v-model="dataScopeForm.dataScope" placeholder="请选择">
@@ -252,17 +252,33 @@
             <el-option label="自定数据权限" value="2"/>
             <el-option label="本部门数据权限" value="3"/>
             <el-option label="本部门及以下" value="4"/>
+            <el-option label="仅本人数据权限" value="5"/>
           </el-select>
         </el-form-item>
+        <el-form-item v-if="dataScopeForm.dataScope === '2'" label="数据权限">
+          <div class="data-scope-box">
+            <div class="data-scope-toolbar">
+              <el-checkbox v-model="dataScopeExpandAll" @change="handleExpandChange">展开/折叠</el-checkbox>
+              <el-checkbox
+                v-model="dataScopeCheckAll"
+                :indeterminate="dataScopeCheckHalf"
+                @change="handleCheckAllChange">
+                全选/全不选
+              </el-checkbox>
+              <el-checkbox v-model="parentChildLink">父子联动</el-checkbox>
+            </div>
+            <el-tree
+              ref="deptTree"
+              :data="deptTreeData"
+              node-key="id"
+              show-checkbox
+              :default-expand-all="dataScopeExpandAll"
+        :check-strictly="dataScopeForm.deptCheckStrictly !== 1"
+              :default-checked-keys="deptChecked"
+              @check-change="handleDeptCheckChange"/>
+          </div>
+        </el-form-item>
       </el-form>
-      <el-tree
-        ref="deptTree"
-        :data="deptTreeData"
-        node-key="id"
-        show-checkbox
-        default-expand-all
-        :check-strictly="dataScopeForm.deptCheckStrictly === 1"
-        :default-checked-keys="deptChecked"/>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dataScopeDialogVisible = false">取消</el-button>
         <el-button type="primary" @click="saveDataScope">保存</el-button>
@@ -319,6 +335,9 @@ export default {
       dataScopeDialogVisible: false,
       deptTreeData: [],
       deptChecked: [],
+      dataScopeExpandAll: true,
+      dataScopeCheckAll: false,
+      dataScopeCheckHalf: false,
       dataScopeForm: {
         id: null,
         dataScope: '1',
@@ -328,6 +347,14 @@ export default {
     }
   },
   computed: {
+    parentChildLink: {
+      get() {
+        return this.dataScopeForm.deptCheckStrictly === 1
+      },
+      set(value) {
+        this.dataScopeForm.deptCheckStrictly = value ? 1 : 0
+      }
+    },
     filteredPermOptions() {
       const keyword = this.permKeyword.trim().toLowerCase()
       if (!keyword) {
@@ -381,7 +408,8 @@ export default {
         '1': '全部数据',
         '2': '自定数据',
         '3': '本部门',
-        '4': '本部门及以下'
+        '4': '本部门及以下',
+        '5': '仅本人数据权限'
       }
       return map[value] || '-'
     },
@@ -529,10 +557,13 @@ export default {
           dataScope: row.dataScope || '1',
           deptCheckStrictly: row.deptCheckStrictly == null ? 1 : row.deptCheckStrictly
         }
+        this.dataScopeExpandAll = true
         this.dataScopeDialogVisible = true
         this.$nextTick(() => {
           if (this.$refs.deptTree) {
             this.$refs.deptTree.setCheckedKeys(this.deptChecked)
+            this.updateTreeExpand(true)
+            this.updateCheckAllState()
           }
         })
       } catch (error) {
@@ -541,11 +572,16 @@ export default {
     },
     async saveDataScope() {
       try {
-        const checkedKeys = this.$refs.deptTree ? this.$refs.deptTree.getCheckedKeys() : []
+        const tree = this.$refs.deptTree
+        const checkedKeys = tree ? tree.getCheckedKeys() : []
+        const halfCheckedKeys = tree ? tree.getHalfCheckedKeys() : []
+        const deptIds = this.dataScopeForm.deptCheckStrictly === 1
+          ? Array.from(new Set([...checkedKeys, ...halfCheckedKeys]))
+          : checkedKeys
         const payload = {
           id: this.dataScopeForm.id,
           dataScope: this.dataScopeForm.dataScope,
-          deptIds: checkedKeys,
+          deptIds,
           deptCheckStrictly: this.dataScopeForm.deptCheckStrictly
         }
         await updateRoleDataScope(payload)
@@ -555,6 +591,69 @@ export default {
       } catch (error) {
         console.error(error)
       }
+    },
+    handleExpandChange(value) {
+      this.dataScopeExpandAll = value
+      this.updateTreeExpand(value)
+    },
+    handleCheckAllChange(value) {
+      const tree = this.$refs.deptTree
+      if (!tree) {
+        return
+      }
+      if (value) {
+        const allKeys = this.collectDeptIds(this.deptTreeData)
+        tree.setCheckedKeys(allKeys)
+        this.dataScopeCheckHalf = false
+      } else {
+        tree.setCheckedKeys([])
+        this.dataScopeCheckHalf = false
+      }
+    },
+    handleDeptCheckChange() {
+      this.updateCheckAllState()
+    },
+    updateCheckAllState() {
+      const tree = this.$refs.deptTree
+      if (!tree) {
+        this.dataScopeCheckAll = false
+        this.dataScopeCheckHalf = false
+        return
+      }
+      const checkedKeys = tree.getCheckedKeys() || []
+      const allKeys = this.collectDeptIds(this.deptTreeData)
+      if (allKeys.length === 0) {
+        this.dataScopeCheckAll = false
+        this.dataScopeCheckHalf = false
+        return
+      }
+      this.dataScopeCheckAll = checkedKeys.length === allKeys.length
+      this.dataScopeCheckHalf = checkedKeys.length > 0 && checkedKeys.length < allKeys.length
+    },
+    updateTreeExpand(expand) {
+      const tree = this.$refs.deptTree
+      if (!tree || !tree.store) {
+        return
+      }
+      const nodes = typeof tree.store._getAllNodes === 'function'
+        ? tree.store._getAllNodes()
+        : Object.values(tree.store.nodesMap || {})
+      nodes.forEach(node => {
+        node.expanded = !!expand
+      })
+    },
+    collectDeptIds(tree = []) {
+      const ids = []
+      const walk = nodes => {
+        nodes.forEach(node => {
+          ids.push(node.id)
+          if (node.children && node.children.length) {
+            walk(node.children)
+          }
+        })
+      }
+      walk(tree)
+      return ids
     },
     statusTagType(value) {
       return value === '0' ? 'success' : 'info'
@@ -662,5 +761,19 @@ export default {
   text-align: center;
   color: #9aa6bf;
   font-size: 12px;
+}
+
+.data-scope-box {
+  border: 1px solid #e1e8ff;
+  border-radius: 12px;
+  padding: 10px 12px 12px;
+  background: #f8faff;
+}
+
+.data-scope-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
 }
 </style>
