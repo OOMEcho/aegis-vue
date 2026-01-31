@@ -58,7 +58,7 @@
                   type="text"
                   size="mini"
                   icon="el-icon-edit"
-                  class="action-icon"
+                  class="action-icon is-primary"
                   @click="handleEdit(scope.row)"/>
               </el-tooltip>
               <el-tooltip v-perm="'system:dict:delete'" content="删除" placement="top" popper-class="action-tooltip">
@@ -66,7 +66,7 @@
                   type="text"
                   size="mini"
                   icon="el-icon-delete"
-                  class="action-icon"
+                  class="action-icon is-danger"
                   @click="handleDelete(scope.row)"/>
               </el-tooltip>
             </div>

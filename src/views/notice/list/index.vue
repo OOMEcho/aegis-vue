@@ -63,7 +63,7 @@
                   type="text"
                   size="mini"
                   icon="el-icon-edit"
-                  class="action-icon"
+                  class="action-icon is-primary"
                   @click="handleEdit(scope.row)"/>
               </el-tooltip>
               <el-tooltip
@@ -76,7 +76,7 @@
                   type="text"
                   size="mini"
                   icon="el-icon-upload2"
-                  class="action-icon"
+                  class="action-icon is-success"
                   @click="handlePublish(scope.row)"/>
               </el-tooltip>
               <el-tooltip
@@ -89,7 +89,7 @@
                   type="text"
                   size="mini"
                   icon="el-icon-refresh"
-                  class="action-icon"
+                  class="action-icon is-warning"
                   @click="handleRevoke(scope.row)"/>
               </el-tooltip>
               <el-tooltip v-perm="'system:notice:delete'" content="删除" placement="top" popper-class="action-tooltip">
@@ -97,7 +97,7 @@
                   type="text"
                   size="mini"
                   icon="el-icon-delete"
-                  class="action-icon"
+                  class="action-icon is-danger"
                   @click="handleDelete(scope.row)"/>
               </el-tooltip>
             </div>

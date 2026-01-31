@@ -57,7 +57,7 @@
                   type="text"
                   size="mini"
                   icon="el-icon-edit"
-                  class="action-icon"
+                  class="action-icon is-primary"
                   @click="handleEdit(scope.row)"/>
               </el-tooltip>
               <el-tooltip
@@ -69,7 +69,7 @@
                   type="text"
                   size="mini"
                   :icon="scope.row.status === '0' ? 'el-icon-close' : 'el-icon-check'"
-                  class="action-icon"
+                  :class="['action-icon', scope.row.status === '0' ? 'is-warning' : 'is-success']"
                   @click="handleStatus(scope.row)"/>
               </el-tooltip>
               <el-tooltip v-perm="'system:role:perm:list'" content="权限配置" placement="top" popper-class="action-tooltip">
@@ -77,7 +77,7 @@
                   type="text"
                   size="mini"
                   icon="el-icon-lock"
-                  class="action-icon"
+                  class="action-icon is-primary"
                   @click="openPermDialog(scope.row)"/>
               </el-tooltip>
               <el-dropdown
@@ -86,7 +86,7 @@
                 popper-class="action-dropdown">
                 <span class="action-dropdown-trigger">
                   <el-tooltip content="更多操作" placement="top" popper-class="action-tooltip">
-                    <el-button type="text" size="mini" icon="el-icon-more" class="action-icon"/>
+                    <el-button type="text" size="mini" icon="el-icon-more" class="action-icon is-neutral"/>
                   </el-tooltip>
                 </span>
                 <el-dropdown-menu slot="dropdown">

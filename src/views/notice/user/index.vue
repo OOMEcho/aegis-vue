@@ -51,7 +51,7 @@
                   type="text"
                   size="mini"
                   icon="el-icon-view"
-                  class="action-icon"
+                  class="action-icon is-primary"
                   @click="handleDetail(scope.row)"/>
               </el-tooltip>
             </div>

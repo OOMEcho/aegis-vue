@@ -35,6 +35,66 @@
   border-color: rgba(79, 112, 255, 0.24);
 }
 
+.action-icon.is-primary {
+  color: #4f70ff;
+  background: rgba(79, 112, 255, 0.08);
+  border-color: rgba(79, 112, 255, 0.2);
+}
+
+.action-icon.is-primary:hover {
+  color: #4f70ff;
+  background: rgba(79, 112, 255, 0.14);
+  border-color: rgba(79, 112, 255, 0.3);
+}
+
+.action-icon.is-success {
+  color: #67c23a;
+  background: rgba(103, 194, 58, 0.12);
+  border-color: rgba(103, 194, 58, 0.24);
+}
+
+.action-icon.is-success:hover {
+  color: #67c23a;
+  background: rgba(103, 194, 58, 0.2);
+  border-color: rgba(103, 194, 58, 0.36);
+}
+
+.action-icon.is-warning {
+  color: #e6a23c;
+  background: rgba(230, 162, 60, 0.12);
+  border-color: rgba(230, 162, 60, 0.24);
+}
+
+.action-icon.is-warning:hover {
+  color: #e6a23c;
+  background: rgba(230, 162, 60, 0.2);
+  border-color: rgba(230, 162, 60, 0.36);
+}
+
+.action-icon.is-neutral {
+  color: #7f8aa6;
+  background: rgba(127, 138, 166, 0.12);
+  border-color: rgba(127, 138, 166, 0.24);
+}
+
+.action-icon.is-neutral:hover {
+  color: #7f8aa6;
+  background: rgba(127, 138, 166, 0.2);
+  border-color: rgba(127, 138, 166, 0.36);
+}
+
+.action-icon.is-danger {
+  color: #f56c6c;
+  background: rgba(245, 108, 108, 0.12);
+  border-color: rgba(245, 108, 108, 0.24);
+}
+
+.action-icon.is-danger:hover {
+  color: #f56c6c;
+  background: rgba(245, 108, 108, 0.2);
+  border-color: rgba(245, 108, 108, 0.36);
+}
+
 .action-dropdown-trigger {
   display: inline-flex;
 }

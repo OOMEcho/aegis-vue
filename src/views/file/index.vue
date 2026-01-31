@@ -48,19 +48,19 @@
               <div class="action-buttons">
                 <el-tooltip content="重试" placement="top" popper-class="action-tooltip">
                   <el-button
-                    type="text"
-                    size="mini"
-                    icon="el-icon-refresh"
-                    class="action-icon"
-                    @click="retryFailed(scope.row)"/>
+                  type="text"
+                  size="mini"
+                  icon="el-icon-refresh"
+                  class="action-icon is-neutral"
+                  @click="retryFailed(scope.row)"/>
                 </el-tooltip>
                 <el-tooltip content="移除" placement="top" popper-class="action-tooltip">
                   <el-button
-                    type="text"
-                    size="mini"
-                    icon="el-icon-close"
-                    class="action-icon"
-                    @click="removeFailed(scope.row)"/>
+                  type="text"
+                  size="mini"
+                  icon="el-icon-close"
+                  class="action-icon is-neutral"
+                  @click="removeFailed(scope.row)"/>
                 </el-tooltip>
               </div>
             </template>
@@ -87,7 +87,7 @@
                   type="text"
                   size="mini"
                   icon="el-icon-document-copy"
-                  class="action-icon"
+                  class="action-icon is-neutral"
                   @click="copyPath(scope.row.filePath)"/>
               </el-tooltip>
               <el-tooltip v-perm="'system:file:tempDownload'" content="临时下载" placement="top" popper-class="action-tooltip">
@@ -95,7 +95,7 @@
                   type="text"
                   size="mini"
                   icon="el-icon-link"
-                  class="action-icon"
+                  class="action-icon is-neutral"
                   @click="handleTempDownload(scope.row)"/>
               </el-tooltip>
               <el-tooltip v-perm="'system:file:download'" content="下载" placement="top" popper-class="action-tooltip">
@@ -103,13 +103,13 @@
                   type="text"
                   size="mini"
                   icon="el-icon-download"
-                  class="action-icon"
+                  class="action-icon is-neutral"
                   @click="handleDownload(scope.row)"/>
               </el-tooltip>
               <el-dropdown v-perm="'system:file:delete'" trigger="click" popper-class="action-dropdown">
                 <span class="action-dropdown-trigger">
                   <el-tooltip content="更多操作" placement="top" popper-class="action-tooltip">
-                    <el-button type="text" size="mini" icon="el-icon-more" class="action-icon"/>
+                    <el-button type="text" size="mini" icon="el-icon-more" class="action-icon is-neutral"/>
                   </el-tooltip>
                 </span>
                 <el-dropdown-menu slot="dropdown">

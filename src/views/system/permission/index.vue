@@ -64,7 +64,7 @@
                   type="text"
                   size="mini"
                   icon="el-icon-edit"
-                  class="action-icon"
+                  class="action-icon is-primary"
                   @click="handleEdit(scope.row)"/>
               </el-tooltip>
               <el-tooltip
@@ -76,7 +76,7 @@
                   type="text"
                   size="mini"
                   :icon="scope.row.status === '0' ? 'el-icon-close' : 'el-icon-check'"
-                  class="action-icon"
+                  :class="['action-icon', scope.row.status === '0' ? 'is-warning' : 'is-success']"
                   @click="handleStatus(scope.row)"/>
               </el-tooltip>
             </div>
