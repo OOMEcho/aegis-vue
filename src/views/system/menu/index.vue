@@ -179,15 +179,97 @@
       </div>
     </el-dialog>
 
-    <el-dialog title="权限配置" :visible.sync="permDialogVisible" width="600px">
-      <el-checkbox-group v-model="permChecked" class="perm-checkbox-group">
-        <el-checkbox
-          v-for="perm in permOptions"
-          :key="perm.permCode"
-          :label="perm.permCode">
-          {{ perm.permName }} ({{ perm.permCode }})
-        </el-checkbox>
-      </el-checkbox-group>
+    <el-dialog title="权限配置" :visible.sync="permDialogVisible" width="680px">
+      <div class="perm-dialog">
+        <div class="perm-toolbar">
+          <el-input
+            v-model="permKeyword"
+            placeholder="搜索权限名称或编码"
+            size="small"
+            clearable
+            prefix-icon="el-icon-search"/>
+        </div>
+        <el-collapse v-model="permCollapseActive" class="perm-collapse">
+          <el-collapse-item name="M">
+            <template slot="title">
+              <div class="perm-collapse-title">
+                <i class="el-icon-document"></i>
+                <span>页面</span>
+                <span class="perm-count">{{ permGroupStats.M.total }}</span>
+                <span v-if="permGroupStats.M.checked" class="perm-selected">已选 {{ permGroupStats.M.checked }}</span>
+              </div>
+            </template>
+            <div class="perm-group">
+              <div class="perm-group-actions">
+                <el-button type="text" size="mini" :disabled="!permGroupStats.M.total" @click="selectPermGroup('M')">全选</el-button>
+                <el-button type="text" size="mini" :disabled="!permGroupStats.M.total" @click="clearPermGroup('M')">清空</el-button>
+              </div>
+              <el-checkbox-group v-model="permChecked" class="perm-grid">
+                <el-checkbox
+                  v-for="perm in permGrouped.M"
+                  :key="perm.permCode"
+                  :label="perm.permCode">
+                  <span class="perm-name">{{ perm.permName }}</span>
+                  <span class="perm-code">{{ perm.permCode }}</span>
+                </el-checkbox>
+              </el-checkbox-group>
+              <div v-if="!permGrouped.M.length" class="perm-empty">暂无匹配权限</div>
+            </div>
+          </el-collapse-item>
+          <el-collapse-item name="B">
+            <template slot="title">
+              <div class="perm-collapse-title">
+                <i class="el-icon-s-operation"></i>
+                <span>按钮</span>
+                <span class="perm-count">{{ permGroupStats.B.total }}</span>
+                <span v-if="permGroupStats.B.checked" class="perm-selected">已选 {{ permGroupStats.B.checked }}</span>
+              </div>
+            </template>
+            <div class="perm-group">
+              <div class="perm-group-actions">
+                <el-button type="text" size="mini" :disabled="!permGroupStats.B.total" @click="selectPermGroup('B')">全选</el-button>
+                <el-button type="text" size="mini" :disabled="!permGroupStats.B.total" @click="clearPermGroup('B')">清空</el-button>
+              </div>
+              <el-checkbox-group v-model="permChecked" class="perm-grid">
+                <el-checkbox
+                  v-for="perm in permGrouped.B"
+                  :key="perm.permCode"
+                  :label="perm.permCode">
+                  <span class="perm-name">{{ perm.permName }}</span>
+                  <span class="perm-code">{{ perm.permCode }}</span>
+                </el-checkbox>
+              </el-checkbox-group>
+              <div v-if="!permGrouped.B.length" class="perm-empty">暂无匹配权限</div>
+            </div>
+          </el-collapse-item>
+          <el-collapse-item name="A">
+            <template slot="title">
+              <div class="perm-collapse-title">
+                <i class="el-icon-link"></i>
+                <span>API</span>
+                <span class="perm-count">{{ permGroupStats.A.total }}</span>
+                <span v-if="permGroupStats.A.checked" class="perm-selected">已选 {{ permGroupStats.A.checked }}</span>
+              </div>
+            </template>
+            <div class="perm-group">
+              <div class="perm-group-actions">
+                <el-button type="text" size="mini" :disabled="!permGroupStats.A.total" @click="selectPermGroup('A')">全选</el-button>
+                <el-button type="text" size="mini" :disabled="!permGroupStats.A.total" @click="clearPermGroup('A')">清空</el-button>
+              </div>
+              <el-checkbox-group v-model="permChecked" class="perm-grid">
+                <el-checkbox
+                  v-for="perm in permGrouped.A"
+                  :key="perm.permCode"
+                  :label="perm.permCode">
+                  <span class="perm-name">{{ perm.permName }}</span>
+                  <span class="perm-code">{{ perm.permCode }}</span>
+                </el-checkbox>
+              </el-checkbox-group>
+              <div v-if="!permGrouped.A.length" class="perm-empty">暂无匹配权限</div>
+            </div>
+          </el-collapse-item>
+        </el-collapse>
+      </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="permDialogVisible = false">取消</el-button>
         <el-button type="primary" @click="saveMenuPermissions">保存</el-button>
@@ -298,6 +380,8 @@ export default {
       permDialogVisible: false,
       permOptions: [],
       permChecked: [],
+      permKeyword: '',
+      permCollapseActive: ['M'],
       currentMenuId: null,
       iconDialogVisible: false,
       iconKeyword: '',
@@ -317,6 +401,37 @@ export default {
         return ''
       }
       return parent.path
+    },
+    filteredPermOptions() {
+      const keyword = this.permKeyword.trim().toLowerCase()
+      if (!keyword) {
+        return this.permOptions
+      }
+      return this.permOptions.filter(item => {
+        const name = (item.permName || '').toLowerCase()
+        const code = (item.permCode || '').toLowerCase()
+        return name.includes(keyword) || code.includes(keyword)
+      })
+    },
+    permGrouped() {
+      const groups = {M: [], B: [], A: []}
+      this.filteredPermOptions.forEach(item => {
+        const type = item.permType || 'M'
+        if (groups[type]) {
+          groups[type].push(item)
+        }
+      })
+      return groups
+    },
+    permGroupStats() {
+      const checkedSet = new Set(this.permChecked || [])
+      const stats = {M: {total: 0, checked: 0}, B: {total: 0, checked: 0}, A: {total: 0, checked: 0}}
+      Object.keys(stats).forEach(type => {
+        const list = this.permGrouped[type] || []
+        stats[type].total = list.length
+        stats[type].checked = list.reduce((count, item) => count + (checkedSet.has(item.permCode) ? 1 : 0), 0)
+      })
+      return stats
     },
     filteredIconOptions() {
       const keyword = this.iconKeyword.trim().toLowerCase()
@@ -452,6 +567,8 @@ export default {
       this.currentMenuId = row.id
       try {
         this.permChecked = await getMenuPermissions(row.id)
+        this.permKeyword = ''
+        this.permCollapseActive = ['M']
         this.permDialogVisible = true
       } catch (error) {
         console.error(error)
@@ -465,6 +582,18 @@ export default {
       } catch (error) {
         console.error(error)
       }
+    },
+    selectPermGroup(type) {
+      const list = this.permGrouped[type] || []
+      const next = new Set(this.permChecked || [])
+      list.forEach(item => next.add(item.permCode))
+      this.permChecked = Array.from(next)
+    },
+    clearPermGroup(type) {
+      const list = this.permGrouped[type] || []
+      const next = new Set(this.permChecked || [])
+      list.forEach(item => next.delete(item.permCode))
+      this.permChecked = Array.from(next)
     },
     statusTagType(value) {
       return value === '0' ? 'success' : 'info'
@@ -657,10 +786,97 @@ export default {
   padding: 30px 0;
 }
 
-.perm-checkbox-group {
+.perm-dialog {
   display: flex;
   flex-direction: column;
-  max-height: 360px;
-  overflow: auto;
+  gap: 14px;
+}
+
+.perm-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.perm-toolbar-hint {
+  color: #8b97ad;
+  font-size: 12px;
+}
+
+.perm-collapse {
+  border: none;
+}
+
+.perm-collapse-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #1f2d3d;
+  font-weight: 600;
+}
+
+.perm-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: #eef3ff;
+  color: #4f70ff;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.perm-selected {
+  font-size: 12px;
+  color: #8b97ad;
+}
+
+.perm-group {
+  background: #f8faff;
+  border: 1px solid #e1e8ff;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.perm-group-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.perm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+}
+
+.perm-grid .el-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  white-space: normal;
+}
+
+.perm-name {
+  font-size: 13px;
+  color: #1f2d3d;
+}
+
+.perm-code {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 12px;
+  color: #8b97ad;
+}
+
+.perm-empty {
+  padding: 12px 0 4px;
+  text-align: center;
+  color: #9aa6bf;
+  font-size: 12px;
 }
 </style>
