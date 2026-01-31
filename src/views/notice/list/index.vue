@@ -55,26 +55,52 @@
           </template>
         </el-table-column>
         <el-table-column prop="publishTime" label="发布时间" min-width="160"/>
-        <el-table-column label="操作" min-width="240" fixed="right">
+        <el-table-column label="操作" min-width="220" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" type="primary" v-perm="'system:notice:update'" @click="handleEdit(scope.row)">编辑
-            </el-button>
-            <el-button size="mini" type="danger" v-perm="'system:notice:delete'" @click="handleDelete(scope.row)">删除
-            </el-button>
-            <el-button
-              v-if="scope.row.status === '0'"
-              size="mini"
-              v-perm="'system:notice:publish'"
-              @click="handlePublish(scope.row)">
-              发布
-            </el-button>
-            <el-button
-              v-if="scope.row.status === '1'"
-              size="mini"
-              v-perm="'system:notice:revoke'"
-              @click="handleRevoke(scope.row)">
-              撤销
-            </el-button>
+            <div class="action-buttons">
+              <el-tooltip v-perm="'system:notice:update'" content="编辑" placement="top" popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  icon="el-icon-edit"
+                  class="action-icon"
+                  @click="handleEdit(scope.row)"/>
+              </el-tooltip>
+              <el-tooltip
+                v-if="scope.row.status === '0'"
+                v-perm="'system:notice:publish'"
+                content="发布"
+                placement="top"
+                popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  icon="el-icon-upload2"
+                  class="action-icon"
+                  @click="handlePublish(scope.row)"/>
+              </el-tooltip>
+              <el-tooltip
+                v-if="scope.row.status === '1'"
+                v-perm="'system:notice:revoke'"
+                content="撤销"
+                placement="top"
+                popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  icon="el-icon-refresh"
+                  class="action-icon"
+                  @click="handleRevoke(scope.row)"/>
+              </el-tooltip>
+              <el-tooltip v-perm="'system:notice:delete'" content="删除" placement="top" popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  icon="el-icon-delete"
+                  class="action-icon"
+                  @click="handleDelete(scope.row)"/>
+              </el-tooltip>
+            </div>
           </template>
         </el-table-column>
       </el-table>

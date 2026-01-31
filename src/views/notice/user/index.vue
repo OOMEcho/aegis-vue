@@ -43,9 +43,18 @@
         </el-table-column>
         <el-table-column prop="publishTime" label="发布时间" min-width="160"/>
         <el-table-column prop="readTime" label="阅读时间" min-width="160"/>
-        <el-table-column label="操作" width="100" fixed="right">
+        <el-table-column label="操作" width="90" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" type="primary" @click="handleDetail(scope.row)">详情</el-button>
+            <div class="action-buttons">
+              <el-tooltip content="详情" placement="top" popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  icon="el-icon-view"
+                  class="action-icon"
+                  @click="handleDetail(scope.row)"/>
+              </el-tooltip>
+            </div>
           </template>
         </el-table-column>
       </el-table>

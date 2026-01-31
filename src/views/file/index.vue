@@ -43,10 +43,26 @@
         <el-table :data="failedUploads" border size="mini" class="failed-table">
           <el-table-column prop="name" label="文件名" min-width="200"/>
           <el-table-column prop="reason" label="失败原因" min-width="200"/>
-          <el-table-column label="操作" width="180">
+          <el-table-column label="操作" width="120">
             <template slot-scope="scope">
-              <el-button size="mini" type="primary" @click="retryFailed(scope.row)">重试</el-button>
-              <el-button size="mini" @click="removeFailed(scope.row)">移除</el-button>
+              <div class="action-buttons">
+                <el-tooltip content="重试" placement="top" popper-class="action-tooltip">
+                  <el-button
+                    type="text"
+                    size="mini"
+                    icon="el-icon-refresh"
+                    class="action-icon"
+                    @click="retryFailed(scope.row)"/>
+                </el-tooltip>
+                <el-tooltip content="移除" placement="top" popper-class="action-tooltip">
+                  <el-button
+                    type="text"
+                    size="mini"
+                    icon="el-icon-close"
+                    class="action-icon"
+                    @click="removeFailed(scope.row)"/>
+                </el-tooltip>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -65,12 +81,45 @@
         <el-table-column prop="uploadTime" label="上传时间" min-width="160"/>
         <el-table-column label="操作" min-width="220" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" @click="copyPath(scope.row.filePath)">复制路径</el-button>
-            <el-button size="mini" v-perm="'system:file:tempDownload'" @click="handleTempDownload(scope.row)">临时下载
-            </el-button>
-            <el-button size="mini" v-perm="'system:file:download'" @click="handleDownload(scope.row)">下载</el-button>
-            <el-button size="mini" type="danger" v-perm="'system:file:delete'" @click="handleDelete(scope.row)">删除
-            </el-button>
+            <div class="action-buttons">
+              <el-tooltip content="复制路径" placement="top" popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  icon="el-icon-document-copy"
+                  class="action-icon"
+                  @click="copyPath(scope.row.filePath)"/>
+              </el-tooltip>
+              <el-tooltip v-perm="'system:file:tempDownload'" content="临时下载" placement="top" popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  icon="el-icon-link"
+                  class="action-icon"
+                  @click="handleTempDownload(scope.row)"/>
+              </el-tooltip>
+              <el-tooltip v-perm="'system:file:download'" content="下载" placement="top" popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  icon="el-icon-download"
+                  class="action-icon"
+                  @click="handleDownload(scope.row)"/>
+              </el-tooltip>
+              <el-dropdown v-perm="'system:file:delete'" trigger="click" popper-class="action-dropdown">
+                <span class="action-dropdown-trigger">
+                  <el-tooltip content="更多操作" placement="top" popper-class="action-tooltip">
+                    <el-button type="text" size="mini" icon="el-icon-more" class="action-icon"/>
+                  </el-tooltip>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item class="danger-item" @click.native="handleDelete(scope.row)">
+                    <span class="danger-dot"></span>
+                    删除
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
           </template>
         </el-table-column>
       </el-table>

@@ -50,12 +50,26 @@
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="160"/>
-        <el-table-column label="操作" min-width="180" fixed="right">
+        <el-table-column label="操作" min-width="140" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" type="primary" v-perm="'system:dict:update'" @click="handleEdit(scope.row)">编辑
-            </el-button>
-            <el-button size="mini" type="danger" v-perm="'system:dict:delete'" @click="handleDelete(scope.row)">删除
-            </el-button>
+            <div class="action-buttons">
+              <el-tooltip v-perm="'system:dict:update'" content="编辑" placement="top" popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  icon="el-icon-edit"
+                  class="action-icon"
+                  @click="handleEdit(scope.row)"/>
+              </el-tooltip>
+              <el-tooltip v-perm="'system:dict:delete'" content="删除" placement="top" popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  icon="el-icon-delete"
+                  class="action-icon"
+                  @click="handleDelete(scope.row)"/>
+              </el-tooltip>
+            </div>
           </template>
         </el-table-column>
       </el-table>

@@ -13,3 +13,70 @@
 .table-toolbar {
   margin: 10px 0;
 }
+
+.action-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-icon {
+  padding: 4px;
+  border-radius: 8px;
+  color: #4a5a75;
+  background: rgba(79, 112, 255, 0.06);
+  border: 1px solid rgba(79, 112, 255, 0.12);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.action-icon:hover {
+  color: #4f70ff;
+  background: rgba(79, 112, 255, 0.12);
+  border-color: rgba(79, 112, 255, 0.24);
+}
+
+.action-dropdown-trigger {
+  display: inline-flex;
+}
+
+.action-dropdown {
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(31, 45, 61, 0.14);
+}
+
+.action-dropdown .el-dropdown-menu__item {
+  padding: 8px 14px;
+}
+
+.action-dropdown .danger-item {
+  color: #f56c6c;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.action-dropdown .danger-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f56c6c;
+  display: inline-block;
+}
+
+.action-tooltip {
+  background: #1f2d3d;
+  color: #ffffff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1;
+  box-shadow: 0 8px 18px rgba(31, 45, 61, 0.18);
+}
+
+.action-tooltip .popper__arrow,
+.action-tooltip .popper__arrow::after {
+  border-top-color: #1f2d3d !important;
+  border-bottom-color: #1f2d3d !important;
+  border-left-color: #1f2d3d !important;
+  border-right-color: #1f2d3d !important;
+}

@@ -56,14 +56,30 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" min-width="180" fixed="right">
+        <el-table-column label="操作" min-width="160" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" type="primary" v-perm="'system:permission:update'" @click="handleEdit(scope.row)">
-              编辑
-            </el-button>
-            <el-button size="mini" v-perm="'system:permission:effective'" @click="handleStatus(scope.row)">
-              {{ scope.row.status === '0' ? '停用' : '启用' }}
-            </el-button>
+            <div class="action-buttons">
+              <el-tooltip v-perm="'system:permission:update'" content="编辑" placement="top" popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  icon="el-icon-edit"
+                  class="action-icon"
+                  @click="handleEdit(scope.row)"/>
+              </el-tooltip>
+              <el-tooltip
+                v-perm="'system:permission:effective'"
+                :content="scope.row.status === '0' ? '停用' : '启用'"
+                placement="top"
+                popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  :icon="scope.row.status === '0' ? 'el-icon-close' : 'el-icon-check'"
+                  class="action-icon"
+                  @click="handleStatus(scope.row)"/>
+              </el-tooltip>
+            </div>
           </template>
         </el-table-column>
       </el-table>

@@ -80,14 +80,34 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" min-width="220" fixed="right">
+        <el-table-column label="操作" min-width="200" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" type="primary" v-perm="'system:menu:update'" @click="handleEdit(scope.row)">编辑
-            </el-button>
-            <el-button size="mini" v-perm="'system:menu:perm:list'" @click="openPermDialog(scope.row)">权限配置
-            </el-button>
-            <el-button size="mini" type="danger" v-perm="'system:menu:delete'" @click="handleDelete(scope.row)">删除
-            </el-button>
+            <div class="action-buttons">
+              <el-tooltip v-perm="'system:menu:update'" content="编辑" placement="top" popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  icon="el-icon-edit"
+                  class="action-icon"
+                  @click="handleEdit(scope.row)"/>
+              </el-tooltip>
+              <el-tooltip v-perm="'system:menu:perm:list'" content="权限配置" placement="top" popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  icon="el-icon-lock"
+                  class="action-icon"
+                  @click="openPermDialog(scope.row)"/>
+              </el-tooltip>
+              <el-tooltip v-perm="'system:menu:delete'" content="删除" placement="top" popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  icon="el-icon-delete"
+                  class="action-icon"
+                  @click="handleDelete(scope.row)"/>
+              </el-tooltip>
+            </div>
           </template>
         </el-table-column>
       </el-table>

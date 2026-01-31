@@ -54,14 +54,26 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" min-width="180" fixed="right">
+        <el-table-column label="操作" min-width="140" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" type="primary" v-perm="'system:resource:update'" @click="handleEdit(scope.row)">
-              编辑
-            </el-button>
-            <el-button size="mini" type="danger" v-perm="'system:resource:delete'" @click="handleDelete(scope.row)">
-              删除
-            </el-button>
+            <div class="action-buttons">
+              <el-tooltip v-perm="'system:resource:update'" content="编辑" placement="top" popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  icon="el-icon-edit"
+                  class="action-icon"
+                  @click="handleEdit(scope.row)"/>
+              </el-tooltip>
+              <el-tooltip v-perm="'system:resource:delete'" content="删除" placement="top" popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  icon="el-icon-delete"
+                  class="action-icon"
+                  @click="handleDelete(scope.row)"/>
+              </el-tooltip>
+            </div>
           </template>
         </el-table-column>
       </el-table>

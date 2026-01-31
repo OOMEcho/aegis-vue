@@ -49,19 +49,57 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" min-width="260" fixed="right">
+        <el-table-column label="操作" min-width="220" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" type="primary" v-perm="'system:role:update'" @click="handleEdit(scope.row)">编辑
-            </el-button>
-            <el-button size="mini" v-perm="'system:role:status'" @click="handleStatus(scope.row)">
-              {{ scope.row.status === '0' ? '停用' : '启用' }}
-            </el-button>
-            <el-button size="mini" v-perm="'system:role:perm:list'" @click="openPermDialog(scope.row)">权限配置
-            </el-button>
-            <el-button size="mini" v-perm="'system:role:dataScope'" @click="openDataScopeDialog(scope.row)">数据权限
-            </el-button>
-            <el-button size="mini" type="danger" v-perm="'system:role:delete'" @click="handleDelete(scope.row)">删除
-            </el-button>
+            <div class="action-buttons">
+              <el-tooltip v-perm="'system:role:update'" content="编辑" placement="top" popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  icon="el-icon-edit"
+                  class="action-icon"
+                  @click="handleEdit(scope.row)"/>
+              </el-tooltip>
+              <el-tooltip
+                v-perm="'system:role:status'"
+                :content="scope.row.status === '0' ? '停用' : '启用'"
+                placement="top"
+                popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  :icon="scope.row.status === '0' ? 'el-icon-close' : 'el-icon-check'"
+                  class="action-icon"
+                  @click="handleStatus(scope.row)"/>
+              </el-tooltip>
+              <el-tooltip v-perm="'system:role:perm:list'" content="权限配置" placement="top" popper-class="action-tooltip">
+                <el-button
+                  type="text"
+                  size="mini"
+                  icon="el-icon-lock"
+                  class="action-icon"
+                  @click="openPermDialog(scope.row)"/>
+              </el-tooltip>
+              <el-dropdown
+                v-perm="['system:role:dataScope','system:role:delete']"
+                trigger="click"
+                popper-class="action-dropdown">
+                <span class="action-dropdown-trigger">
+                  <el-tooltip content="更多操作" placement="top" popper-class="action-tooltip">
+                    <el-button type="text" size="mini" icon="el-icon-more" class="action-icon"/>
+                  </el-tooltip>
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item v-perm="'system:role:dataScope'" @click.native="openDataScopeDialog(scope.row)">
+                    数据权限
+                  </el-dropdown-item>
+                  <el-dropdown-item v-perm="'system:role:delete'" class="danger-item" @click.native="handleDelete(scope.row)">
+                    <span class="danger-dot"></span>
+                    删除
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
           </template>
         </el-table-column>
       </el-table>
