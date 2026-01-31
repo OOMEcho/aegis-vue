@@ -23,10 +23,22 @@
       </div>
     </div>
     <div v-if="menuVisible" class="context-menu" :style="menuStyle">
-      <button type="button" @click="refreshSelected">刷新页面</button>
-      <button type="button" @click="closeSelected">关闭当前</button>
-      <button type="button" @click="closeOthers">关闭其他</button>
-      <button type="button" @click="closeAll">全部关闭</button>
+      <button type="button" @click="refreshSelected">
+        <i class="el-icon-refresh menu-icon"></i>
+        刷新页面
+      </button>
+      <button type="button" @click="closeSelected">
+        <i class="el-icon-close menu-icon"></i>
+        关闭当前
+      </button>
+      <button type="button" @click="closeOthers">
+        <i class="el-icon-remove-outline menu-icon"></i>
+        关闭其他
+      </button>
+      <button type="button" @click="closeAll">
+        <i class="el-icon-circle-close menu-icon"></i>
+        全部关闭
+      </button>
     </div>
   </div>
 </template>
@@ -93,7 +105,7 @@ export default {
     },
     openMenu(tag, event) {
       this.selectedTag = tag
-      const menuWidth = 160
+      const menuWidth = 120
       const menuHeight = 150
       const rect = event.currentTarget.getBoundingClientRect()
       let left = rect.right + 8
@@ -206,18 +218,28 @@ export default {
   z-index: 9999;
   display: flex;
   flex-direction: column;
-  min-width: 160px;
+  min-width: 120px;
 }
 
 .context-menu button {
   border: none;
   background: transparent;
-  text-align: left;
+  text-align: center;
   padding: 8px 10px;
   font-size: 12px;
   color: #3b4a66;
   border-radius: 8px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  width: 100%;
+}
+
+.context-menu .menu-icon {
+  font-size: 14px;
+  color: #6b7a99;
 }
 
 .context-menu button:hover {
