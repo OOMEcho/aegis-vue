@@ -200,10 +200,6 @@
               </div>
             </template>
             <div class="perm-group">
-              <div class="perm-group-actions">
-                <el-button type="text" size="mini" :disabled="!permGroupStats.M.total" @click="selectPermGroup('M')">全选</el-button>
-                <el-button type="text" size="mini" :disabled="!permGroupStats.M.total" @click="clearPermGroup('M')">清空</el-button>
-              </div>
               <el-checkbox-group v-model="permChecked" class="perm-grid">
                 <el-checkbox
                   v-for="perm in permGrouped.M"
@@ -226,10 +222,6 @@
               </div>
             </template>
             <div class="perm-group">
-              <div class="perm-group-actions">
-                <el-button type="text" size="mini" :disabled="!permGroupStats.B.total" @click="selectPermGroup('B')">全选</el-button>
-                <el-button type="text" size="mini" :disabled="!permGroupStats.B.total" @click="clearPermGroup('B')">清空</el-button>
-              </div>
               <el-checkbox-group v-model="permChecked" class="perm-grid">
                 <el-checkbox
                   v-for="perm in permGrouped.B"
@@ -252,10 +244,6 @@
               </div>
             </template>
             <div class="perm-group">
-              <div class="perm-group-actions">
-                <el-button type="text" size="mini" :disabled="!permGroupStats.A.total" @click="selectPermGroup('A')">全选</el-button>
-                <el-button type="text" size="mini" :disabled="!permGroupStats.A.total" @click="clearPermGroup('A')">清空</el-button>
-              </div>
               <el-checkbox-group v-model="permChecked" class="perm-grid">
                 <el-checkbox
                   v-for="perm in permGrouped.A"
@@ -520,7 +508,7 @@ export default {
           id: detail.id,
           menuCode: detail.menuCode,
           menuName: detail.menuName,
-          parentId: detail.parentId,
+          parentId: detail.parentId === 0 || detail.parentId === '0' || detail.parentId === null || detail.parentId === undefined ? 0 : detail.parentId,
           orderNum: detail.orderNum,
           name: detail.name,
           path: detail.path,
@@ -841,13 +829,6 @@ export default {
   border: 1px solid #e1e8ff;
   border-radius: 12px;
   padding: 12px;
-}
-
-.perm-group-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-bottom: 10px;
 }
 
 .perm-grid {
