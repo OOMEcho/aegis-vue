@@ -2,6 +2,17 @@ import ParentView from '@/components/ParentView/index.vue'
 
 const viewModules = require.context('@/views', true, /index\.vue$/, 'lazy')
 
+const DASHBOARD_PATH = '/dashboard'
+const DASHBOARD_MENU = {
+  path: DASHBOARD_PATH,
+  name: 'Dashboard',
+  meta: {
+    title: '首页',
+    icon: 'icon-pingtaizijiankong'
+  },
+  hidden: false
+}
+
 const state = {
   routes: [],
   permissions: []
@@ -21,9 +32,37 @@ const actions = {
     const routerVoList = userInfo?.routerVoList || []
     const permissions = userInfo?.permissions || []
     const accessedRoutes = buildRoutes(routerVoList)
-    commit('SET_ROUTES', accessedRoutes)
+    const menuRoutes = ensureDashboardFirst(accessedRoutes)
+    commit('SET_ROUTES', menuRoutes)
     commit('SET_PERMISSIONS', permissions)
     return accessedRoutes
+  }
+}
+
+function ensureDashboardFirst(routes = []) {
+  const list = Array.isArray(routes) ? routes.slice() : []
+  const dashboardIndex = list.findIndex(route => normalizePath(route.path) === DASHBOARD_PATH)
+  const dashboardRoute = dashboardIndex > -1
+    ? createDashboardMenu(list.splice(dashboardIndex, 1)[0])
+    : createDashboardMenu()
+  return [dashboardRoute, ...list]
+}
+
+function createDashboardMenu(route) {
+  if (!route) {
+    return {...DASHBOARD_MENU}
+  }
+
+  return {
+    ...route,
+    path: DASHBOARD_PATH,
+    name: 'Dashboard',
+    meta: {
+      ...(route.meta || {}),
+      title: DASHBOARD_MENU.meta.title,
+      icon: DASHBOARD_MENU.meta.icon
+    },
+    hidden: false
   }
 }
 
