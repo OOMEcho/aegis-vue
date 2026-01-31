@@ -1,6 +1,6 @@
-// Centralized permission map for v-perm usage and permission checks.
+// v-perm 使用和权限检查的集中权限映射.
 export const PERMS = Object.freeze({
-  // User management
+  // 用户管理
   user: {
     page: 'system:user:page',
     add: 'system:user:add',
@@ -10,7 +10,7 @@ export const PERMS = Object.freeze({
     resetPwd: 'system:user:resetPwd',
     kick: 'system:user:kick'
   },
-  // Role management
+  // 角色管理
   role: {
     page: 'system:role:page',
     add: 'system:role:add',
@@ -20,7 +20,7 @@ export const PERMS = Object.freeze({
     permList: 'system:role:perm:list',
     dataScope: 'system:role:dataScope'
   },
-  // Menu management
+  // 菜单管理
   menu: {
     page: 'system:menu:page',
     add: 'system:menu:add',
@@ -28,38 +28,38 @@ export const PERMS = Object.freeze({
     delete: 'system:menu:delete',
     permList: 'system:menu:perm:list'
   },
-  // Department management
+  // 部门管理
   dept: {
     add: 'system:dept:add',
     update: 'system:dept:update',
     delete: 'system:dept:delete'
   },
-  // Permission management
+  // 权限管理
   permission: {
     page: 'system:permission:page',
     add: 'system:permission:add',
     update: 'system:permission:update',
     effective: 'system:permission:effective'
   },
-  // Resource management
+  // 资源管理
   resource: {
     add: 'system:resource:add',
     update: 'system:resource:update',
     delete: 'system:resource:delete'
   },
-  // Dictionary management
+  // 字典管理
   dict: {
     add: 'system:dict:add',
     update: 'system:dict:update',
     delete: 'system:dict:delete'
   },
-  // Whitelist management
+  // 白名单管理
   whitelist: {
     add: 'system:whitelist:add',
     update: 'system:whitelist:update',
     delete: 'system:whitelist:delete'
   },
-  // Notice management
+  // 通知管理
   notice: {
     page: 'system:notice:page',
     add: 'system:notice:add',
@@ -68,7 +68,7 @@ export const PERMS = Object.freeze({
     publish: 'system:notice:publish',
     revoke: 'system:notice:revoke'
   },
-  // File management
+  // 文件管理
   file: {
     upload: 'system:file:upload',
     uploadBatch: 'system:file:uploadBatch',
@@ -76,7 +76,7 @@ export const PERMS = Object.freeze({
     download: 'system:file:download',
     delete: 'system:file:delete'
   },
-  // Log management
+  // 日志管理
   log: {
     loginPage: 'system:loginLog:page',
     loginExport: 'system:loginLog:export',
