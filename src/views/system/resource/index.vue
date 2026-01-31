@@ -106,13 +106,111 @@
           <el-input v-model="form.requestUri" placeholder="请输入URI"/>
         </el-form-item>
         <el-form-item label="权限编码" prop="permCode">
-          <el-select v-model="form.permCode" placeholder="请选择权限编码" filterable>
-            <el-option
-              v-for="perm in permOptions"
-              :key="perm.permCode"
-              :label="perm.permName + ' (' + perm.permCode + ')'"
-              :value="perm.permCode"/>
-          </el-select>
+          <el-input
+            v-model="permLabel"
+            placeholder="请选择权限编码"
+            readonly
+            class="perm-input"
+            @click.native="togglePermPanel">
+            <template slot="suffix">
+              <span class="dept-query-suffix">
+                <i
+                  v-if="permLabel"
+                  class="el-icon-circle-close dept-query-clear"
+                  @click.stop="clearPermSelect"></i>
+                <i class="el-icon-arrow-down dept-query-arrow"></i>
+              </span>
+            </template>
+          </el-input>
+          <div v-show="permPanelVisible" class="perm-panel">
+            <div class="perm-select">
+              <div class="perm-toolbar">
+                <el-input
+                  v-model="permKeyword"
+                  placeholder="搜索权限名称或编码"
+                  size="small"
+                  clearable
+                  prefix-icon="el-icon-search"/>
+              </div>
+              <el-collapse v-model="permCollapseActive" class="perm-collapse">
+                <el-collapse-item name="A">
+                  <template slot="title">
+                    <div class="perm-collapse-title">
+                      <i class="el-icon-link"></i>
+                      <span>API</span>
+                      <span class="perm-count">{{ permGroupStats.A.total }}</span>
+                      <span v-if="permGroupStats.A.checked" class="perm-selected">已选 {{ permGroupStats.A.checked }}</span>
+                    </div>
+                  </template>
+                  <div class="perm-group">
+                    <div class="perm-grid">
+                      <button
+                        v-for="perm in permGrouped.A"
+                        :key="perm.permCode"
+                        type="button"
+                        class="perm-item"
+                        :class="{ 'is-active': perm.permCode === form.permCode }"
+                        @click="selectPermCode(perm)">
+                        <span class="perm-name">{{ perm.permName }}</span>
+                        <span class="perm-code">{{ perm.permCode }}</span>
+                      </button>
+                    </div>
+                    <div v-if="!permGrouped.A.length" class="perm-empty">暂无匹配权限</div>
+                  </div>
+                </el-collapse-item>
+                <el-collapse-item name="M">
+                  <template slot="title">
+                    <div class="perm-collapse-title">
+                      <i class="el-icon-document"></i>
+                      <span>页面</span>
+                      <span class="perm-count">{{ permGroupStats.M.total }}</span>
+                      <span v-if="permGroupStats.M.checked" class="perm-selected">已选 {{ permGroupStats.M.checked }}</span>
+                    </div>
+                  </template>
+                  <div class="perm-group">
+                    <div class="perm-grid">
+                      <button
+                        v-for="perm in permGrouped.M"
+                        :key="perm.permCode"
+                        type="button"
+                        class="perm-item"
+                        :class="{ 'is-active': perm.permCode === form.permCode }"
+                        @click="selectPermCode(perm)">
+                        <span class="perm-name">{{ perm.permName }}</span>
+                        <span class="perm-code">{{ perm.permCode }}</span>
+                      </button>
+                    </div>
+                    <div v-if="!permGrouped.M.length" class="perm-empty">暂无匹配权限</div>
+                  </div>
+                </el-collapse-item>
+                <el-collapse-item name="B">
+                  <template slot="title">
+                    <div class="perm-collapse-title">
+                      <i class="el-icon-s-operation"></i>
+                      <span>按钮</span>
+                      <span class="perm-count">{{ permGroupStats.B.total }}</span>
+                      <span v-if="permGroupStats.B.checked" class="perm-selected">已选 {{ permGroupStats.B.checked }}</span>
+                    </div>
+                  </template>
+                  <div class="perm-group">
+                    <div class="perm-grid">
+                      <button
+                        v-for="perm in permGrouped.B"
+                        :key="perm.permCode"
+                        type="button"
+                        class="perm-item"
+                        :class="{ 'is-active': perm.permCode === form.permCode }"
+                        @click="selectPermCode(perm)">
+                        <span class="perm-name">{{ perm.permName }}</span>
+                        <span class="perm-code">{{ perm.permCode }}</span>
+                      </button>
+                    </div>
+                    <div v-if="!permGrouped.B.length" class="perm-empty">暂无匹配权限</div>
+                  </div>
+                </el-collapse-item>
+              </el-collapse>
+            </div>
+          </div>
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-select v-model="form.status" placeholder="请选择状态">
@@ -165,6 +263,10 @@ export default {
       },
       tableData: [],
       permOptions: [],
+      permKeyword: '',
+      permPanelVisible: false,
+      permLabel: '',
+      permCollapseActive: ['A'],
       dialogVisible: false,
       dialogTitle: '',
       form: this.getDefaultForm(),
@@ -174,6 +276,46 @@ export default {
         permCode: [{required: true, message: '请选择权限编码', trigger: 'change'}]
       },
       PERMS
+    }
+  },
+  computed: {
+    filteredPermOptions() {
+      const keyword = this.permKeyword.trim().toLowerCase()
+      if (!keyword) {
+        return this.permOptions
+      }
+      return this.permOptions.filter(item => {
+        const name = (item.permName || '').toLowerCase()
+        const code = (item.permCode || '').toLowerCase()
+        return name.includes(keyword) || code.includes(keyword)
+      })
+    },
+    permGrouped() {
+      const groups = {A: [], M: [], B: []}
+      this.filteredPermOptions.forEach(item => {
+        const type = item.permType || 'M'
+        if (groups[type]) {
+          groups[type].push(item)
+        }
+      })
+      return groups
+    },
+    permGroupStats() {
+      const current = this.form.permCode
+      return {
+        A: {
+          total: this.permGrouped.A.length,
+          checked: current && this.permGrouped.A.some(item => item.permCode === current) ? 1 : 0
+        },
+        M: {
+          total: this.permGrouped.M.length,
+          checked: current && this.permGrouped.M.some(item => item.permCode === current) ? 1 : 0
+        },
+        B: {
+          total: this.permGrouped.B.length,
+          checked: current && this.permGrouped.B.some(item => item.permCode === current) ? 1 : 0
+        }
+      }
     }
   },
   created() {
@@ -207,6 +349,7 @@ export default {
     async fetchPermissionOptions() {
       try {
         this.permOptions = await getPermissionList({})
+        this.syncPermLabel()
       } catch (error) {
         console.error(error)
       }
@@ -238,6 +381,10 @@ export default {
     handleAdd() {
       this.dialogTitle = '新增资源'
       this.form = this.getDefaultForm()
+      this.permLabel = ''
+      this.permKeyword = ''
+      this.permCollapseActive = ['A']
+      this.permPanelVisible = false
       this.dialogVisible = true
       this.$nextTick(() => this.$refs.formRef && this.$refs.formRef.clearValidate())
     },
@@ -253,10 +400,38 @@ export default {
           status: detail.status,
           remark: detail.remark
         }
+        this.permKeyword = ''
+        this.permCollapseActive = ['A']
+        this.permPanelVisible = false
+        this.syncPermLabel()
         this.dialogVisible = true
         this.$nextTick(() => this.$refs.formRef && this.$refs.formRef.clearValidate())
       } catch (error) {
         console.error(error)
+      }
+    },
+    togglePermPanel() {
+      this.permPanelVisible = !this.permPanelVisible
+    },
+    selectPermCode(perm) {
+      this.form.permCode = perm.permCode
+      this.permLabel = `${perm.permName} (${perm.permCode})`
+      this.permPanelVisible = false
+    },
+    clearPermSelect() {
+      this.form.permCode = ''
+      this.permLabel = ''
+      this.permKeyword = ''
+      this.permPanelVisible = false
+    },
+    syncPermLabel() {
+      if (!this.form.permCode) {
+        this.permLabel = ''
+        return
+      }
+      const match = (this.permOptions || []).find(item => item.permCode === this.form.permCode)
+      if (match) {
+        this.permLabel = `${match.permName} (${match.permCode})`
       }
     },
     submitForm() {
@@ -301,5 +476,116 @@ export default {
 .page-pagination {
   margin-top: 12px;
   text-align: right;
+}
+</style>
+
+<style>
+.perm-select {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.perm-input {
+  cursor: pointer;
+}
+
+.perm-panel {
+  margin-top: 8px;
+  background: #ffffff;
+  border: 1px solid #e1e8ff;
+  border-radius: 12px;
+  padding: 10px 12px 12px;
+  max-height: 60vh;
+  overflow: auto;
+}
+
+.perm-toolbar {
+  display: flex;
+  align-items: center;
+}
+
+.perm-collapse {
+  border: none;
+}
+
+.perm-collapse-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #1f2d3d;
+  font-weight: 600;
+}
+
+.perm-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: #eef3ff;
+  color: #4f70ff;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.perm-selected {
+  font-size: 12px;
+  color: #8b97ad;
+}
+
+.perm-group {
+  background: #f8faff;
+  border: 1px solid #e1e8ff;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.perm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+}
+
+.perm-item {
+  border: 1px solid #e1e8ff;
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: #ffffff;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.perm-item:hover {
+  border-color: #4f70ff;
+  box-shadow: 0 8px 16px rgba(79, 112, 255, 0.16);
+}
+
+.perm-item.is-active {
+  border-color: #4f70ff;
+  background: #eef3ff;
+}
+
+.perm-name {
+  font-size: 13px;
+  color: #1f2d3d;
+}
+
+.perm-code {
+  font-size: 12px;
+  color: #8b97ad;
+}
+
+.perm-empty {
+  padding: 12px 0 4px;
+  text-align: center;
+  color: #9aa6bf;
+  font-size: 12px;
 }
 </style>
