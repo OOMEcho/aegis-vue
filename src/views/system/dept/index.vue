@@ -84,15 +84,48 @@
         <el-form-item label="部门名称" prop="deptName">
           <el-input v-model="form.deptName" placeholder="请输入部门名称"/>
         </el-form-item>
-        <el-form-item label="上级部门" prop="parentId">
-          <el-select v-model="form.parentId" placeholder="请选择上级部门">
-            <el-option :label="'顶级部门'" :value="0"/>
-            <el-option
-              v-for="item in parentOptions"
-              :key="item.id"
-              :label="item.deptName"
-              :value="item.id"/>
-          </el-select>
+        <el-form-item v-if="showParentField" label="上级部门" prop="parentId">
+          <el-popover
+            v-model="parentPopoverVisible"
+            placement="bottom-start"
+            trigger="click"
+            width="280"
+            popper-class="dept-tree-popover">
+            <div class="dept-tree-search">
+              <el-input
+                v-model="parentFilter"
+                size="small"
+                placeholder="搜索上级部门"
+                clearable/>
+            </div>
+            <div class="dept-tree-panel">
+              <el-tree
+                ref="parentTree"
+                v-loading="parentTreeLoading"
+                :data="parentTreeData"
+                :props="parentTreeProps"
+                node-key="id"
+                highlight-current
+                :expand-on-click-node="false"
+                :filter-node-method="filterParentNode"
+                @node-click="handleParentSelect"/>
+            </div>
+            <el-input
+              slot="reference"
+              v-model="parentLabel"
+              placeholder="请选择上级部门"
+              readonly>
+              <template slot="suffix">
+                <span class="dept-query-suffix">
+                  <i
+                    v-if="parentLabel"
+                    class="el-icon-circle-close dept-query-clear"
+                    @click.stop="clearParentSelect"></i>
+                  <i class="el-icon-arrow-down dept-query-arrow"></i>
+                </span>
+              </template>
+            </el-input>
+          </el-popover>
         </el-form-item>
         <el-form-item label="排序" prop="orderNum">
           <el-input-number v-model="form.orderNum" :min="0"/>
@@ -130,6 +163,8 @@ import {
   deleteDept,
   getDeptDetail,
   getDeptList,
+  getDeptListExclude,
+  getDeptTree,
   updateDept
 } from '@/api/dept'
 import {Message} from 'element-ui'
@@ -146,7 +181,16 @@ export default {
         status: ''
       },
       tableData: [],
-      deptOptions: [],
+      parentTreeData: [],
+      parentTreeLoading: false,
+      parentTreeProps: {
+        children: 'children',
+        label: 'label'
+      },
+      parentTreeLabelKey: 'label',
+      parentPopoverVisible: false,
+      parentFilter: '',
+      parentLabel: '',
       expandAll: true,
       tableKey: 0,
       dialogVisible: false,
@@ -160,23 +204,30 @@ export default {
     }
   },
   computed: {
-    parentOptions() {
+    showParentField() {
       if (!this.form.id) {
-        return this.deptOptions
+        return true
       }
-      return this.deptOptions.filter(item => item.id !== this.form.id)
+      return !(this.form.parentId === 0 || this.form.parentId === '0' || this.form.parentId === null || this.form.parentId === undefined)
     }
   },
   created() {
     this.loadDictOptions('DATA_STATUS')
     this.fetchList()
   },
+  watch: {
+    parentFilter(value) {
+      if (this.$refs.parentTree) {
+        this.$refs.parentTree.filter(value)
+      }
+    }
+  },
   methods: {
     getDefaultForm() {
       return {
         id: null,
         deptName: '',
-        parentId: 0,
+        parentId: null,
         orderNum: 0,
         leader: '',
         phone: '',
@@ -188,7 +239,6 @@ export default {
       this.loading = true
       try {
         const list = await getDeptList(this.queryParams)
-        this.deptOptions = list || []
         this.tableData = this.buildTree(list || [])
       } catch (error) {
         console.error(error)
@@ -207,8 +257,19 @@ export default {
     handleAdd() {
       this.dialogTitle = '新增部门'
       this.form = this.getDefaultForm()
+      this.parentLabel = ''
+      this.parentFilter = ''
+      this.parentPopoverVisible = false
       this.dialogVisible = true
-      this.$nextTick(() => this.$refs.formRef && this.$refs.formRef.clearValidate())
+      this.fetchParentTreeForAdd()
+      this.$nextTick(() => {
+        if (this.$refs.formRef) {
+          this.$refs.formRef.clearValidate()
+        }
+        if (this.$refs.parentTree) {
+          this.$refs.parentTree.setCurrentKey(null)
+        }
+      })
     },
     async handleEdit(row) {
       this.dialogTitle = '编辑部门'
@@ -224,11 +285,93 @@ export default {
           email: detail.email,
           status: detail.status
         }
+        this.parentLabel = ''
+        this.parentFilter = ''
+        this.parentPopoverVisible = false
         this.dialogVisible = true
-        this.$nextTick(() => this.$refs.formRef && this.$refs.formRef.clearValidate())
+        if (this.showParentField) {
+          await this.fetchParentTreeForEdit(detail.id)
+          this.parentLabel = this.findParentLabel(this.parentTreeData, detail.parentId) || ''
+        }
+        this.$nextTick(() => {
+          if (this.$refs.formRef) {
+            this.$refs.formRef.clearValidate()
+          }
+          if (this.$refs.parentTree && this.showParentField) {
+            this.$refs.parentTree.setCurrentKey(detail.parentId)
+          }
+        })
       } catch (error) {
         console.error(error)
       }
+    },
+    async fetchParentTreeForAdd() {
+      this.parentTreeLoading = true
+      this.parentTreeLabelKey = 'label'
+      this.parentTreeProps = {children: 'children', label: 'label'}
+      try {
+        const data = await getDeptTree({})
+        this.parentTreeData = Array.isArray(data) ? data : []
+      } catch (error) {
+        console.error(error)
+      } finally {
+        this.parentTreeLoading = false
+      }
+    },
+    async fetchParentTreeForEdit(id) {
+      this.parentTreeLoading = true
+      this.parentTreeLabelKey = 'deptName'
+      this.parentTreeProps = {children: 'children', label: 'deptName'}
+      try {
+        const list = await getDeptListExclude(id)
+        const tree = this.buildTree(list || [])
+        this.parentTreeData = tree
+      } catch (error) {
+        console.error(error)
+      } finally {
+        this.parentTreeLoading = false
+      }
+    },
+    filterParentNode(value, data) {
+      const keyword = (value || '').trim()
+      if (!keyword) {
+        return true
+      }
+      const label = data[this.parentTreeLabelKey] || data.label || data.deptName || ''
+      return label.toLowerCase().includes(keyword.toLowerCase())
+    },
+    handleParentSelect(node) {
+      this.form.parentId = node.id
+      this.parentLabel = node[this.parentTreeLabelKey] || node.label || node.deptName || ''
+      this.parentPopoverVisible = false
+    },
+    clearParentSelect() {
+      this.form.parentId = null
+      this.parentLabel = ''
+      this.parentFilter = ''
+      this.parentPopoverVisible = false
+      this.$nextTick(() => {
+        if (this.$refs.parentTree) {
+          this.$refs.parentTree.setCurrentKey(null)
+        }
+      })
+    },
+    findParentLabel(tree = [], id) {
+      if (!id) {
+        return ''
+      }
+      for (const node of tree) {
+        if (String(node.id) === String(id)) {
+          return node[this.parentTreeLabelKey] || node.label || node.deptName || ''
+        }
+        if (node.children && node.children.length) {
+          const label = this.findParentLabel(node.children, id)
+          if (label) {
+            return label
+          }
+        }
+      }
+      return ''
     },
     submitForm() {
       this.$refs.formRef.validate(async valid => {

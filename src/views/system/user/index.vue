@@ -657,38 +657,3 @@ export default {
   text-align: right;
 }
 </style>
-
-<style>
-.dept-tree-popover {
-  padding: 8px 10px 10px;
-}
-
-.dept-tree-popover .dept-tree-search {
-  margin-bottom: 8px;
-}
-
-.dept-query-suffix {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.dept-query-clear {
-  cursor: pointer;
-  color: #9aa6bf;
-  font-size: 14px;
-}
-
-.dept-query-clear:hover {
-  color: #4f70ff;
-}
-
-.dept-query-arrow {
-  color: #9aa6bf;
-}
-
-.dept-tree-popover .dept-tree-panel {
-  max-height: 260px;
-  overflow: auto;
-}
-</style>
