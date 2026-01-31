@@ -270,7 +270,7 @@ export default {
 
 .layout-main {
   background-color: #f4f7ff;
-  padding: 20px;
+  padding: 0;
   flex: 1;
   overflow: auto;
   min-height: 0;

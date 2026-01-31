@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard">
+  <div class="page-container dashboard">
     <el-row :gutter="16" class="stats-row">
       <el-col :span="6">
         <el-card class="stat-card">
