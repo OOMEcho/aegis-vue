@@ -51,10 +51,18 @@
               slot="reference"
               v-model="deptQueryLabel"
               placeholder="部门"
-              clearable
               readonly
-              suffix-icon="el-icon-arrow-down"
-              @clear="clearDeptQuery"/>
+            >
+              <template slot="suffix">
+                <span class="dept-query-suffix">
+                  <i
+                    v-if="deptQueryLabel"
+                    class="el-icon-circle-close dept-query-clear"
+                    @click.stop="clearDeptQuery"></i>
+                  <i class="el-icon-arrow-down dept-query-arrow"></i>
+                </span>
+              </template>
+            </el-input>
           </el-popover>
         </el-form-item>
         <el-form-item label="创建时间">
@@ -657,6 +665,26 @@ export default {
 
 .dept-tree-popover .dept-tree-search {
   margin-bottom: 8px;
+}
+
+.dept-query-suffix {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dept-query-clear {
+  cursor: pointer;
+  color: #9aa6bf;
+  font-size: 14px;
+}
+
+.dept-query-clear:hover {
+  color: #4f70ff;
+}
+
+.dept-query-arrow {
+  color: #9aa6bf;
 }
 
 .dept-tree-popover .dept-tree-panel {
