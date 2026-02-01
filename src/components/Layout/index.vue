@@ -83,7 +83,6 @@
           <router-view :key="`${$route.fullPath}-${viewKey}`"/>
         </keep-alive>
       </el-main>
-      <el-footer class="layout-footer">Aegis Admin</el-footer>
     </el-container>
   </el-container>
 </template>
@@ -454,12 +453,6 @@ export default {
   min-height: 0;
 }
 
-.layout-footer {
-  text-align: center;
-  color: #8b97ad;
-  font-size: 12px;
-  background: #f4f7ff;
-}
 
 .menu-search-mask {
   position: fixed;
