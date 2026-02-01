@@ -47,6 +47,31 @@ export function cancelAuth(data) {
 }
 
 /**
+ * 批量选择用户授权
+ * @param {Object} data 批量选择授权数据
+ * @param {number} data.roleId 角色ID
+ * @param {Array} data.userIds 用户组ID
+ */
+export function selectAuthAll(data) {
+  return postRequest('/role/selectAll', data)
+}
+
+/**
+ * 查询未分配用户角色列表
+ * @param {Object} params 查询参数
+ * @param {number} params.pageNum 页数
+ * @param {number} params.pageSize 当前页大小
+ * @param {string} params.phone 电话
+ * @param {number} params.roleId 角色ID
+ * @param {string} params.sortField 排序字段
+ * @param {string} params.sortOrder 排序方式 ASC DESC
+ * @param {string} params.username 用户名
+ */
+export function getUnallocatedList(params) {
+  return getRequest('/role/unallocatedList', params)
+}
+
+/**
  * 批量取消授权用户
  * @param {Object} data 批量取消授权数据
  * @param {number} data.roleId 角色ID
@@ -108,31 +133,6 @@ export function getRolePermissions(roleId) {
  */
 export function assignRolePermissions(roleId, permCodes) {
   return postRequest(`/role/${roleId}/permissions`, permCodes)
-}
-
-/**
- * 批量选择用户授权
- * @param {Object} data 批量选择授权数据
- * @param {number} data.roleId 角色ID
- * @param {Array} data.userIds 用户组ID
- */
-export function selectAuthAll(data) {
-  return postRequest('/role/selectAll', data)
-}
-
-/**
- * 查询未分配用户角色列表
- * @param {Object} params 查询参数
- * @param {number} params.pageNum 页数
- * @param {number} params.pageSize 当前页大小
- * @param {string} params.phone 电话
- * @param {number} params.roleId 角色ID
- * @param {string} params.sortField 排序字段
- * @param {string} params.sortOrder 排序方式 ASC DESC
- * @param {string} params.username 用户名
- */
-export function getUnallocatedList(params) {
-  return getRequest('/role/unallocatedList', params)
 }
 
 /**

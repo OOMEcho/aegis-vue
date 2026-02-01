@@ -81,7 +81,7 @@
                   @click="openPermDialog(scope.row)"/>
               </el-tooltip>
               <el-dropdown
-                v-perm="[PERMS.role.dataScope, PERMS.role.delete]"
+                v-perm="[PERMS.role.assignUser, PERMS.role.dataScope, PERMS.role.delete]"
                 trigger="click"
                 popper-class="action-dropdown">
                 <span class="action-dropdown-trigger">
@@ -90,6 +90,9 @@
                   </el-tooltip>
                 </span>
                 <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item v-perm="PERMS.role.assignUser" @click.native="openAssignUser(scope.row)">
+                    分配用户
+                  </el-dropdown-item>
                   <el-dropdown-item v-perm="PERMS.role.dataScope" @click.native="openDataScopeDialog(scope.row)">
                     数据权限
                   </el-dropdown-item>
@@ -284,20 +287,183 @@
         <el-button type="primary" @click="saveDataScope">保存</el-button>
       </div>
     </el-dialog>
+
+    <el-dialog :title="assignDialogTitle" :visible.sync="assignDialogVisible" width="900px">
+      <el-tabs v-model="assignActiveTab" @tab-click="handleAssignTabClick">
+        <el-tab-pane label="已分配" name="allocated">
+          <div class="assign-toolbar">
+            <el-form :inline="true" :model="allocatedQuery" size="small">
+              <el-form-item label="用户名">
+                <el-input v-model="allocatedQuery.username" placeholder="用户名" clearable/>
+              </el-form-item>
+              <el-form-item label="手机号">
+                <el-input v-model="allocatedQuery.phone" placeholder="手机号" clearable/>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" icon="el-icon-search" @click="handleAllocatedSearch">查询</el-button>
+                <el-button icon="el-icon-refresh" @click="handleAllocatedReset">重置</el-button>
+                <el-button
+                  type="danger"
+                  icon="el-icon-close"
+                  :disabled="!allocatedSelection.length"
+                  @click="handleCancelAuthAll">
+                  批量取消
+                </el-button>
+              </el-form-item>
+            </el-form>
+          </div>
+          <el-table
+            :data="allocatedList"
+            border
+            stripe
+            v-loading="allocatedLoading"
+            @selection-change="handleAllocatedSelectionChange">
+            <el-table-column type="selection" width="50"/>
+            <el-table-column prop="username" label="用户名" min-width="120"/>
+            <el-table-column label="昵称" min-width="120">
+              <template slot-scope="scope">
+                {{ scope.row.nickname || '-' }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="phone" label="手机号" min-width="120"/>
+            <el-table-column label="状态" width="80">
+              <template slot-scope="scope">
+                <el-tag :type="statusTagType(scope.row.status)" size="mini">
+                  {{ dictLabel('DATA_STATUS', scope.row.status) }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="创建时间" min-width="160">
+              <template slot-scope="scope">
+                {{ scope.row.createTime || '-' }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="80">
+              <template slot-scope="scope">
+                <div class="action-buttons">
+                  <el-tooltip content="取消授权" placement="top" popper-class="action-tooltip">
+                    <el-button
+                      type="text"
+                      size="mini"
+                      icon="el-icon-close"
+                      class="action-icon is-danger"
+                      @click="handleCancelAuth(scope.row)"/>
+                  </el-tooltip>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
+          <div class="page-pagination">
+            <el-pagination
+              background
+              layout="total, sizes, prev, pager, next"
+              :total="allocatedTotal"
+              :current-page="allocatedQuery.pageNum"
+              :page-size="allocatedQuery.pageSize"
+              :page-sizes="[10, 20, 50, 100]"
+              @current-change="handleAllocatedPageChange"
+              @size-change="handleAllocatedSizeChange"/>
+          </div>
+        </el-tab-pane>
+        <el-tab-pane label="未分配" name="unallocated">
+          <div class="assign-toolbar">
+            <el-form :inline="true" :model="unallocatedQuery" size="small">
+              <el-form-item label="用户名">
+                <el-input v-model="unallocatedQuery.username" placeholder="用户名" clearable/>
+              </el-form-item>
+              <el-form-item label="手机号">
+                <el-input v-model="unallocatedQuery.phone" placeholder="手机号" clearable/>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" icon="el-icon-search" @click="handleUnallocatedSearch">查询</el-button>
+                <el-button icon="el-icon-refresh" @click="handleUnallocatedReset">重置</el-button>
+                <el-button
+                  type="primary"
+                  icon="el-icon-check"
+                  :disabled="!unallocatedSelection.length"
+                  @click="handleSelectAuthAll">
+                  批量授权
+                </el-button>
+              </el-form-item>
+            </el-form>
+          </div>
+          <el-table
+            :data="unallocatedList"
+            border
+            stripe
+            v-loading="unallocatedLoading"
+            @selection-change="handleUnallocatedSelectionChange">
+            <el-table-column type="selection" width="50"/>
+            <el-table-column prop="username" label="用户名" min-width="120"/>
+            <el-table-column label="昵称" min-width="120">
+              <template slot-scope="scope">
+                {{ scope.row.nickname || '-' }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="phone" label="手机号" min-width="120"/>
+            <el-table-column label="状态" width="80">
+              <template slot-scope="scope">
+                <el-tag :type="statusTagType(scope.row.status)" size="mini">
+                  {{ dictLabel('DATA_STATUS', scope.row.status) }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="创建时间" min-width="160">
+              <template slot-scope="scope">
+                {{ scope.row.createTime || '-' }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="80">
+              <template slot-scope="scope">
+                <div class="action-buttons">
+                  <el-tooltip content="授权" placement="top" popper-class="action-tooltip">
+                    <el-button
+                      type="text"
+                      size="mini"
+                      icon="el-icon-check"
+                      class="action-icon is-primary"
+                      @click="handleSelectAuth(scope.row)"/>
+                  </el-tooltip>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
+          <div class="page-pagination">
+            <el-pagination
+              background
+              layout="total, sizes, prev, pager, next"
+              :total="unallocatedTotal"
+              :current-page="unallocatedQuery.pageNum"
+              :page-size="unallocatedQuery.pageSize"
+              :page-sizes="[10, 20, 50, 100]"
+              @current-change="handleUnallocatedPageChange"
+              @size-change="handleUnallocatedSizeChange"/>
+          </div>
+        </el-tab-pane>
+      </el-tabs>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="assignDialogVisible = false">关闭</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import {
   addRole,
+  cancelAuth,
+  cancelAuthAll,
   deleteRole,
+  getAllocatedList,
   getRolePageList,
   updateRole,
   updateRoleStatus,
   getRoleWithDeptTree,
+  getUnallocatedList,
   updateRoleDataScope,
   getRolePermissions,
-  assignRolePermissions
+  assignRolePermissions,
+  selectAuthAll
 } from '@/api/role'
 import {getPermissionList} from '@/api/permission'
 import {PERMS} from '@/utils/permCode'
@@ -343,10 +509,39 @@ export default {
         dataScope: '1',
         deptCheckStrictly: 1
       },
+      assignDialogVisible: false,
+      assignActiveTab: 'allocated',
+      assignRole: {
+        id: null,
+        roleName: ''
+      },
+      allocatedLoading: false,
+      allocatedTotal: 0,
+      allocatedList: [],
+      allocatedSelection: [],
+      allocatedQuery: {
+        pageNum: 1,
+        pageSize: 10,
+        username: '',
+        phone: ''
+      },
+      unallocatedLoading: false,
+      unallocatedTotal: 0,
+      unallocatedList: [],
+      unallocatedSelection: [],
+      unallocatedQuery: {
+        pageNum: 1,
+        pageSize: 10,
+        username: '',
+        phone: ''
+      },
       PERMS
     }
   },
   computed: {
+    assignDialogTitle() {
+      return this.assignRole.roleName ? `分配用户 - ${this.assignRole.roleName}` : '分配用户'
+    },
     parentChildLink: {
       get() {
         return this.dataScopeForm.deptCheckStrictly === 1
@@ -570,6 +765,172 @@ export default {
         console.error(error)
       }
     },
+    openAssignUser(row) {
+      this.assignRole = {
+        id: row.id,
+        roleName: row.roleName
+      }
+      this.assignActiveTab = 'allocated'
+      this.resetAllocatedQuery()
+      this.resetUnallocatedQuery()
+      this.allocatedList = []
+      this.unallocatedList = []
+      this.allocatedTotal = 0
+      this.unallocatedTotal = 0
+      this.assignDialogVisible = true
+      this.fetchAllocatedList()
+    },
+    async fetchAllocatedList() {
+      if (!this.assignRole.id) {
+        return
+      }
+      this.allocatedLoading = true
+      try {
+        const data = await getAllocatedList({
+          ...this.allocatedQuery,
+          roleId: this.assignRole.id
+        })
+        this.allocatedList = data.records || []
+        this.allocatedTotal = Number(data.total || 0)
+        this.allocatedSelection = []
+      } catch (error) {
+        console.error(error)
+      } finally {
+        this.allocatedLoading = false
+      }
+    },
+    async fetchUnallocatedList() {
+      if (!this.assignRole.id) {
+        return
+      }
+      this.unallocatedLoading = true
+      try {
+        const data = await getUnallocatedList({
+          ...this.unallocatedQuery,
+          roleId: this.assignRole.id
+        })
+        this.unallocatedList = data.records || []
+        this.unallocatedTotal = Number(data.total || 0)
+        this.unallocatedSelection = []
+      } catch (error) {
+        console.error(error)
+      } finally {
+        this.unallocatedLoading = false
+      }
+    },
+    handleAssignTabClick(tab) {
+      if (tab.name === 'allocated') {
+        this.fetchAllocatedList()
+      } else if (tab.name === 'unallocated') {
+        this.fetchUnallocatedList()
+      }
+    },
+    handleAllocatedSearch() {
+      this.allocatedQuery.pageNum = 1
+      this.fetchAllocatedList()
+    },
+    handleAllocatedReset() {
+      this.resetAllocatedQuery()
+      this.fetchAllocatedList()
+    },
+    handleUnallocatedSearch() {
+      this.unallocatedQuery.pageNum = 1
+      this.fetchUnallocatedList()
+    },
+    handleUnallocatedReset() {
+      this.resetUnallocatedQuery()
+      this.fetchUnallocatedList()
+    },
+    handleAllocatedPageChange(page) {
+      this.allocatedQuery.pageNum = page
+      this.fetchAllocatedList()
+    },
+    handleAllocatedSizeChange(size) {
+      this.allocatedQuery.pageSize = size
+      this.allocatedQuery.pageNum = 1
+      this.fetchAllocatedList()
+    },
+    handleUnallocatedPageChange(page) {
+      this.unallocatedQuery.pageNum = page
+      this.fetchUnallocatedList()
+    },
+    handleUnallocatedSizeChange(size) {
+      this.unallocatedQuery.pageSize = size
+      this.unallocatedQuery.pageNum = 1
+      this.fetchUnallocatedList()
+    },
+    handleAllocatedSelectionChange(selection) {
+      this.allocatedSelection = selection || []
+    },
+    handleUnallocatedSelectionChange(selection) {
+      this.unallocatedSelection = selection || []
+    },
+    async handleCancelAuth(row) {
+      const roleId = this.assignRole.id
+      const userId = row ? (row.id || row.userId) : null
+      if (!roleId || !userId) {
+        return
+      }
+      this.$confirm(`确认取消用户 ${row.username || row.nickname || ''} 的授权吗？`, '提示', {type: 'warning'})
+        .then(async () => {
+          await cancelAuth({roleId, userId})
+          Message.success('取消授权成功')
+          this.fetchAllocatedList()
+        })
+        .catch(() => {
+        })
+    },
+    async handleCancelAuthAll() {
+      const roleId = this.assignRole.id
+      const userIds = this.allocatedSelection.map(item => item.id || item.userId).filter(Boolean)
+      if (!roleId || userIds.length === 0) {
+        return
+      }
+      this.$confirm('确认批量取消授权吗？', '提示', {type: 'warning'})
+        .then(async () => {
+          await cancelAuthAll({roleId, userIds})
+          Message.success('批量取消成功')
+          this.fetchAllocatedList()
+        })
+        .catch(() => {
+        })
+    },
+    async handleSelectAuth(row) {
+      const roleId = this.assignRole.id
+      const userId = row ? (row.id || row.userId) : null
+      if (!roleId || !userId) {
+        return
+      }
+      await selectAuthAll({roleId, userIds: [userId]})
+      Message.success('授权成功')
+      this.fetchUnallocatedList()
+    },
+    async handleSelectAuthAll() {
+      const roleId = this.assignRole.id
+      const userIds = this.unallocatedSelection.map(item => item.id || item.userId).filter(Boolean)
+      if (!roleId || userIds.length === 0) {
+        return
+      }
+      await selectAuthAll({roleId, userIds})
+      Message.success('批量授权成功')
+      this.fetchUnallocatedList()
+    },
+    resetAllocatedQuery() {
+      this.allocatedQuery = {
+        pageNum: 1,
+        pageSize: 10,
+        username: '',
+        phone: ''
+      }
+    },
+    resetUnallocatedQuery() {
+      this.unallocatedQuery = {
+        pageNum: 1,
+        pageSize: 10,
+        username: '',
+        phone: ''
+      }
+    },
     async saveDataScope() {
       try {
         const tree = this.$refs.deptTree
@@ -774,6 +1135,10 @@ export default {
   display: flex;
   align-items: center;
   gap: 16px;
+  margin-bottom: 8px;
+}
+
+.assign-toolbar {
   margin-bottom: 8px;
 }
 </style>

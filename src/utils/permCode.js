@@ -18,7 +18,8 @@ export const PERMS = Object.freeze({
     delete: 'system:role:delete',
     status: 'system:role:status',
     permList: 'system:role:perm:list',
-    dataScope: 'system:role:dataScope'
+    dataScope: 'system:role:dataScope',
+    assignUser: 'system:role:assignUser'
   },
   // 菜单管理
   menu: {
