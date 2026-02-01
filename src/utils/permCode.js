@@ -3,84 +3,84 @@ export const PERMS = Object.freeze({
   // 用户管理
   user: {
     page: 'system:user:page',
-    add: 'system:user:add',
-    update: 'system:user:update',
-    delete: 'system:user:delete',
-    status: 'system:user:status',
-    resetPwd: 'system:user:resetPwd',
-    kick: 'system:user:kick'
+    add: 'system:user:add:btn',
+    update: 'system:user:update:btn',
+    delete: 'system:user:delete:btn',
+    status: 'system:user:status:btn',
+    resetPwd: 'system:user:resetPwd:btn',
+    kick: 'system:user:kick:btn'
   },
   // 角色管理
   role: {
     page: 'system:role:page',
-    add: 'system:role:add',
-    update: 'system:role:update',
-    delete: 'system:role:delete',
-    status: 'system:role:status',
-    permList: 'system:role:perm:list',
-    dataScope: 'system:role:dataScope',
-    assignUser: 'system:role:assignUser'
+    add: 'system:role:add:btn',
+    update: 'system:role:update:btn',
+    delete: 'system:role:delete:btn',
+    status: 'system:role:status:btn',
+    permList: 'system:role:permConfig:btn',
+    dataScope: 'system:role:dataScope:btn',
+    assignUser: 'system:role:assignUser:btn'
   },
   // 菜单管理
   menu: {
     page: 'system:menu:page',
-    add: 'system:menu:add',
-    update: 'system:menu:update',
-    delete: 'system:menu:delete',
-    permList: 'system:menu:perm:list'
+    add: 'system:menu:add:btn',
+    update: 'system:menu:update:btn',
+    delete: 'system:menu:delete:btn',
+    permList: 'system:menu:permConfig:btn'
   },
   // 部门管理
   dept: {
-    add: 'system:dept:add',
-    update: 'system:dept:update',
-    delete: 'system:dept:delete'
+    add: 'system:dept:add:btn',
+    update: 'system:dept:update:btn',
+    delete: 'system:dept:delete:btn'
   },
   // 权限管理
   permission: {
     page: 'system:permission:page',
-    add: 'system:permission:add',
-    update: 'system:permission:update',
-    effective: 'system:permission:effective'
+    add: 'system:permission:add:btn',
+    update: 'system:permission:update:btn',
+    effective: 'system:permission:effective:btn'
   },
   // 资源管理
   resource: {
-    add: 'system:resource:add',
-    update: 'system:resource:update',
-    delete: 'system:resource:delete'
+    add: 'system:resource:add:btn',
+    update: 'system:resource:update:btn',
+    delete: 'system:resource:delete:btn'
   },
   // 字典管理
   dict: {
-    add: 'system:dict:add',
-    update: 'system:dict:update',
-    delete: 'system:dict:delete'
+    add: 'system:dict:add:btn',
+    update: 'system:dict:update:btn',
+    delete: 'system:dict:delete:btn'
   },
   // 白名单管理
   whitelist: {
-    add: 'system:whitelist:add',
-    update: 'system:whitelist:update',
-    delete: 'system:whitelist:delete'
+    add: 'system:whitelist:add:btn',
+    update: 'system:whitelist:update:btn',
+    delete: 'system:whitelist:delete:btn'
   },
   // 通知管理
   notice: {
     page: 'system:notice:page',
-    add: 'system:notice:add',
-    update: 'system:notice:update',
-    delete: 'system:notice:delete',
-    publish: 'system:notice:publish',
-    revoke: 'system:notice:revoke'
+    add: 'system:notice:add:btn',
+    update: 'system:notice:update:btn',
+    delete: 'system:notice:delete:btn',
+    publish: 'system:notice:publish:btn',
+    revoke: 'system:notice:revoke:btn'
   },
   // 文件管理
   file: {
-    upload: 'system:file:upload',
-    uploadBatch: 'system:file:uploadBatch',
-    tempDownload: 'system:file:tempDownload',
-    download: 'system:file:download',
-    delete: 'system:file:delete'
+    upload: 'system:file:upload:btn',
+    uploadBatch: 'system:file:uploadBatch:btn',
+    tempDownload: 'system:file:tempDownload:btn',
+    download: 'system:file:download:btn',
+    delete: 'system:file:delete:btn'
   },
   // 日志管理
   log: {
     loginPage: 'system:loginLog:page',
-    loginExport: 'system:loginLog:export',
-    operateExport: 'system:operateLog:export'
+    loginExport: 'system:loginLog:export:btn',
+    operateExport: 'system:operateLog:export:btn'
   }
 })
