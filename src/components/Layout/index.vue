@@ -572,4 +572,18 @@ export default {
 .menu-search-fade-leave-to {
   opacity: 0;
 }
+
+.badge-item ::v-deep .el-badge__content {
+  border: none;
+  background: #f56c6c;
+  color: #ffffff;
+  height: 12px;
+  min-width: 12px;
+  line-height: 12px;
+  border-radius: 6px;
+  padding: 0 2px;
+  font-size: 8px;
+  font-weight: 600;
+  transform: translate(20px, 4px);
+}
 </style>
