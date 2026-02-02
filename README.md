@@ -46,15 +46,16 @@ Aegis是一个功能完整的企业级RBAC(Role-Based Access Control)权限管�
 
 ### 🧱 技术栈
 
-| 技术 | 版本      | 说明 |
-|------|---------|------|
-| Vue | 2.7.16  | 前端框架 |
-| Vue Router | 3.6.2   | 路由管理 |
-| Vuex | 3.6.2   | 状态管理 |
-| Element UI | 2.15.14 | 组件库 |
-| Axios | 1.11.0  | HTTP 请求 |
-| JSEncrypt | 3.5.4   | RSA 加密 |
-| NProgress | 0.2.0   | 路由进度条 |
+| 技术         | 版本      | 说明      |
+|------------|---------|---------|
+| Vue        | 2.7.16  | 前端框架    |
+| Vue Router | 3.6.2   | 路由管理    |
+| Vuex       | 3.6.2   | 状态管理    |
+| Element UI | 2.15.14 | 组件库     |
+| Axios      | 1.11.0  | HTTP 请求 |
+| Echarts    | 4.9.0   | 图表展示    |
+| JSEncrypt  | 3.5.4   | RSA 加密  |
+| NProgress  | 0.2.0   | 路由进度条   |
 
 ## 🚀 快速开始
 
@@ -207,6 +208,7 @@ src/
 - [Vue Router](https://router.vuejs.org/)- 路由管理
 - [Element UI](https://element.eleme.cn/#/zh-CN) - 组件库
 - [Axios](https://axios-http.com/) - HTTP请求库
+- [Echarts](https://echarts.apache.org/zh/index.html) - 图表库
 
 ## 📞 支持
 
