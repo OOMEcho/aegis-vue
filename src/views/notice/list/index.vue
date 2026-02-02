@@ -148,7 +148,10 @@
           </el-select>
         </el-form-item>
         <el-form-item label="通知内容" prop="noticeContent">
-          <el-input v-model="form.noticeContent" type="textarea" rows="6"/>
+          <div class="notice-editor">
+            <div ref="noticeToolbar" class="notice-editor-toolbar"></div>
+            <div ref="noticeEditor" class="notice-editor-body"></div>
+          </div>
         </el-form-item>
         <el-form-item label="发布时间" prop="publishTime">
           <el-date-picker
@@ -167,6 +170,7 @@
 </template>
 
 <script>
+import Editor from 'wangeditor'
 import {
   addNotice,
   deleteNotice,
@@ -199,6 +203,7 @@ export default {
       dialogVisible: false,
       dialogTitle: '',
       form: this.getDefaultForm(),
+      editor: null,
       rules: {
         noticeTitle: [{required: true, message: '请输入通知标题', trigger: 'blur'}],
         noticeType: [{required: true, message: '请选择通知类型', trigger: 'change'}],
@@ -316,7 +321,13 @@ export default {
       this.dialogTitle = '新增通知'
       this.form = this.getDefaultForm()
       this.dialogVisible = true
-      this.$nextTick(() => this.$refs.formRef && this.$refs.formRef.clearValidate())
+      this.$nextTick(() => {
+        if (this.$refs.formRef) {
+          this.$refs.formRef.clearValidate()
+        }
+        this.initEditor()
+        this.setEditorContent(this.form.noticeContent)
+      })
     },
     async handleEdit(row) {
       this.dialogTitle = '编辑通知'
@@ -338,9 +349,58 @@ export default {
           publishTime: detail.publishTime || ''
         }
         this.dialogVisible = true
-        this.$nextTick(() => this.$refs.formRef && this.$refs.formRef.clearValidate())
+        this.$nextTick(() => {
+          if (this.$refs.formRef) {
+            this.$refs.formRef.clearValidate()
+          }
+          this.initEditor()
+          this.setEditorContent(this.form.noticeContent)
+        })
       } catch (error) {
         console.error(error)
+      }
+    },
+    initEditor() {
+      if (this.editor) {
+        return
+      }
+      if (!this.$refs.noticeEditor || !this.$refs.noticeToolbar) {
+        return
+      }
+      const editor = new Editor(this.$refs.noticeToolbar, this.$refs.noticeEditor)
+      editor.config.menus = [
+        'bold',
+        'italic',
+        'underline',
+        'head',
+        'list',
+        'link',
+        'quote',
+        'code',
+        'undo',
+        'redo'
+      ]
+      editor.config.showFullScreen = false
+      editor.config.onchange = html => {
+        const text = editor.txt.text().trim()
+        this.form.noticeContent = text ? html : ''
+      }
+      editor.config.linkCheck = (text, link) => {
+        if (!/^https?:\/\//i.test(link || '')) {
+          return '链接仅支持 http/https'
+        }
+        return true
+      }
+      editor.config.linkImgCallback = () => {}
+      editor.config.uploadImgShowBase64 = false
+      editor.config.uploadImgMaxLength = 0
+      editor.config.pasteFilterStyle = true
+      editor.create()
+      this.editor = editor
+    },
+    setEditorContent(content) {
+      if (this.editor) {
+        this.editor.txt.html(content || '')
       }
     },
     submitForm() {
@@ -393,6 +453,12 @@ export default {
         .catch(() => {
         })
     }
+  },
+  beforeDestroy() {
+    if (this.editor) {
+      this.editor.destroy()
+      this.editor = null
+    }
   }
 }
 </script>
@@ -402,5 +468,19 @@ export default {
 .page-pagination {
   margin-top: 12px;
   text-align: right;
+}
+
+.notice-editor {
+  border: 1px solid #e1e8ff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.notice-editor-toolbar {
+  border-bottom: 1px solid #e1e8ff;
+}
+
+.notice-editor-body {
+  min-height: 220px;
 }
 </style>

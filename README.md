@@ -54,6 +54,7 @@ Aegis是一个功能完整的企业级RBAC(Role-Based Access Control)权限管�
 | Element UI | 2.15.14 | 组件库     |
 | Axios      | 1.11.0  | HTTP 请求 |
 | Echarts    | 4.9.0   | 图表展示    |
+| wangeditor | 4.7.15  | 富文本     |
 | JSEncrypt  | 3.5.4   | RSA 加密  |
 | NProgress  | 0.2.0   | 路由进度条   |
 
@@ -209,6 +210,7 @@ src/
 - [Element UI](https://element.eleme.cn/#/zh-CN) - 组件库
 - [Axios](https://axios-http.com/) - HTTP请求库
 - [Echarts](https://echarts.apache.org/zh/index.html) - 图表库
+- [wangeditor](https://www.wangeditor.com/) - 富文本编辑器
 
 ## 📞 支持
 

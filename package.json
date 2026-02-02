@@ -10,6 +10,7 @@
   "dependencies": {
     "axios": "^1.11.0",
     "core-js": "^3.8.3",
+    "dompurify": "^3.3.1",
     "echarts": "^4.9.0",
     "element-ui": "^2.15.14",
     "jsencrypt": "^3.5.4",
@@ -17,7 +18,8 @@
     "vue": "^2.7.16",
     "vue-echarts": "^4.1.0",
     "vue-router": "^3.6.5",
-    "vuex": "^3.6.2"
+    "vuex": "^3.6.2",
+    "wangeditor": "^4.7.15"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",

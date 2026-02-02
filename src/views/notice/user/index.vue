@@ -74,10 +74,15 @@
 
     <el-dialog title="通知详情" :visible.sync="detailVisible" width="600px">
       <div class="notice-detail">
-        <h3>{{ detail.noticeTitle }}</h3>
-        <p class="detail-meta">{{ noticeTypeText(detail.noticeType) }} | {{ detail.publishTime || '-' }}</p>
-        <div class="detail-content">
-          {{ detail.noticeContent }}
+        <div class="detail-header">
+          <div class="detail-title">{{ detail.noticeTitle }}</div>
+          <el-tag size="mini" type="info">{{ noticeTypeText(detail.noticeType) }}</el-tag>
+        </div>
+        <div class="detail-meta">
+          <span>发布时间：{{ detail.publishTime || '-' }}</span>
+        </div>
+        <div class="detail-content-box">
+          <div class="detail-content" v-html="sanitizedContent"></div>
         </div>
       </div>
       <div slot="footer" class="dialog-footer">
@@ -88,6 +93,7 @@
 </template>
 
 <script>
+import DOMPurify from 'dompurify'
 import {getUserNoticeDetail, getUserNoticePageList} from '@/api/notice'
 
 export default {
@@ -106,6 +112,16 @@ export default {
       tableData: [],
       detailVisible: false,
       detail: {}
+    }
+  },
+  computed: {
+    sanitizedContent() {
+      const content = this.detail.noticeContent || ''
+      return DOMPurify.sanitize(content, {
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a', 'blockquote', 'code', 'pre'],
+        ALLOWED_ATTR: ['href', 'target', 'rel'],
+        ALLOWED_URI_REGEXP: /^https?:\/\//i
+      })
     }
   },
   created() {
@@ -170,17 +186,82 @@ export default {
   text-align: right;
 }
 
-.notice-detail h3 {
-  margin: 0 0 8px;
+.notice-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.detail-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .detail-meta {
-  color: #999;
-  margin-bottom: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.detail-content-box {
+  background: #f8faff;
+  border: 1px solid #e1e8ff;
+  border-radius: 12px;
+  padding: 12px 14px;
 }
 
 .detail-content {
   white-space: pre-line;
-  line-height: 1.6;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+::v-deep .detail-content p {
+  margin: 0 0 8px;
+}
+
+::v-deep .detail-content ul,
+::v-deep .detail-content ol {
+  padding-left: 18px;
+  margin: 0 0 8px;
+}
+
+::v-deep .detail-content a {
+  color: #4f70ff;
+  text-decoration: none;
+}
+
+::v-deep .detail-content a:hover {
+  text-decoration: underline;
+}
+
+::v-deep .detail-content blockquote {
+  margin: 0 0 8px;
+  padding: 6px 12px;
+  border-left: 3px solid #4f70ff;
+  background: #f4f7ff;
+  color: #5b6b84;
+}
+
+::v-deep .detail-content code,
+::v-deep .detail-content pre {
+  font-family: "Fira Code", "JetBrains Mono", Consolas, monospace;
+}
+
+::v-deep .detail-content pre {
+  background: #f7f9ff;
+  border: 1px solid #e1e8ff;
+  border-radius: 10px;
+  padding: 10px 12px;
+  overflow: auto;
 }
 </style>
