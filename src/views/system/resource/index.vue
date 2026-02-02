@@ -138,14 +138,14 @@
                     <div class="perm-collapse-title">
                       <i class="el-icon-link"></i>
                       <span>API</span>
-                      <span class="perm-count">{{ permGroupStats.A.total }}</span>
-                      <span v-if="permGroupStats.A.checked" class="perm-selected">已选 {{ permGroupStats.A.checked }}</span>
+                      <span class="perm-count">{{ permStats.total }}</span>
+                      <span v-if="permStats.checked" class="perm-selected">已选 {{ permStats.checked }}</span>
                     </div>
                   </template>
                   <div class="perm-group">
                     <div class="perm-grid">
                       <button
-                        v-for="perm in permGrouped.A"
+                        v-for="perm in permApiOptions"
                         :key="perm.permCode"
                         type="button"
                         class="perm-item"
@@ -155,57 +155,7 @@
                         <span class="perm-code">{{ perm.permCode }}</span>
                       </button>
                     </div>
-                    <div v-if="!permGrouped.A.length" class="perm-empty">暂无匹配权限</div>
-                  </div>
-                </el-collapse-item>
-                <el-collapse-item name="M">
-                  <template slot="title">
-                    <div class="perm-collapse-title">
-                      <i class="el-icon-document"></i>
-                      <span>页面</span>
-                      <span class="perm-count">{{ permGroupStats.M.total }}</span>
-                      <span v-if="permGroupStats.M.checked" class="perm-selected">已选 {{ permGroupStats.M.checked }}</span>
-                    </div>
-                  </template>
-                  <div class="perm-group">
-                    <div class="perm-grid">
-                      <button
-                        v-for="perm in permGrouped.M"
-                        :key="perm.permCode"
-                        type="button"
-                        class="perm-item"
-                        :class="{ 'is-active': perm.permCode === form.permCode }"
-                        @click="selectPermCode(perm)">
-                        <span class="perm-name">{{ perm.permName }}</span>
-                        <span class="perm-code">{{ perm.permCode }}</span>
-                      </button>
-                    </div>
-                    <div v-if="!permGrouped.M.length" class="perm-empty">暂无匹配权限</div>
-                  </div>
-                </el-collapse-item>
-                <el-collapse-item name="B">
-                  <template slot="title">
-                    <div class="perm-collapse-title">
-                      <i class="el-icon-s-operation"></i>
-                      <span>按钮</span>
-                      <span class="perm-count">{{ permGroupStats.B.total }}</span>
-                      <span v-if="permGroupStats.B.checked" class="perm-selected">已选 {{ permGroupStats.B.checked }}</span>
-                    </div>
-                  </template>
-                  <div class="perm-group">
-                    <div class="perm-grid">
-                      <button
-                        v-for="perm in permGrouped.B"
-                        :key="perm.permCode"
-                        type="button"
-                        class="perm-item"
-                        :class="{ 'is-active': perm.permCode === form.permCode }"
-                        @click="selectPermCode(perm)">
-                        <span class="perm-name">{{ perm.permName }}</span>
-                        <span class="perm-code">{{ perm.permCode }}</span>
-                      </button>
-                    </div>
-                    <div v-if="!permGrouped.B.length" class="perm-empty">暂无匹配权限</div>
+                    <div v-if="!permApiOptions.length" class="perm-empty">暂无匹配权限</div>
                   </div>
                 </el-collapse-item>
               </el-collapse>
@@ -290,31 +240,14 @@ export default {
         return name.includes(keyword) || code.includes(keyword)
       })
     },
-    permGrouped() {
-      const groups = {A: [], M: [], B: []}
-      this.filteredPermOptions.forEach(item => {
-        const type = item.permType || 'M'
-        if (groups[type]) {
-          groups[type].push(item)
-        }
-      })
-      return groups
+    permApiOptions() {
+      return this.filteredPermOptions.filter(item => (item.permType || 'A') === 'A')
     },
-    permGroupStats() {
+    permStats() {
       const current = this.form.permCode
       return {
-        A: {
-          total: this.permGrouped.A.length,
-          checked: current && this.permGrouped.A.some(item => item.permCode === current) ? 1 : 0
-        },
-        M: {
-          total: this.permGrouped.M.length,
-          checked: current && this.permGrouped.M.some(item => item.permCode === current) ? 1 : 0
-        },
-        B: {
-          total: this.permGrouped.B.length,
-          checked: current && this.permGrouped.B.some(item => item.permCode === current) ? 1 : 0
-        }
+        total: this.permApiOptions.length,
+        checked: current && this.permApiOptions.some(item => item.permCode === current) ? 1 : 0
       }
     }
   },
@@ -348,7 +281,7 @@ export default {
     },
     async fetchPermissionOptions() {
       try {
-        this.permOptions = await getPermissionList({})
+        this.permOptions = await getPermissionList({permType: 'A'})
         this.syncPermLabel()
       } catch (error) {
         console.error(error)
