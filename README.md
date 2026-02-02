@@ -176,10 +176,23 @@ src/
 
 ## 🖼️ 项目截图
 
-> 请替换为实际截图路径
-
-![登录页](<SCREENSHOT_PATH_1>)
-![仪表盘](<SCREENSHOT_PATH_2>)
+![登录页](docs/screenshots/login.png)
+![注册页](docs/screenshots/register.png)
+![验证码](docs/screenshots/loging.png)
+![仪表盘](docs/screenshots/dashboard.png)
+![个人中心](docs/screenshots/profile.png)
+![用户管理](docs/screenshots/user.png)
+![角色管理](docs/screenshots/role.png)
+![菜单管理](docs/screenshots/menu.png)
+![权限管理](docs/screenshots/permission.png)
+![资源管理](docs/screenshots/resouce.png)
+![部门管理](docs/screenshots/dept.png)
+![字典管理](docs/screenshots/dictionary.png)
+![白名单管理](docs/screenshots/whitlist.png)
+![登录日志](docs/screenshots/login-log.png)
+![操作日志](docs/screenshots/operation.png)
+![通知公告](docs/screenshots/notice.png)
+![我的通知](docs/screenshots/notice-user.png)
 
 ## 🤝 贡献指南
 
