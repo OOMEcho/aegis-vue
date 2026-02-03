@@ -7,7 +7,9 @@ import router, {resetRouter} from '@/router'
 
 // 基础配置
 const instance = axios.create({
-  baseURL: process.env.NODE_ENV === 'production' ? '/prod-api' : '/api',
+  baseURL: process.env.NODE_ENV === 'production'
+    ? process.env.VUE_APP_BASE_API  // 生产环境：https://admin.example.cn（跨域请求）
+    : process.env.VUE_APP_BASE_PRE,  // 开发环境：/api（代理转发）
   timeout: 15000,
   withCredentials: true, // 允许携带 cookie
   headers: {
