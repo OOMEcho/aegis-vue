@@ -1,5 +1,23 @@
 <template>
   <div class="login-container">
+    <div
+      v-if="demoReset && demoReset.enabled && !demoResetError"
+      class="demo-reset-float"
+    >
+      <div class="demo-reset-title">演示数据重置</div>
+      <div class="demo-reset-row">
+        <span class="demo-reset-label">距下次重置</span>
+        <span class="demo-reset-value">{{ formatCountdown(remainingSeconds) }}</span>
+      </div>
+      <div class="demo-reset-row">
+        <span class="demo-reset-label">下次重置时间</span>
+        <span class="demo-reset-value">{{ demoReset.nextResetTime }}</span>
+      </div>
+      <div class="demo-reset-row">
+        <span class="demo-reset-label">上次重置时间</span>
+        <span class="demo-reset-value">{{ demoReset.lastResetTime || '--' }}</span>
+      </div>
+    </div>
     <div class="login-shell">
       <section class="login-hero">
         <div class="brand">
@@ -152,7 +170,7 @@
 
 <script>
 import SlideCaptcha from '@/components/SlideCaptcha/index.vue';
-import {login} from '@/api/login';
+import {login, getDemoResetCountdown} from '@/api/login';
 import {getPublicKey, sendEmailCode} from '@/api/profile';
 import {rsaEncrypt} from '@/utils/encrypt';
 
@@ -212,20 +230,70 @@ export default {
       isLoggingIn: false,
       publicKey: '',
       countdown: 0, // 验证码倒计时
-      timer: null
+      timer: null,
+      demoReset: null,
+      demoResetLoading: false,
+      demoResetError: false,
+      demoResetTimer: null,
+      remainingSeconds: 0
     };
   },
   created() {
     // 页面加载时获取公钥
     this.fetchPublicKey();
+    this.fetchDemoResetCountdown();
   },
   beforeDestroy() {
     // 清除倒计时
     if (this.timer) {
       clearInterval(this.timer);
     }
+    if (this.demoResetTimer) {
+      clearInterval(this.demoResetTimer);
+    }
   },
   methods: {
+    async fetchDemoResetCountdown() {
+      this.demoResetLoading = true;
+      this.demoResetError = false;
+      try {
+        const data = await getDemoResetCountdown();
+        this.demoReset = data;
+        if (data && data.enabled) {
+          const seconds = Number(data.secondsToNextReset || 0);
+          this.remainingSeconds = seconds > 0 ? seconds : 0;
+          if (this.demoResetTimer) {
+            clearInterval(this.demoResetTimer);
+          }
+          this.demoResetTimer = setInterval(() => {
+            if (this.remainingSeconds > 0) {
+              this.remainingSeconds -= 1;
+            } else {
+              clearInterval(this.demoResetTimer);
+              this.demoResetTimer = null;
+            }
+          }, 1000);
+        } else {
+          this.remainingSeconds = 0;
+          if (this.demoResetTimer) {
+            clearInterval(this.demoResetTimer);
+            this.demoResetTimer = null;
+          }
+        }
+      } catch (error) {
+        this.demoResetError = true;
+      } finally {
+        this.demoResetLoading = false;
+      }
+    },
+    formatCountdown(seconds) {
+      const total = Number(seconds || 0);
+      const safeTotal = total > 0 ? total : 0;
+      const hours = Math.floor(safeTotal / 3600);
+      const minutes = Math.floor((safeTotal % 3600) / 60);
+      const secs = safeTotal % 60;
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    },
     // 获取RSA公钥
     async fetchPublicKey() {
       try {
@@ -398,6 +466,46 @@ export default {
   overflow: hidden;
   font-family: "Manrope", "Noto Sans SC", "PingFang SC", sans-serif;
   box-sizing: border-box;
+}
+
+.demo-reset-float {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(79, 112, 255, 0.12);
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 18px 40px rgba(20, 34, 74, 0.12);
+  min-width: 240px;
+  backdrop-filter: blur(8px);
+}
+
+.demo-reset-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2a3553;
+  margin-bottom: 10px;
+}
+
+.demo-reset-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: #4b5a78;
+  margin-top: 6px;
+}
+
+.demo-reset-label {
+  color: #6a7896;
+}
+
+.demo-reset-value {
+  font-weight: 600;
+  color: #2f3a57;
 }
 
 .login-container::before,
@@ -620,6 +728,10 @@ export default {
   .login-container {
     padding: 16px;
     height: auto;
+  }
+
+  .demo-reset-float {
+    display: none;
   }
 
   .login-hero {

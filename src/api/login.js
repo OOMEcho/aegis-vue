@@ -1,4 +1,4 @@
-import {postRequest} from "@/utils/request"
+import {postRequest, getRequest} from "@/utils/request"
 
 /**
  * 登录接口 - 按类型统一提交
@@ -36,4 +36,11 @@ export function login(params) {
   }
 
   return postRequest('/login', payload);
+}
+
+/**
+ * 获取重置倒计时信息
+ */
+export function getDemoResetCountdown() {
+  return getRequest('/demo/reset/countdown')
 }
