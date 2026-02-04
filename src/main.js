@@ -15,7 +15,7 @@ Vue.use(ElementUI);
 
 Vue.config.productionTip = false
 
-Vue.config.devtools = true
+Vue.config.devtools = process.env.NODE_ENV === 'development'
 
 Vue.use(VueRouter);
 
