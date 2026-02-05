@@ -6,6 +6,7 @@
 [![Element UI](https://img.shields.io/badge/ElementUI-2.15.14-blue.svg)](https://element.eleme.cn/#/zh-CN)
 [![Axios](https://img.shields.io/badge/Axios-1.11.0-yellow.svg)](https://element.eleme.cn/#/zh-CN)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/OOMEcho/aegis)
 ## 🍟 如果您觉得有帮助，请点右上角 "Star" 支持一下谢谢
 
 </div>
