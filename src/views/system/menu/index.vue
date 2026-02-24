@@ -287,13 +287,17 @@ export default {
 
     const validatePath = (rule, value, callback) => {
       if (!value) {
-        callback(new Error('请输入路由地址'))
-        return
+        return callback(new Error('请输入路由地址'))
       }
-      if (!/^\/?[A-Za-z]+$/.test(value)) {
-        callback(new Error('路由地址仅支持英文字母，允许以“/”开头'))
-        return
+
+      const reg = /^\/[A-Za-z0-9-]+(\/[A-Za-z0-9-]+)*$/
+
+      if (!reg.test(value)) {
+        return callback(
+          new Error('路由地址需以 / 开头，仅支持字母、数字、-，可多级路径')
+        )
       }
+
       callback()
     }
 
