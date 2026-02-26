@@ -1,4 +1,4 @@
-import {getRequest, postRequest, putRequest, deleteRequest} from "@/utils/request"
+import {getRequest, postRequest, putRequest} from "@/utils/request"
 
 /**
  * 权限分页列表
@@ -49,5 +49,5 @@ export function updatePermission(data) {
  * @param {number} id 权限ID
  */
 export function effectivePermission(id) {
-  return deleteRequest(`/permissions/effective/${id}`)
+  return getRequest(`/permissions/effective/${id}`)
 }
