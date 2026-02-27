@@ -61,7 +61,7 @@ export function getNoticePageList(params) {
  * @param {number} id 通知ID
  */
 export function publishNotice(id) {
-  return getRequest(`/notice/publish/${id}`)
+  return putRequest(`/notice/publish/${id}`)
 }
 
 /**
@@ -69,7 +69,7 @@ export function publishNotice(id) {
  * @param {number} id 通知ID
  */
 export function revokeNotice(id) {
-  return getRequest(`/notice/revoke/${id}`)
+  return putRequest(`/notice/revoke/${id}`)
 }
 
 /**

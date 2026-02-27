@@ -49,5 +49,5 @@ export function updatePermission(data) {
  * @param {number} id 权限ID
  */
 export function effectivePermission(id) {
-  return getRequest(`/permissions/effective/${id}`)
+  return putRequest(`/permissions/effective/${id}`)
 }
