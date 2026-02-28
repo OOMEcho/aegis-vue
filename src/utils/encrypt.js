@@ -12,7 +12,7 @@ export function rsaEncrypt(data, publicKey) {
   const pub = forge.pki.publicKeyFromPem(pemKey);
   const encrypted = pub.encrypt(data, 'RSA-OAEP', {
     md: forge.md.sha256.create(),
-    mgf1: { md: forge.md.sha256.create() }
+    mgf1: { md: forge.md.sha1.create() }
   });
   return forge.util.encode64(encrypted);
 }
