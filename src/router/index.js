@@ -147,6 +147,7 @@ router.afterEach((to) => {
 
 export function resetRouter() {
   router.matcher = createRouter().matcher
+  is404Added = false
 }
 
 export default router;

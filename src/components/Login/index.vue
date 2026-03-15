@@ -404,12 +404,6 @@ export default {
         // 保存token
         await this.$store.dispatch('auth/saveToken', data)
 
-        const userInfo = await this.$store.dispatch('auth/fetchUserInfo')
-        const accessRoutes = await this.$store.dispatch('permission/generateRoutes', userInfo)
-        accessRoutes.forEach(route => {
-          this.$router.addRoute('layout', route)
-        })
-
         // 延迟跳转
         setTimeout(() => {
           this.$router.push('/');
