@@ -1,4 +1,13 @@
+import axios from 'axios'
 import {getRequest, postRequest, deleteRequest} from "@/utils/request"
+
+/**
+ * 文件分页列表
+ * @param {Object} params 查询参数
+ */
+export function getFilePageList(params) {
+  return getRequest('/file/pageList', params)
+}
 
 /**
  * 文件删除
@@ -49,6 +58,27 @@ export function getPresignedUploadUrl(fileName, directory) {
     params.directory = directory
   }
   return getRequest('/file/presigned-upload-url', params)
+}
+
+/**
+ * 预签名上传完成入库
+ * @param {Object} data 完成信息
+ */
+export function completePresignedUpload(data) {
+  return postRequest('/file/presigned-upload-complete', data)
+}
+
+/**
+ * 直传文件到预签名URL
+ * @param {string} uploadUrl 预签名上传URL
+ * @param {File|Blob} file 文件对象
+ */
+export function uploadToPresignedUrl(uploadUrl, file) {
+  return axios.put(uploadUrl, file, {
+    headers: {
+      'Content-Type': file?.type || 'application/octet-stream'
+    }
+  })
 }
 
 /**
