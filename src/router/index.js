@@ -27,11 +27,17 @@ const routes = [
   {
     path: '/login',
     name: 'login',
+    meta: {
+      title: '登录'
+    },
     component: LoginComponent
   },
   {
     path: '/register',
     name: 'register',
+    meta: {
+      title: '注册'
+    },
     component: RegisterComponent
   },
   {
@@ -79,6 +85,18 @@ const createRouter = () => new VueRouter({
 
 const router = createRouter();
 let is404Added = false
+
+function resolvePageTitle(to) {
+  const matched = Array.isArray(to && to.matched) ? [...to.matched].reverse() : []
+  const routeRecord = matched.find(item => item.meta && item.meta.title)
+  if (routeRecord && routeRecord.meta && routeRecord.meta.title) {
+    return routeRecord.meta.title
+  }
+  if (to && to.meta && to.meta.title) {
+    return to.meta.title
+  }
+  return process.env.VUE_APP_TITLE || 'aegis'
+}
 
 router.beforeEach(async (to, from, next) => {
   NProgress.start()
@@ -137,6 +155,10 @@ router.beforeEach(async (to, from, next) => {
 })
 
 router.afterEach((to) => {
+  if (typeof document !== 'undefined') {
+    document.title = resolvePageTitle(to)
+  }
+
   if (to.path !== '/login' && to.path !== '/register' && to.path !== '/404') {
     if (to.meta && to.meta.title) {
       store.dispatch('tagsView/addView', to)
