@@ -1,9 +1,11 @@
 <template>
   <div class="page-container">
     <el-card>
-      <div slot="header" class="card-header">
-        <span>资源管理</span>
-      </div>
+      <template #header>
+        <div class="card-header">
+          <span>资源管理</span>
+        </div>
+      </template>
 
       <el-form :inline="true" :model="queryParams" class="search-form" size="small">
         <el-form-item label="请求方法">
@@ -31,13 +33,13 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="el-icon-search" @click="handleSearch">查询</el-button>
-          <el-button icon="el-icon-refresh" @click="handleReset">重置</el-button>
+          <el-button type="primary" icon="Search" @click="handleSearch">查询</el-button>
+          <el-button icon="Refresh" @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
 
       <div class="table-toolbar">
-        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="PERMS.resource.add" @click="handleAdd">
+        <el-button type="primary" size="small" icon="Plus" v-perm="PERMS.resource.add" @click="handleAdd">
           新增
         </el-button>
       </div>
@@ -48,28 +50,28 @@
         <el-table-column prop="permCode" label="权限编码" min-width="200"/>
         <el-table-column prop="remark" label="备注" min-width="160"/>
         <el-table-column label="状态" width="80">
-          <template slot-scope="scope">
-            <el-tag :type="statusTagType(scope.row.status)" size="mini">
+          <template #default="scope">
+            <el-tag :type="statusTagType(scope.row.status)" size="small">
               {{ dictLabel('DATA_STATUS', scope.row.status) }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" min-width="140" fixed="right">
-          <template slot-scope="scope">
+          <template #default="scope">
             <div class="action-buttons">
-              <el-tooltip v-perm="PERMS.resource.update" content="编辑" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-if="hasPerm(PERMS.resource.update)" content="编辑" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
-                  size="mini"
-                  icon="el-icon-edit"
+                  size="small"
+                  icon="Edit"
                   class="action-icon is-primary"
                   @click="handleEdit(scope.row)"/>
               </el-tooltip>
-              <el-tooltip v-perm="PERMS.resource.delete" content="删除" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-if="hasPerm(PERMS.resource.delete)" content="删除" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
-                  size="mini"
-                  icon="el-icon-delete"
+                  size="small"
+                  icon="Delete"
                   class="action-icon is-danger"
                   @click="handleDelete(scope.row)"/>
               </el-tooltip>
@@ -91,7 +93,7 @@
       </div>
     </el-card>
 
-    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="520px">
+    <el-dialog :title="dialogTitle" v-model="dialogVisible" width="520px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="请求方法" prop="requestMethod">
           <el-select v-model="form.requestMethod" placeholder="请选择请求方法">
@@ -111,14 +113,12 @@
             placeholder="请选择权限编码"
             readonly
             class="perm-input"
-            @click.native="togglePermPanel">
-            <template slot="suffix">
+            @click="togglePermPanel">
+            <template #suffix>
               <span class="dept-query-suffix">
-                <i
-                  v-if="permLabel"
-                  class="el-icon-circle-close dept-query-clear"
-                  @click.stop="clearPermSelect"></i>
-                <i class="el-icon-arrow-down dept-query-arrow"></i>
+                <el-icon class="dept-query-clear" v-if="permLabel"
+                  @click.stop="clearPermSelect"><CircleCloseFilled /></el-icon>
+                <el-icon class="dept-query-arrow"><ArrowDown /></el-icon>
               </span>
             </template>
           </el-input>
@@ -130,13 +130,13 @@
                   placeholder="搜索权限名称或编码"
                   size="small"
                   clearable
-                  prefix-icon="el-icon-search"/>
+                  prefix-icon="Search"/>
               </div>
               <el-collapse v-model="permCollapseActive" class="perm-collapse">
                 <el-collapse-item name="A">
-                  <template slot="title">
+                  <template #title>
                     <div class="perm-collapse-title">
-                      <i class="el-icon-link"></i>
+                      <el-icon><Link /></el-icon>
                       <span>API</span>
                       <span class="perm-count">{{ permStats.total }}</span>
                       <span v-if="permStats.checked" class="perm-selected">已选 {{ permStats.checked }}</span>
@@ -172,18 +172,23 @@
           </el-select>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" rows="3"/>
+          <el-input v-model="form.remark" type="textarea" :rows="3"/>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">确定</el-button>
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitForm">确定</el-button>
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, computed, nextTick } from 'vue'
+import type { FormInstance } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   addResource,
   deleteResource,
@@ -191,217 +196,230 @@ import {
   getResourcePageList,
   updateResource
 } from '@/api/resource'
-import {getPermissionList} from '@/api/permission'
-import {PERMS} from '@/utils/permCode'
-import {Message} from 'element-ui'
-import dictMixin from '@/mixins/dict'
+import { getPermissionList } from '@/api/permission'
+import { PERMS } from '@/utils/permCode'
+import { usePermission } from '@/composables/usePermission'
+import { useDict } from '@/composables/useDict'
 
-export default {
-  name: 'ResourcePage',
-  mixins: [dictMixin],
-  data() {
-    return {
-      loading: false,
-      total: 0,
-      queryParams: {
-        pageNum: 1,
-        pageSize: 10,
-        requestMethod: '',
-        requestUri: '',
-        permCode: '',
-        status: ''
-      },
-      tableData: [],
-      permOptions: [],
-      permKeyword: '',
-      permPanelVisible: false,
-      permLabel: '',
-      permCollapseActive: ['A'],
-      dialogVisible: false,
-      dialogTitle: '',
-      form: this.getDefaultForm(),
-      rules: {
-        requestMethod: [{required: true, message: '请选择请求方法', trigger: 'change'}],
-        requestUri: [{required: true, message: '请输入URI', trigger: 'blur'}],
-        permCode: [{required: true, message: '请选择权限编码', trigger: 'change'}]
-      },
-      PERMS
-    }
-  },
-  computed: {
-    filteredPermOptions() {
-      const keyword = this.permKeyword.trim().toLowerCase()
-      if (!keyword) {
-        return this.permOptions
-      }
-      return this.permOptions.filter(item => {
-        const name = (item.permName || '').toLowerCase()
-        const code = (item.permCode || '').toLowerCase()
-        return name.includes(keyword) || code.includes(keyword)
-      })
-    },
-    permApiOptions() {
-      return this.filteredPermOptions.filter(item => (item.permType || 'A') === 'A')
-    },
-    permStats() {
-      const current = this.form.permCode
-      return {
-        total: this.permApiOptions.length,
-        checked: current && this.permApiOptions.some(item => item.permCode === current) ? 1 : 0
-      }
-    }
-  },
-  created() {
-    this.loadDictOptions('DATA_STATUS')
-    this.fetchList()
-    this.fetchPermissionOptions()
-  },
-  methods: {
-    getDefaultForm() {
-      return {
-        id: null,
-        requestMethod: 'GET',
-        requestUri: '',
-        permCode: '',
-        status: '0',
-        remark: ''
-      }
-    },
-    async fetchList() {
-      this.loading = true
-      try {
-        const data = await getResourcePageList(this.queryParams)
-        this.tableData = data.records || []
-        this.total = Number(data.total || 0)
-      } catch (error) {
-        console.error(error)
-      } finally {
-        this.loading = false
-      }
-    },
-    async fetchPermissionOptions() {
-      try {
-        this.permOptions = await getPermissionList({permType: 'A'})
-        this.syncPermLabel()
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    handleSearch() {
-      this.queryParams.pageNum = 1
-      this.fetchList()
-    },
-    handleReset() {
-      this.queryParams = {
-        pageNum: 1,
-        pageSize: 10,
-        requestMethod: '',
-        requestUri: '',
-        permCode: '',
-        status: ''
-      }
-      this.fetchList()
-    },
-    handlePageChange(page) {
-      this.queryParams.pageNum = page
-      this.fetchList()
-    },
-    handleSizeChange(size) {
-      this.queryParams.pageSize = size
-      this.queryParams.pageNum = 1
-      this.fetchList()
-    },
-    handleAdd() {
-      this.dialogTitle = '新增资源'
-      this.form = this.getDefaultForm()
-      this.permLabel = ''
-      this.permKeyword = ''
-      this.permCollapseActive = ['A']
-      this.permPanelVisible = false
-      this.dialogVisible = true
-      this.$nextTick(() => this.$refs.formRef && this.$refs.formRef.clearValidate())
-    },
-    async handleEdit(row) {
-      this.dialogTitle = '编辑资源'
-      try {
-        const detail = await getResourceDetail(row.id)
-        this.form = {
-          id: detail.id,
-          requestMethod: detail.requestMethod,
-          requestUri: detail.requestUri,
-          permCode: detail.permCode,
-          status: detail.status,
-          remark: detail.remark
-        }
-        this.permKeyword = ''
-        this.permCollapseActive = ['A']
-        this.permPanelVisible = false
-        this.syncPermLabel()
-        this.dialogVisible = true
-        this.$nextTick(() => this.$refs.formRef && this.$refs.formRef.clearValidate())
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    togglePermPanel() {
-      this.permPanelVisible = !this.permPanelVisible
-    },
-    selectPermCode(perm) {
-      this.form.permCode = perm.permCode
-      this.permLabel = `${perm.permName} (${perm.permCode})`
-      this.permPanelVisible = false
-    },
-    clearPermSelect() {
-      this.form.permCode = ''
-      this.permLabel = ''
-      this.permKeyword = ''
-      this.permPanelVisible = false
-    },
-    syncPermLabel() {
-      if (!this.form.permCode) {
-        this.permLabel = ''
-        return
-      }
-      const match = (this.permOptions || []).find(item => item.permCode === this.form.permCode)
-      if (match) {
-        this.permLabel = `${match.permName} (${match.permCode})`
-      }
-    },
-    submitForm() {
-      this.$refs.formRef.validate(async valid => {
-        if (!valid) {
-          return
-        }
-        try {
-          if (this.form.id) {
-            await updateResource(this.form)
-            Message.success('修改成功')
-          } else {
-            await addResource(this.form)
-            Message.success('新增成功')
-          }
-          this.dialogVisible = false
-          this.fetchList()
-        } catch (error) {
-          console.error(error)
-        }
-      })
-    },
-    handleDelete(row) {
-      this.$confirm(`确认删除资源 ${row.requestUri} 吗？`, '提示', {type: 'warning'})
-        .then(async () => {
-          await deleteResource(row.id)
-          Message.success('删除成功')
-          this.fetchList()
-        })
-        .catch(() => {
-        })
-    },
-    statusTagType(value) {
-      return value === '0' ? 'success' : 'info'
-    }
+const { dicts, loadDictOptions, dictLabel } = useDict()
+const { hasPerm } = usePermission()
+
+const loading = ref(false)
+const total = ref(0)
+const queryParams = ref({
+  pageNum: 1,
+  pageSize: 10,
+  requestMethod: '',
+  requestUri: '',
+  permCode: '',
+  status: ''
+})
+const tableData = ref<any[]>([])
+const permOptions = ref<any[]>([])
+const permKeyword = ref('')
+const permPanelVisible = ref(false)
+const permLabel = ref('')
+const permCollapseActive = ref(['A'])
+const dialogVisible = ref(false)
+const dialogTitle = ref('')
+
+const formRef = ref<FormInstance>()
+
+function getDefaultForm() {
+  return {
+    id: null as number | null,
+    requestMethod: 'GET',
+    requestUri: '',
+    permCode: '',
+    status: '0',
+    remark: ''
   }
 }
+
+const form = ref(getDefaultForm())
+
+const rules = {
+  requestMethod: [{ required: true, message: '请选择请求方法', trigger: 'change' }],
+  requestUri: [{ required: true, message: '请输入URI', trigger: 'blur' }],
+  permCode: [{ required: true, message: '请选择权限编码', trigger: 'change' }]
+}
+
+const filteredPermOptions = computed(() => {
+  const keyword = permKeyword.value.trim().toLowerCase()
+  if (!keyword) {
+    return permOptions.value
+  }
+  return permOptions.value.filter(item => {
+    const name = (item.permName || '').toLowerCase()
+    const code = (item.permCode || '').toLowerCase()
+    return name.includes(keyword) || code.includes(keyword)
+  })
+})
+
+const permApiOptions = computed(() => {
+  return filteredPermOptions.value.filter(item => (item.permType || 'A') === 'A')
+})
+
+const permStats = computed(() => {
+  const current = form.value.permCode
+  return {
+    total: permApiOptions.value.length,
+    checked: current && permApiOptions.value.some(item => item.permCode === current) ? 1 : 0
+  }
+})
+
+async function fetchList() {
+  loading.value = true
+  try {
+    const data = await getResourcePageList(queryParams.value)
+    tableData.value = data.records || []
+    total.value = Number(data.total || 0)
+  } catch (error) {
+    console.error(error)
+  } finally {
+    loading.value = false
+  }
+}
+
+async function fetchPermissionOptions() {
+  try {
+    permOptions.value = await getPermissionList({ permType: 'A' })
+    syncPermLabel()
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function handleSearch() {
+  queryParams.value.pageNum = 1
+  fetchList()
+}
+
+function handleReset() {
+  queryParams.value = {
+    pageNum: 1,
+    pageSize: 10,
+    requestMethod: '',
+    requestUri: '',
+    permCode: '',
+    status: ''
+  }
+  fetchList()
+}
+
+function handlePageChange(page: number) {
+  queryParams.value.pageNum = page
+  fetchList()
+}
+
+function handleSizeChange(size: number) {
+  queryParams.value.pageSize = size
+  queryParams.value.pageNum = 1
+  fetchList()
+}
+
+function handleAdd() {
+  dialogTitle.value = '新增资源'
+  form.value = getDefaultForm()
+  permLabel.value = ''
+  permKeyword.value = ''
+  permCollapseActive.value = ['A']
+  permPanelVisible.value = false
+  dialogVisible.value = true
+  nextTick(() => formRef.value?.clearValidate())
+}
+
+async function handleEdit(row: any) {
+  dialogTitle.value = '编辑资源'
+  try {
+    const detail = await getResourceDetail(row.id)
+    form.value = {
+      id: detail.id,
+      requestMethod: detail.requestMethod,
+      requestUri: detail.requestUri,
+      permCode: detail.permCode,
+      status: detail.status,
+      remark: detail.remark
+    }
+    permKeyword.value = ''
+    permCollapseActive.value = ['A']
+    permPanelVisible.value = false
+    syncPermLabel()
+    dialogVisible.value = true
+    nextTick(() => formRef.value?.clearValidate())
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function togglePermPanel() {
+  permPanelVisible.value = !permPanelVisible.value
+}
+
+function selectPermCode(perm: any) {
+  form.value.permCode = perm.permCode
+  permLabel.value = `${perm.permName} (${perm.permCode})`
+  permPanelVisible.value = false
+}
+
+function clearPermSelect() {
+  form.value.permCode = ''
+  permLabel.value = ''
+  permKeyword.value = ''
+  permPanelVisible.value = false
+}
+
+function syncPermLabel() {
+  if (!form.value.permCode) {
+    permLabel.value = ''
+    return
+  }
+  const match = (permOptions.value || []).find(item => item.permCode === form.value.permCode)
+  if (match) {
+    permLabel.value = `${match.permName} (${match.permCode})`
+  }
+}
+
+function submitForm() {
+  formRef.value?.validate(async (valid) => {
+    if (!valid) {
+      return
+    }
+    try {
+      if (form.value.id) {
+        await updateResource(form.value)
+        ElMessage.success('修改成功')
+      } else {
+        await addResource(form.value)
+        ElMessage.success('新增成功')
+      }
+      dialogVisible.value = false
+      fetchList()
+    } catch (error) {
+      console.error(error)
+    }
+  })
+}
+
+function handleDelete(row: any) {
+  ElMessageBox.confirm(`确认删除资源 ${row.requestUri} 吗？`, '提示', { type: 'warning' })
+    .then(async () => {
+      await deleteResource(row.id)
+      ElMessage.success('删除成功')
+      fetchList()
+    })
+    .catch(() => {
+    })
+}
+
+function statusTagType(value: string) {
+  return value === '0' ? 'success' : 'info'
+}
+
+// created
+loadDictOptions('DATA_STATUS')
+fetchList()
+fetchPermissionOptions()
 </script>
 
 <style scoped>

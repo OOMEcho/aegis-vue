@@ -2,7 +2,7 @@
   <div class="not-found">
     <div class="not-found-card">
       <div class="image-wrap">
-        <img class="main" :src="mainImage" alt="404"/>
+        <div class="error-code">404</div>
       </div>
       <div class="content">
         <h1>页面不存在</h1>
@@ -16,22 +16,17 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'NotFoundPage',
-  data() {
-    return {
-      mainImage: require('@/assets/404_images/404.png'),
-    }
-  },
-  methods: {
-    goBack() {
-      this.$router.back()
-    },
-    goHome() {
-      this.$router.push('/dashboard')
-    }
-  }
+<script setup lang="ts">
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+function goBack() {
+  router.back()
+}
+
+function goHome() {
+  router.push('/dashboard')
 }
 </script>
 
@@ -64,16 +59,12 @@ export default {
   min-height: 260px;
 }
 
-.image-wrap .cloud {
-  position: absolute;
-  width: 80%;
-  opacity: 0.7;
-}
-
-.image-wrap .main {
-  width: 80%;
-  position: relative;
-  z-index: 1;
+.error-code {
+  font-size: 120px;
+  font-weight: 700;
+  color: #e0e6f1;
+  line-height: 1;
+  user-select: none;
 }
 
 .content h1 {

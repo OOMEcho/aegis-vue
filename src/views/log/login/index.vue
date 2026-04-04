@@ -1,9 +1,11 @@
 <template>
   <div class="page-container">
     <el-card>
-      <div slot="header" class="card-header">
-        <span>登录日志</span>
-      </div>
+      <template #header>
+        <div class="card-header">
+          <span>登录日志</span>
+        </div>
+      </template>
 
       <el-form :inline="true" :model="queryParams" class="search-form" size="small">
         <el-form-item label="登录名">
@@ -25,15 +27,15 @@
           <el-date-picker
             v-model="dateRange"
             type="daterange"
-            value-format="yyyy-MM-dd"
+            value-format="YYYY-MM-DD"
             range-separator="-"
             start-placeholder="开始日期"
             end-placeholder="结束日期"/>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="el-icon-search" @click="handleSearch">查询</el-button>
-          <el-button icon="el-icon-refresh" @click="handleReset">重置</el-button>
-          <el-button type="success" icon="el-icon-download" v-perm="PERMS.log.loginExport" @click="handleExport">
+          <el-button type="primary" icon="Search" @click="handleSearch">查询</el-button>
+          <el-button icon="Refresh" @click="handleReset">重置</el-button>
+          <el-button type="success" icon="Download" v-perm="PERMS.log.loginExport" @click="handleExport">
             导出
           </el-button>
         </el-form-item>
@@ -47,8 +49,8 @@
         <el-table-column prop="loginOs" label="操作系统" min-width="120"/>
         <el-table-column prop="loginTime" label="登录时间" min-width="160"/>
         <el-table-column label="状态" width="80">
-          <template slot-scope="scope">
-            <el-tag :type="statusTagType(scope.row.loginStatus)" size="mini">
+          <template #default="scope">
+            <el-tag :type="statusTagType(scope.row.loginStatus)" size="small">
               {{ dictLabel('OPERATION_STATUS', scope.row.loginStatus) }}
             </el-tag>
           </template>
@@ -71,104 +73,102 @@
   </div>
 </template>
 
-<script>
-import {exportLoginLog, getLoginLogPageList} from '@/api/loginLog'
-import {PERMS} from '@/utils/permCode'
-import dictMixin from '@/mixins/dict'
+<script setup lang="ts">
+import { ref, reactive } from 'vue'
+import { exportLoginLog, getLoginLogPageList } from '@/api/loginLog'
+import { PERMS } from '@/utils/permCode'
+import { useDict } from '@/composables/useDict'
 
-export default {
-  name: 'LoginLogPage',
-  mixins: [dictMixin],
-  data() {
-    return {
-      loading: false,
-      total: 0,
-      dateRange: [],
-      queryParams: {
-        pageNum: 1,
-        pageSize: 10,
-        loginUsername: '',
-        loginLocal: '',
-        loginStatus: ''
-      },
-      tableData: [],
-      PERMS
+const { dicts, loadDictOptions, dictLabel } = useDict()
+
+const loading = ref(false)
+const total = ref(0)
+const dateRange = ref<string[]>([])
+const queryParams = reactive({
+  pageNum: 1,
+  pageSize: 10,
+  loginUsername: '',
+  loginLocal: '',
+  loginStatus: ''
+})
+const tableData = ref<any[]>([])
+
+async function fetchList() {
+  loading.value = true
+  try {
+    const params: any = { ...queryParams }
+    if (dateRange.value && dateRange.value.length === 2) {
+      params.beginTime = dateRange.value[0]
+      params.endTime = dateRange.value[1]
     }
-  },
-  created() {
-    this.loadDictOptions('OPERATION_STATUS')
-    this.fetchList()
-  },
-  methods: {
-    async fetchList() {
-      this.loading = true
-      try {
-        const params = {...this.queryParams}
-        if (this.dateRange && this.dateRange.length === 2) {
-          params.beginTime = this.dateRange[0]
-          params.endTime = this.dateRange[1]
-        }
-        const data = await getLoginLogPageList(params)
-        this.tableData = data.records || []
-        this.total = Number(data.total || 0)
-      } catch (error) {
-        console.error(error)
-      } finally {
-        this.loading = false
-      }
-    },
-    handleSearch() {
-      this.queryParams.pageNum = 1
-      this.fetchList()
-    },
-    handleReset() {
-      this.dateRange = []
-      this.queryParams = {
-        pageNum: 1,
-        pageSize: 10,
-        loginUsername: '',
-        loginLocal: '',
-        loginStatus: ''
-      }
-      this.fetchList()
-    },
-    handlePageChange(page) {
-      this.queryParams.pageNum = page
-      this.fetchList()
-    },
-    handleSizeChange(size) {
-      this.queryParams.pageSize = size
-      this.queryParams.pageNum = 1
-      this.fetchList()
-    },
-    async handleExport() {
-      try {
-        const params = {...this.queryParams}
-        if (this.dateRange && this.dateRange.length === 2) {
-          params.beginTime = this.dateRange[0]
-          params.endTime = this.dateRange[1]
-        }
-        const blob = await exportLoginLog(params)
-        this.downloadBlob(blob, 'login_log.xlsx')
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    downloadBlob(blob, filename) {
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = filename
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
-    },
-    statusTagType(value) {
-      return value === '0' ? 'success' : 'danger'
-    }
+    const data = await getLoginLogPageList(params)
+    tableData.value = data.records || []
+    total.value = Number(data.total || 0)
+  } catch (error) {
+    console.error(error)
+  } finally {
+    loading.value = false
   }
 }
+
+function handleSearch() {
+  queryParams.pageNum = 1
+  fetchList()
+}
+
+function handleReset() {
+  dateRange.value = []
+  queryParams.pageNum = 1
+  queryParams.pageSize = 10
+  queryParams.loginUsername = ''
+  queryParams.loginLocal = ''
+  queryParams.loginStatus = ''
+  fetchList()
+}
+
+function handlePageChange(page: number) {
+  queryParams.pageNum = page
+  fetchList()
+}
+
+function handleSizeChange(size: number) {
+  queryParams.pageSize = size
+  queryParams.pageNum = 1
+  fetchList()
+}
+
+async function handleExport() {
+  try {
+    const params: any = { ...queryParams }
+    if (dateRange.value && dateRange.value.length === 2) {
+      params.beginTime = dateRange.value[0]
+      params.endTime = dateRange.value[1]
+    }
+    const blob = await exportLoginLog(params)
+    downloadBlob(blob, 'login_log.xlsx')
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  window.URL.revokeObjectURL(url)
+}
+
+function statusTagType(value: string) {
+  return value === '0' ? 'success' : 'danger'
+}
+
+// created
+loadDictOptions('OPERATION_STATUS')
+fetchList()
 </script>
 
 <style scoped>

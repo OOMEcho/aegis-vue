@@ -53,126 +53,122 @@
   </div>
 </template>
 
-<script>
-import {generateCaptcha} from "@/api/profile";
+<script setup lang="ts">
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { generateCaptcha } from '@/api/profile'
 
-export default {
-  name: "SlideCaptchaComponent",
-  data() {
-    return {
-      captchaData: null,
-      sliderPosition: 0,
-      slideProgress: 0,
-      isSliding: false,
-      isVerifying: false,
-      startX: 0,
-      maxSlideDistance: 260,
-      loadError: false
-    };
-  },
-  computed: {
-    sliderImageStyle() {
-      const top = this.captchaData ? `${this.captchaData.sliderY}px` : "0px";
-      return {
-        top,
-        transform: `translate3d(${this.sliderPosition}px, 0, 0)`
-      };
-    },
-    sliderButtonStyle() {
-      const scale = this.isSliding ? " scale(1.1)" : "";
-      return {
-        transform: `translate3d(${this.sliderPosition}px, 0, 0)${scale}`
-      };
-    },
-    slideProgressStyle() {
-      return {
-        transform: `scaleX(${this.slideProgress / 100})`
-      };
-    }
-  },
-  mounted() {
-    this.loadCaptcha();
-  },
-  beforeDestroy() {
-    this.cleanupListeners();
-  },
-  methods: {
-    async loadCaptcha() {
-      try {
-        this.loadError = false;
-        this.captchaData = await generateCaptcha();
-        this.resetSlider();
-      } catch (error) {
-        console.error('验证码加载失败:', error);
-        this.loadError = true;
-        this.$emit('load-error', error);
-      }
-    },
+defineOptions({ name: 'SlideCaptchaComponent' })
 
-    refreshCaptcha() {
-      this.loadCaptcha();
-    },
+const emit = defineEmits<{
+  'slide-complete': [payload: { captchaKey: string; slideX: number }]
+  'load-error': [error: unknown]
+}>()
 
-    resetSlider() {
-      this.sliderPosition = 0;
-      this.slideProgress = 0;
-      this.isSliding = false;
-      this.isVerifying = false;
-    },
+interface CaptchaData {
+  backgroundImage: string
+  sliderImage: string
+  sliderY: number
+  captchaKey: string
+}
 
-    // 设置验证状态（供父组件调用）
-    setVerifying(status) {
-      this.isVerifying = status;
-    },
+const captchaData = ref<CaptchaData | null>(null)
+const sliderPosition = ref(0)
+const slideProgress = ref(0)
+const isSliding = ref(false)
+const isVerifying = ref(false)
+const startX = ref(0)
+const maxSlideDistance = 260
+const loadError = ref(false)
 
-    startSlide(event) {
-      if (this.isVerifying) return;
+const sliderImageStyle = computed(() => ({
+  top: captchaData.value ? `${captchaData.value.sliderY}px` : '0px',
+  transform: `translate3d(${sliderPosition.value}px, 0, 0)`
+}))
 
-      this.isSliding = true;
-      this.startX = this.getEventX(event);
-      event.preventDefault();
+const sliderButtonStyle = computed(() => {
+  const scale = isSliding.value ? ' scale(1.1)' : ''
+  return { transform: `translate3d(${sliderPosition.value}px, 0, 0)${scale}` }
+})
 
-      document.addEventListener("mousemove", this.onSliding, {passive: false});
-      document.addEventListener("mouseup", this.stopSlide);
-      document.addEventListener("touchmove", this.onSliding, {passive: false});
-      document.addEventListener("touchend", this.stopSlide);
-    },
+const slideProgressStyle = computed(() => ({
+  transform: `scaleX(${slideProgress.value / 100})`
+}))
 
-    onSliding(event) {
-      if (!this.isSliding) return;
-
-      const deltaX = this.getEventX(event) - this.startX;
-      const nextX = Math.max(0, Math.min(deltaX, this.maxSlideDistance));
-      this.sliderPosition = nextX;
-      this.slideProgress = (nextX / this.maxSlideDistance) * 100;
-      event.preventDefault();
-    },
-
-    stopSlide() {
-      if (!this.isSliding) return;
-      this.isSliding = false;
-      this.isVerifying = true;
-      this.cleanupListeners();
-
-      // 拖动完成后立即触发验证事件
-      this.$emit("slide-complete", {
-        captchaKey: this.captchaData.captchaKey,
-        slideX: Math.round(this.sliderPosition)
-      });
-    },
-
-    getEventX(event) {
-      return event.type.startsWith("touch") ? event.touches[0].clientX : event.clientX;
-    },
-
-    cleanupListeners() {
-      document.removeEventListener("mousemove", this.onSliding);
-      document.removeEventListener("mouseup", this.stopSlide);
-      document.removeEventListener("touchmove", this.onSliding);
-      document.removeEventListener("touchend", this.stopSlide);
-    }
+async function loadCaptcha() {
+  try {
+    loadError.value = false
+    captchaData.value = await generateCaptcha() as CaptchaData
+    resetSlider()
+  } catch (error) {
+    console.error('验证码加载失败:', error)
+    loadError.value = true
+    emit('load-error', error)
   }
-};
+}
+
+function refreshCaptcha() {
+  loadCaptcha()
+}
+
+function resetSlider() {
+  sliderPosition.value = 0
+  slideProgress.value = 0
+  isSliding.value = false
+  isVerifying.value = false
+}
+
+function setVerifying(status: boolean) {
+  isVerifying.value = status
+}
+
+function startSlide(event: MouseEvent | TouchEvent) {
+  if (isVerifying.value) return
+  isSliding.value = true
+  startX.value = getEventX(event)
+  event.preventDefault()
+
+  document.addEventListener('mousemove', onSliding, { passive: false })
+  document.addEventListener('mouseup', stopSlide)
+  document.addEventListener('touchmove', onSliding, { passive: false })
+  document.addEventListener('touchend', stopSlide)
+}
+
+function onSliding(event: MouseEvent | TouchEvent) {
+  if (!isSliding.value) return
+  const deltaX = getEventX(event) - startX.value
+  const nextX = Math.max(0, Math.min(deltaX, maxSlideDistance))
+  sliderPosition.value = nextX
+  slideProgress.value = (nextX / maxSlideDistance) * 100
+  event.preventDefault()
+}
+
+function stopSlide() {
+  if (!isSliding.value) return
+  isSliding.value = false
+  isVerifying.value = true
+  cleanupListeners()
+
+  emit('slide-complete', {
+    captchaKey: captchaData.value!.captchaKey,
+    slideX: Math.round(sliderPosition.value)
+  })
+}
+
+function getEventX(event: MouseEvent | TouchEvent): number {
+  return 'touches' in event ? event.touches[0].clientX : event.clientX
+}
+
+function cleanupListeners() {
+  document.removeEventListener('mousemove', onSliding)
+  document.removeEventListener('mouseup', stopSlide)
+  document.removeEventListener('touchmove', onSliding)
+  document.removeEventListener('touchend', stopSlide)
+}
+
+onMounted(() => { loadCaptcha() })
+onBeforeUnmount(() => { cleanupListeners() })
+
+defineExpose({ refreshCaptcha, setVerifying })
 </script>
 
 <style scoped>
@@ -184,7 +180,6 @@ export default {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
-
 .captcha-header {
   display: flex;
   justify-content: space-between;
@@ -195,7 +190,6 @@ export default {
   font-size: 14px;
   color: #666;
 }
-
 .refresh-btn {
   background: none;
   border: none;
@@ -205,20 +199,9 @@ export default {
   border-radius: 4px;
   transition: background-color 0.2s;
 }
-
-.refresh-btn:hover:not(:disabled) {
-  background-color: rgba(0, 0, 0, 0.1);
-}
-
-.refresh-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.captcha-main {
-  position: relative;
-}
-
+.refresh-btn:hover:not(:disabled) { background-color: rgba(0, 0, 0, 0.1); }
+.refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.captcha-main { position: relative; }
 .background-container {
   position: relative;
   width: 320px;
@@ -226,14 +209,7 @@ export default {
   overflow: hidden;
   background: #f5f5f5;
 }
-
-.background-image {
-  width: 100%;
-  height: 100%;
-  display: block;
-  user-select: none;
-}
-
+.background-image { width: 100%; height: 100%; display: block; user-select: none; }
 .slider-image {
   position: absolute;
   width: 60px;
@@ -246,11 +222,7 @@ export default {
   user-select: none;
   pointer-events: none;
 }
-
-.slider-image.sliding {
-  transition: none;
-}
-
+.slider-image.sliding { transition: none; }
 .slide-track {
   position: relative;
   height: 50px;
@@ -259,7 +231,6 @@ export default {
   align-items: center;
   padding: 0 5px;
 }
-
 .slide-track-bg {
   flex: 1;
   height: 40px;
@@ -268,7 +239,6 @@ export default {
   position: relative;
   overflow: hidden;
 }
-
 .slide-progress {
   height: 100%;
   background: linear-gradient(90deg, #4CAF50, #45a049);
@@ -277,25 +247,12 @@ export default {
   transform-origin: left center;
   transition: transform 0.1s ease-out;
 }
-
-.slide-progress.sliding {
-  transition: none;
-}
-
+.slide-progress.sliding { transition: none; }
 .slide-progress.verifying {
   background: linear-gradient(90deg, #2196F3, #1976D2);
   animation: pulse 1.5s ease-in-out infinite;
 }
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 .slide-text {
   position: absolute;
   left: 50%;
@@ -307,12 +264,7 @@ export default {
   user-select: none;
   white-space: nowrap;
 }
-
-.verifying-text {
-  color: #2196F3;
-  font-weight: 500;
-}
-
+.verifying-text { color: #2196F3; font-weight: 500; }
 .slide-button {
   position: absolute;
   left: 5px;
@@ -334,38 +286,11 @@ export default {
   user-select: none;
   will-change: transform;
 }
-
-.slide-button:hover:not(.verifying) {
-  border-color: #4CAF50;
-  color: #4CAF50;
-}
-
-.slide-button.sliding {
-  cursor: grabbing;
-  border-color: #2196F3;
-  color: #2196F3;
-}
-
-.slide-button.verifying {
-  border-color: #2196F3;
-  color: #2196F3;
-  cursor: not-allowed;
-}
-
-.slide-button.verifying span {
-  display: inline-block;
-  animation: rotate 1s linear infinite;
-}
-
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
+.slide-button:hover:not(.verifying) { border-color: #4CAF50; color: #4CAF50; }
+.slide-button.sliding { cursor: grabbing; border-color: #2196F3; color: #2196F3; }
+.slide-button.verifying { border-color: #2196F3; color: #2196F3; cursor: not-allowed; }
+.slide-button.verifying span { display: inline-block; animation: rotate 1s linear infinite; }
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .loading, .error {
   height: 180px;
   display: flex;
@@ -376,7 +301,6 @@ export default {
   font-size: 14px;
   gap: 10px;
 }
-
 .retry-btn {
   padding: 6px 16px;
   background: #2196F3;
@@ -387,22 +311,9 @@ export default {
   font-size: 14px;
   transition: background-color 0.2s;
 }
-
-.retry-btn:hover {
-  background: #1976D2;
-}
-
-/* 移动端适配 */
+.retry-btn:hover { background: #1976D2; }
 @media (max-width: 480px) {
-  .slide-captcha-container {
-    width: 100%;
-    max-width: 320px;
-  }
-
-  .slide-button {
-    width: 36px;
-    height: 36px;
-    font-size: 16px;
-  }
+  .slide-captcha-container { width: 100%; max-width: 320px; }
+  .slide-button { width: 36px; height: 36px; font-size: 16px; }
 }
 </style>

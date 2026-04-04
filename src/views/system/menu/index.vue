@@ -1,9 +1,11 @@
 <template>
   <div class="page-container">
     <el-card>
-      <div slot="header" class="card-header">
-        <span>菜单管理</span>
-      </div>
+      <template #header>
+        <div class="card-header">
+          <span>菜单管理</span>
+        </div>
+      </template>
 
       <el-form :inline="true" :model="queryParams" class="search-form" size="small">
         <el-form-item label="菜单名称">
@@ -28,16 +30,16 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="el-icon-search" @click="fetchList">查询</el-button>
-          <el-button icon="el-icon-refresh" @click="handleReset">重置</el-button>
+          <el-button type="primary" icon="Search" @click="fetchList">查询</el-button>
+          <el-button icon="Refresh" @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
 
       <div class="table-toolbar">
-        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="PERMS.menu.add" @click="handleAdd">
+        <el-button type="primary" size="small" icon="Plus" v-perm="PERMS.menu.add" @click="handleAdd">
           新增
         </el-button>
-        <el-button size="small" icon="el-icon-s-fold" @click="toggleExpand">
+        <el-button size="small" icon="Fold" @click="toggleExpand">
           {{ expandAll ? '折叠全部' : '展开全部' }}
         </el-button>
       </div>
@@ -54,7 +56,7 @@
         <el-table-column prop="menuName" label="菜单名称" min-width="160"/>
         <el-table-column prop="menuCode" label="菜单编码" min-width="160"/>
         <el-table-column label="图标" width="100">
-          <template slot-scope="scope">
+          <template #default="scope">
             <i v-if="scope.row.icon && scope.row.icon !== '#'" class="iconfont table-icon" :class="scope.row.icon"></i>
             <span v-else class="icon-placeholder">-</span>
           </template>
@@ -63,47 +65,47 @@
         <el-table-column prop="name" label="路由名称" min-width="140"/>
         <el-table-column prop="path" label="路由地址" min-width="160"/>
         <el-table-column label="类型" width="80">
-          <template slot-scope="scope">
+          <template #default="scope">
             {{ scope.row.menuType === 'D' ? '目录' : '菜单' }}
           </template>
         </el-table-column>
         <el-table-column label="显示" width="80">
-          <template slot-scope="scope">
-            <el-tag v-if="!scope.row.hidden" type="success" size="mini">显示</el-tag>
-            <el-tag v-else type="info" size="mini">隐藏</el-tag>
+          <template #default="scope">
+            <el-tag v-if="!scope.row.hidden" type="success" size="small">显示</el-tag>
+            <el-tag v-else type="info" size="small">隐藏</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="状态" width="80">
-          <template slot-scope="scope">
-            <el-tag :type="statusTagType(scope.row.status)" size="mini">
+          <template #default="scope">
+            <el-tag :type="statusTagType(scope.row.status)" size="small">
               {{ dictLabel('DATA_STATUS', scope.row.status) }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" min-width="200" fixed="right">
-          <template slot-scope="scope">
+          <template #default="scope">
             <div class="action-buttons">
-              <el-tooltip v-perm="PERMS.menu.update" content="编辑" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-if="hasPerm(PERMS.menu.update)" content="编辑" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
-                  size="mini"
-                  icon="el-icon-edit"
+                  size="small"
+                  icon="Edit"
                   class="action-icon is-primary"
                   @click="handleEdit(scope.row)"/>
               </el-tooltip>
-              <el-tooltip v-perm="PERMS.menu.permList" content="权限配置" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-if="hasPerm(PERMS.menu.permList)" content="权限配置" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
-                  size="mini"
-                  icon="el-icon-lock"
+                  size="small"
+                  icon="Lock"
                   class="action-icon is-primary"
                   @click="openPermDialog(scope.row)"/>
               </el-tooltip>
-              <el-tooltip v-perm="PERMS.menu.delete" content="删除" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-if="hasPerm(PERMS.menu.delete)" content="删除" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
-                  size="mini"
-                  icon="el-icon-delete"
+                  size="small"
+                  icon="Delete"
                   class="action-icon is-danger"
                   @click="handleDelete(scope.row)"/>
               </el-tooltip>
@@ -113,7 +115,7 @@
       </el-table>
     </el-card>
 
-    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="560px">
+    <el-dialog :title="dialogTitle" v-model="dialogVisible" width="560px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="菜单名称" prop="menuName">
           <el-input v-model="form.menuName" placeholder="请输入菜单名称"/>
@@ -141,13 +143,13 @@
         </el-form-item>
         <el-form-item label="路由地址" prop="path">
           <el-input v-model="form.path" placeholder="如 user 或 /user"/>
-          <div class="form-hint">仅支持英文字母；不带“/”将自动拼接父级路径，带“/”视为完整路径</div>
+          <div class="form-hint">仅支持英文字母；不带"/"将自动拼接父级路径，带"/"视为完整路径</div>
           <div v-if="parentPathHint" class="form-hint">当前父级：{{ parentPathHint }}</div>
         </el-form-item>
         <el-form-item label="菜单类型" prop="menuType">
           <el-radio-group v-model="form.menuType">
-            <el-radio label="D">目录</el-radio>
-            <el-radio label="M">菜单</el-radio>
+            <el-radio value="D">目录</el-radio>
+            <el-radio value="M">菜单</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="菜单图标" prop="icon">
@@ -173,13 +175,15 @@
           </el-select>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">确定</el-button>
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitForm">确定</el-button>
+        </div>
+      </template>
     </el-dialog>
 
-    <el-dialog title="权限配置" :visible.sync="permDialogVisible" width="680px">
+    <el-dialog title="权限配置" v-model="permDialogVisible" width="680px">
       <div class="perm-dialog">
         <div class="perm-toolbar">
           <el-input
@@ -187,19 +191,19 @@
             placeholder="搜索权限名称或编码"
             size="small"
             clearable
-            prefix-icon="el-icon-search"/>
+            prefix-icon="Search"/>
         </div>
         <div class="perm-section">
           <div class="perm-section-title">
             <div class="perm-section-info">
-              <i class="el-icon-document"></i>
+              <el-icon><Document /></el-icon>
               <span>页面</span>
               <span class="perm-count">{{ permStats.total }}</span>
               <span v-if="permStats.checked" class="perm-selected">已选 {{ permStats.checked }}</span>
             </div>
             <div class="perm-section-actions">
-              <el-button size="mini" @click="selectAllPerms">全选</el-button>
-              <el-button size="mini" @click="clearAllPerms">清空</el-button>
+              <el-button size="small" @click="selectAllPerms">全选</el-button>
+              <el-button size="small" @click="clearAllPerms">清空</el-button>
             </div>
           </div>
           <div class="perm-group">
@@ -216,13 +220,15 @@
           </div>
         </div>
       </div>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="permDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveMenuPermissions">保存</el-button>
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="permDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="saveMenuPermissions">保存</el-button>
+        </div>
+      </template>
     </el-dialog>
 
-    <el-dialog title="选择菜单图标" :visible.sync="iconDialogVisible" width="720px">
+    <el-dialog title="选择菜单图标" v-model="iconDialogVisible" width="720px">
       <div class="icon-dialog">
         <el-input
           v-model="iconKeyword"
@@ -249,7 +255,10 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import type { FormInstance } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   addMenu,
   deleteMenu,
@@ -259,371 +268,395 @@ import {
   getMenuPermissions,
   assignMenuPermissions
 } from '@/api/menu'
-import {getPermissionList} from '@/api/permission'
-import {PERMS} from '@/utils/permCode'
-import {Message} from 'element-ui'
-import dictMixin from '@/mixins/dict'
+import { getPermissionList } from '@/api/permission'
+import { PERMS } from '@/utils/permCode'
+import { usePermission } from '@/composables/usePermission'
+import { useDict } from '@/composables/useDict'
 
-export default {
-  name: 'MenuPage',
-  mixins: [dictMixin],
-  data() {
-    const validateParent = (rule, value, callback) => {
-      if (value === undefined || value === null) {
-        callback(new Error('请选择上级菜单'))
-        return
-      }
-      if (value === 0) {
-        callback()
-        return
-      }
-      const parent = this.menuOptions.find(item => item.id === value)
-      if (parent && parent.menuType === 'M') {
-        callback(new Error('菜单不能创建子菜单，请选择目录作为上级'))
-        return
-      }
-      callback()
-    }
+const { dicts, loadDictOptions, dictLabel } = useDict()
+const { hasPerm } = usePermission()
 
-    const validatePath = (rule, value, callback) => {
-      if (!value) {
-        return callback(new Error('请输入路由地址'))
-      }
+const loading = ref(false)
+const queryParams = ref({
+  menuName: '',
+  menuCode: '',
+  menuType: '',
+  status: ''
+})
+const tableData = ref<any[]>([])
+const menuOptions = ref<any[]>([])
+const expandAll = ref(true)
+const tableKey = ref(0)
+const dialogVisible = ref(false)
+const dialogTitle = ref('')
 
-      const reg = /^\/[A-Za-z0-9-]+(\/[A-Za-z0-9-]+)*$/
+const formRef = ref<FormInstance>()
 
-      if (!reg.test(value)) {
-        return callback(
-          new Error('路由地址需以 / 开头，仅支持字母、数字、-，可多级路径')
-        )
-      }
+// Permission dialog
+const permDialogVisible = ref(false)
+const permOptions = ref<any[]>([])
+const permChecked = ref<string[]>([])
+const permKeyword = ref('')
+const currentMenuId = ref<number | null>(null)
 
-      callback()
-    }
+// Icon dialog
+const iconDialogVisible = ref(false)
+const iconKeyword = ref('')
+const iconOptions = ref<string[]>([])
 
-    return {
-      loading: false,
-      queryParams: {
-        menuName: '',
-        menuCode: '',
-        menuType: '',
-        status: ''
-      },
-      tableData: [],
-      menuOptions: [],
-      expandAll: true,
-      tableKey: 0,
-      dialogVisible: false,
-      dialogTitle: '',
-      form: this.getDefaultForm(),
-      rules: {
-        menuName: [{required: true, message: '请输入菜单名称', trigger: 'blur'}],
-        menuCode: [{required: true, message: '请输入菜单编码', trigger: 'blur'}],
-        parentId: [{required: true, validator: validateParent, trigger: 'change'}],
-        orderNum: [{required: true, message: '请输入排序', trigger: 'change'}],
-        name: [{required: true, message: '请输入路由名称', trigger: 'blur'}],
-        path: [
-          {required: true, message: '请输入路由地址', trigger: 'blur'},
-          {validator: validatePath, trigger: 'blur'}
-        ],
-        menuType: [{required: true, message: '请选择菜单类型', trigger: 'change'}]
-      },
-      permDialogVisible: false,
-      permOptions: [],
-      permChecked: [],
-      permKeyword: '',
-      currentMenuId: null,
-      iconDialogVisible: false,
-      iconKeyword: '',
-      iconOptions: [],
-      PERMS
-    }
-  },
-  computed: {
-    parentOptions() {
-      if (!this.form.id) {
-        return this.menuOptions
-      }
-      return this.menuOptions.filter(item => item.id !== this.form.id)
-    },
-    parentPathHint() {
-      const parent = this.menuOptions.find(item => item.id === this.form.parentId)
-      if (!parent || !parent.path) {
-        return ''
-      }
-      return parent.path
-    },
-    filteredPermOptions() {
-      const keyword = this.permKeyword.trim().toLowerCase()
-      if (!keyword) {
-        return this.permOptions
-      }
-      return this.permOptions.filter(item => {
-        const name = (item.permName || '').toLowerCase()
-        const code = (item.permCode || '').toLowerCase()
-        return name.includes(keyword) || code.includes(keyword)
-      })
-    },
-    permPageOptions() {
-      return this.filteredPermOptions.filter(item => (item.permType || 'M') === 'M')
-    },
-    permStats() {
-      const checkedSet = new Set(this.permChecked || [])
-      return {
-        total: this.permPageOptions.length,
-        checked: this.permPageOptions.reduce(
-          (count, item) => count + (checkedSet.has(item.permCode) ? 1 : 0),
-          0
-        )
-      }
-    },
-    filteredIconOptions() {
-      const keyword = this.iconKeyword.trim().toLowerCase()
-      if (!keyword) {
-        return this.iconOptions
-      }
-      return this.iconOptions.filter(icon => icon.toLowerCase().includes(keyword))
-    }
-  },
-  created() {
-    this.loadDictOptions('DATA_STATUS')
-    this.fetchList()
-    this.fetchPermissionOptions()
-  },
-  mounted() {
-    this.loadIconOptions()
-  },
-  watch: {
-    iconDialogVisible(value) {
-      if (value) {
-        this.loadIconOptions()
-      }
-    }
-  },
-  methods: {
-    getDefaultForm() {
-      return {
-        id: null,
-        menuCode: '',
-        menuName: '',
-        parentId: 0,
-        orderNum: 0,
-        name: '',
-        path: '',
-        menuType: 'M',
-        icon: '',
-        hidden: false,
-        status: '0'
-      }
-    },
-    async fetchList() {
-      this.loading = true
-      try {
-        const list = await getMenuList(this.queryParams)
-        this.menuOptions = list || []
-        this.tableData = this.buildTree(list || [])
-      } catch (error) {
-        console.error(error)
-      } finally {
-        this.loading = false
-      }
-    },
-    async fetchPermissionOptions() {
-      try {
-        this.permOptions = await getPermissionList({permType: 'M'})
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    handleReset() {
-      this.queryParams = {
-        menuName: '',
-        menuCode: '',
-        menuType: '',
-        status: ''
-      }
-      this.fetchList()
-    },
-    toggleExpand() {
-      this.expandAll = !this.expandAll
-      this.tableKey += 1
-    },
-    handleAdd() {
-      this.dialogTitle = '新增菜单'
-      this.form = this.getDefaultForm()
-      this.dialogVisible = true
-      this.$nextTick(() => this.$refs.formRef && this.$refs.formRef.clearValidate())
-    },
-    async handleEdit(row) {
-      this.dialogTitle = '编辑菜单'
-      try {
-        const detail = await getMenuDetail(row.id)
-        this.form = {
-          id: detail.id,
-          menuCode: detail.menuCode,
-          menuName: detail.menuName,
-          parentId: detail.parentId === 0 || detail.parentId === '0' || detail.parentId === null || detail.parentId === undefined ? 0 : detail.parentId,
-          orderNum: detail.orderNum,
-          name: detail.name,
-          path: detail.path,
-          menuType: detail.menuType,
-          icon: detail.icon,
-          hidden: !!detail.hidden,
-          status: detail.status
-        }
-        this.dialogVisible = true
-        this.$nextTick(() => this.$refs.formRef && this.$refs.formRef.clearValidate())
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    submitForm() {
-      this.$refs.formRef.validate(async valid => {
-        if (!valid) {
-          return
-        }
-        try {
-          if (this.form.id) {
-            await updateMenu(this.form)
-            Message.success('修改成功')
-          } else {
-            await addMenu(this.form)
-            Message.success('新增成功')
-          }
-          this.dialogVisible = false
-          this.fetchList()
-        } catch (error) {
-          console.error(error)
-        }
-      })
-    },
-    handleDelete(row) {
-      this.$confirm(`确认删除菜单 ${row.menuName} 吗？`, '提示', {type: 'warning'})
-        .then(async () => {
-          await deleteMenu(row.id)
-          Message.success('删除成功')
-          this.fetchList()
-        })
-        .catch(() => {
-        })
-    },
-    async openPermDialog(row) {
-      this.currentMenuId = row.id
-      try {
-        this.permChecked = await getMenuPermissions(row.id)
-        this.permKeyword = ''
-        this.permDialogVisible = true
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    async saveMenuPermissions() {
-      try {
-        await assignMenuPermissions(this.currentMenuId, this.permChecked)
-        Message.success('权限配置成功')
-        this.permDialogVisible = false
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    selectAllPerms() {
-      const next = new Set(this.permChecked || [])
-      this.permPageOptions.forEach(item => next.add(item.permCode))
-      this.permChecked = Array.from(next)
-    },
-    clearAllPerms() {
-      const next = new Set(this.permChecked || [])
-      this.permPageOptions.forEach(item => next.delete(item.permCode))
-      this.permChecked = Array.from(next)
-    },
-    statusTagType(value) {
-      return value === '0' ? 'success' : 'info'
-    },
-    async loadIconOptions() {
-      const icons = new Set()
-      const sheets = Array.from(document.styleSheets || [])
-      sheets.forEach(sheet => {
-        let rules
-        try {
-          rules = sheet.cssRules || sheet.rules
-        } catch (error) {
-          return
-        }
-        if (!rules) {
-          return
-        }
-        Array.from(rules).forEach(rule => {
-          if (!rule.selectorText) {
-            return
-          }
-          rule.selectorText.split(',').forEach(selector => {
-            const trimmed = selector.trim()
-            if (!/\.icon-[\w-]+::?before$/.test(trimmed)) {
-              return
-            }
-            const match = trimmed.match(/^\.icon-[\w-]+/)
-            if (match) {
-              icons.add(match[0].slice(1))
-            }
-          })
-        })
-      })
-
-      if (icons.size === 0) {
-        const iconSheet = sheets.find(sheet => sheet.href && sheet.href.includes('iconfont.css'))
-        if (iconSheet && iconSheet.href) {
-          try {
-            const response = await fetch(iconSheet.href)
-            const cssText = await response.text()
-            const matches = cssText.match(/\.icon-[\w-]+::?before/g) || []
-            matches.forEach(item => {
-              icons.add(item.replace(/^\./, '').replace(/::?before$/, ''))
-            })
-          } catch (error) {
-            // ignore fetch errors
-          }
-        }
-      }
-
-      this.iconOptions = Array.from(icons).sort()
-    },
-    selectIcon(icon) {
-      this.form.icon = icon
-      this.iconDialogVisible = false
-    },
-    buildTree(list) {
-      const nodeMap = new Map()
-      const roots = []
-      const nodes = list.map(item => ({...item, children: []}))
-
-      nodes.forEach(item => {
-        nodeMap.set(item.id, item)
-      })
-
-      nodes.forEach(item => {
-        const parentId = item.parentId
-        const isRoot = parentId === 0 || parentId === '0' || parentId === null || parentId === undefined
-        if (isRoot || !nodeMap.has(parentId)) {
-          roots.push(item)
-        } else {
-          nodeMap.get(parentId).children.push(item)
-        }
-      })
-
-      const sortTree = items => {
-        items.sort((a, b) => (a.orderNum || 0) - (b.orderNum || 0))
-        items.forEach(child => {
-          if (child.children && child.children.length) {
-            sortTree(child.children)
-          }
-        })
-      }
-
-      sortTree(roots)
-      return roots
-    }
+function getDefaultForm() {
+  return {
+    id: null as number | null,
+    menuCode: '',
+    menuName: '',
+    parentId: 0,
+    orderNum: 0,
+    name: '',
+    path: '',
+    menuType: 'M',
+    icon: '',
+    hidden: false,
+    status: '0'
   }
 }
+
+const form = ref(getDefaultForm())
+
+const validateParent = (rule: any, value: any, callback: any) => {
+  if (value === undefined || value === null) {
+    callback(new Error('请选择上级菜单'))
+    return
+  }
+  if (value === 0) {
+    callback()
+    return
+  }
+  const parent = menuOptions.value.find(item => item.id === value)
+  if (parent && parent.menuType === 'M') {
+    callback(new Error('菜单不能创建子菜单，请选择目录作为上级'))
+    return
+  }
+  callback()
+}
+
+const validatePath = (rule: any, value: any, callback: any) => {
+  if (!value) {
+    return callback(new Error('请输入路由地址'))
+  }
+
+  const reg = /^\/[A-Za-z0-9-]+(\/[A-Za-z0-9-]+)*$/
+
+  if (!reg.test(value)) {
+    return callback(
+      new Error('路由地址需以 / 开头，仅支持字母、数字、-，可多级路径')
+    )
+  }
+
+  callback()
+}
+
+const rules = {
+  menuName: [{ required: true, message: '请输入菜单名称', trigger: 'blur' }],
+  menuCode: [{ required: true, message: '请输入菜单编码', trigger: 'blur' }],
+  parentId: [{ required: true, validator: validateParent, trigger: 'change' }],
+  orderNum: [{ required: true, message: '请输入排序', trigger: 'change' }],
+  name: [{ required: true, message: '请输入路由名称', trigger: 'blur' }],
+  path: [
+    { required: true, message: '请输入路由地址', trigger: 'blur' },
+    { validator: validatePath, trigger: 'blur' }
+  ],
+  menuType: [{ required: true, message: '请选择菜单类型', trigger: 'change' }]
+}
+
+// Computed
+const parentOptions = computed(() => {
+  if (!form.value.id) {
+    return menuOptions.value
+  }
+  return menuOptions.value.filter(item => item.id !== form.value.id)
+})
+
+const parentPathHint = computed(() => {
+  const parent = menuOptions.value.find(item => item.id === form.value.parentId)
+  if (!parent || !parent.path) {
+    return ''
+  }
+  return parent.path
+})
+
+const filteredPermOptions = computed(() => {
+  const keyword = permKeyword.value.trim().toLowerCase()
+  if (!keyword) {
+    return permOptions.value
+  }
+  return permOptions.value.filter(item => {
+    const name = (item.permName || '').toLowerCase()
+    const code = (item.permCode || '').toLowerCase()
+    return name.includes(keyword) || code.includes(keyword)
+  })
+})
+
+const permPageOptions = computed(() => {
+  return filteredPermOptions.value.filter(item => (item.permType || 'M') === 'M')
+})
+
+const permStats = computed(() => {
+  const checkedSet = new Set(permChecked.value || [])
+  return {
+    total: permPageOptions.value.length,
+    checked: permPageOptions.value.reduce(
+      (count, item) => count + (checkedSet.has(item.permCode) ? 1 : 0),
+      0
+    )
+  }
+})
+
+const filteredIconOptions = computed(() => {
+  const keyword = iconKeyword.value.trim().toLowerCase()
+  if (!keyword) {
+    return iconOptions.value
+  }
+  return iconOptions.value.filter(icon => icon.toLowerCase().includes(keyword))
+})
+
+watch(iconDialogVisible, (value) => {
+  if (value) {
+    loadIconOptions()
+  }
+})
+
+// Methods
+async function fetchList() {
+  loading.value = true
+  try {
+    const list = await getMenuList(queryParams.value)
+    menuOptions.value = list || []
+    tableData.value = buildTree(list || [])
+  } catch (error) {
+    console.error(error)
+  } finally {
+    loading.value = false
+  }
+}
+
+async function fetchPermissionOptions() {
+  try {
+    permOptions.value = await getPermissionList({ permType: 'M' })
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function handleReset() {
+  queryParams.value = {
+    menuName: '',
+    menuCode: '',
+    menuType: '',
+    status: ''
+  }
+  fetchList()
+}
+
+function toggleExpand() {
+  expandAll.value = !expandAll.value
+  tableKey.value += 1
+}
+
+function handleAdd() {
+  dialogTitle.value = '新增菜单'
+  form.value = getDefaultForm()
+  dialogVisible.value = true
+  nextTick(() => formRef.value?.clearValidate())
+}
+
+async function handleEdit(row: any) {
+  dialogTitle.value = '编辑菜单'
+  try {
+    const detail = await getMenuDetail(row.id)
+    form.value = {
+      id: detail.id,
+      menuCode: detail.menuCode,
+      menuName: detail.menuName,
+      parentId: detail.parentId === 0 || detail.parentId === '0' || detail.parentId === null || detail.parentId === undefined ? 0 : detail.parentId,
+      orderNum: detail.orderNum,
+      name: detail.name,
+      path: detail.path,
+      menuType: detail.menuType,
+      icon: detail.icon,
+      hidden: !!detail.hidden,
+      status: detail.status
+    }
+    dialogVisible.value = true
+    nextTick(() => formRef.value?.clearValidate())
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function submitForm() {
+  formRef.value?.validate(async (valid) => {
+    if (!valid) {
+      return
+    }
+    try {
+      if (form.value.id) {
+        await updateMenu(form.value)
+        ElMessage.success('修改成功')
+      } else {
+        await addMenu(form.value)
+        ElMessage.success('新增成功')
+      }
+      dialogVisible.value = false
+      fetchList()
+    } catch (error) {
+      console.error(error)
+    }
+  })
+}
+
+function handleDelete(row: any) {
+  ElMessageBox.confirm(`确认删除菜单 ${row.menuName} 吗？`, '提示', { type: 'warning' })
+    .then(async () => {
+      await deleteMenu(row.id)
+      ElMessage.success('删除成功')
+      fetchList()
+    })
+    .catch(() => {
+    })
+}
+
+async function openPermDialog(row: any) {
+  currentMenuId.value = row.id
+  try {
+    permChecked.value = await getMenuPermissions(row.id)
+    permKeyword.value = ''
+    permDialogVisible.value = true
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+async function saveMenuPermissions() {
+  try {
+    await assignMenuPermissions(currentMenuId.value!, permChecked.value)
+    ElMessage.success('权限配置成功')
+    permDialogVisible.value = false
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function selectAllPerms() {
+  const next = new Set(permChecked.value || [])
+  permPageOptions.value.forEach(item => next.add(item.permCode))
+  permChecked.value = Array.from(next)
+}
+
+function clearAllPerms() {
+  const next = new Set(permChecked.value || [])
+  permPageOptions.value.forEach(item => next.delete(item.permCode))
+  permChecked.value = Array.from(next)
+}
+
+function statusTagType(value: string) {
+  return value === '0' ? 'success' : 'info'
+}
+
+async function loadIconOptions() {
+  const icons = new Set<string>()
+  const sheets = Array.from(document.styleSheets || [])
+  sheets.forEach(sheet => {
+    let rules: CSSRuleList | undefined
+    try {
+      rules = sheet.cssRules || (sheet as any).rules
+    } catch (error) {
+      return
+    }
+    if (!rules) {
+      return
+    }
+    Array.from(rules).forEach(rule => {
+      if (!(rule instanceof CSSStyleRule) || !rule.selectorText) {
+        return
+      }
+      rule.selectorText.split(',').forEach(selector => {
+        const trimmed = selector.trim()
+        if (!/\.icon-[\w-]+::?before$/.test(trimmed)) {
+          return
+        }
+        const match = trimmed.match(/^\.icon-[\w-]+/)
+        if (match) {
+          icons.add(match[0].slice(1))
+        }
+      })
+    })
+  })
+
+  if (icons.size === 0) {
+    const iconSheet = sheets.find(sheet => sheet.href && sheet.href.includes('iconfont.css'))
+    if (iconSheet && iconSheet.href) {
+      try {
+        const response = await fetch(iconSheet.href)
+        const cssText = await response.text()
+        const matches = cssText.match(/\.icon-[\w-]+::?before/g) || []
+        matches.forEach(item => {
+          icons.add(item.replace(/^\./, '').replace(/::?before$/, ''))
+        })
+      } catch (error) {
+        // ignore fetch errors
+      }
+    }
+  }
+
+  iconOptions.value = Array.from(icons).sort()
+}
+
+function selectIcon(icon: string) {
+  form.value.icon = icon
+  iconDialogVisible.value = false
+}
+
+function buildTree(list: any[]) {
+  const nodeMap = new Map()
+  const roots: any[] = []
+  const nodes = list.map(item => ({ ...item, children: [] }))
+
+  nodes.forEach(item => {
+    nodeMap.set(item.id, item)
+  })
+
+  nodes.forEach(item => {
+    const parentId = item.parentId
+    const isRoot = parentId === 0 || parentId === '0' || parentId === null || parentId === undefined
+    if (isRoot || !nodeMap.has(parentId)) {
+      roots.push(item)
+    } else {
+      nodeMap.get(parentId).children.push(item)
+    }
+  })
+
+  const sortTree = (items: any[]) => {
+    items.sort((a: any, b: any) => (a.orderNum || 0) - (b.orderNum || 0))
+    items.forEach((child: any) => {
+      if (child.children && child.children.length) {
+        sortTree(child.children)
+      }
+    })
+  }
+
+  sortTree(roots)
+  return roots
+}
+
+// created
+loadDictOptions('DATA_STATUS')
+fetchList()
+fetchPermissionOptions()
+
+// mounted
+onMounted(() => {
+  loadIconOptions()
+})
 </script>
 
 <style scoped>

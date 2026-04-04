@@ -40,7 +40,7 @@
                 <el-radio
                   v-for="item in dicts.USER_GENDER || []"
                   :key="item.dictValue"
-                  :label="item.dictValue">
+                  :value="item.dictValue">
                   {{ item.dictLabel }}
                 </el-radio>
               </el-radio-group>
@@ -71,212 +71,209 @@
   </div>
 </template>
 
-<script>
-import {getAvatarPreview, getPublicKey, logout, updatePassword, updateProfile, uploadAvatar} from '@/api/profile'
-import {resetRouter} from '@/router'
-import {rsaEncrypt} from '@/utils/encrypt'
-import {Message} from 'element-ui'
-import dictMixin from '@/mixins/dict'
+<script setup lang="ts">
+import { ref, reactive, computed, watch, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import type { FormInstance } from 'element-plus'
+import { getAvatarPreview, getPublicKey, logout, updatePassword, updateProfile, uploadAvatar } from '@/api/profile'
+import { resetRouter } from '@/router'
+import { rsaEncrypt } from '@/utils/encrypt'
+import { useAuthStore } from '@/stores/auth'
+import { usePermissionStore } from '@/stores/permission'
+import { useDict } from '@/composables/useDict'
 
-export default {
-  name: 'ProfilePage',
-  mixins: [dictMixin],
-  data() {
-    return {
-      activeTab: 'profile',
-      avatarPreviewUrl: '',
-      publicKey: '',
-      profileForm: {
-        username: '',
-        nickname: '',
-        email: '',
-        phone: '',
-        sex: '0'
-      },
-      passwordForm: {
-        oldPassword: '',
-        password: '',
-        confirmPassword: ''
-      },
-      profileRules: {
-        nickname: [{required: true, message: '请输入昵称', trigger: 'blur'}]
-      },
-      passwordRules: {
-        oldPassword: [{required: true, message: '请输入旧密码', trigger: 'blur'}],
-        password: [
-          {required: true, message: '请输入新密码', trigger: 'blur'},
-          {min: 8, max: 16, message: '密码长度必须在8到16位之间', trigger: 'blur'}
-        ],
-        confirmPassword: [
-          {required: true, message: '请输入确认密码', trigger: 'blur'},
-          {
-            validator: (rule, value, callback) => {
-              if (value !== this.passwordForm.password) {
-                callback(new Error('两次密码不一致'))
-              } else {
-                callback()
-              }
-            }, trigger: 'blur'
-          }
-        ]
-      }
+const router = useRouter()
+const authStore = useAuthStore()
+const permissionStore = usePermissionStore()
+const { dicts, loadDictOptions } = useDict()
+
+const activeTab = ref('profile')
+const avatarPreviewUrl = ref('')
+const publicKey = ref('')
+
+const profileFormRef = ref<FormInstance>()
+const passwordFormRef = ref<FormInstance>()
+
+const profileForm = reactive({
+  username: '',
+  nickname: '',
+  email: '',
+  phone: '',
+  sex: '0'
+})
+
+const passwordForm = reactive({
+  oldPassword: '',
+  password: '',
+  confirmPassword: ''
+})
+
+const profileRules = {
+  nickname: [{ required: true, message: '请输入昵称', trigger: 'blur' }]
+}
+
+const passwordRules = {
+  oldPassword: [{ required: true, message: '请输入旧密码', trigger: 'blur' }],
+  password: [
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { min: 8, max: 16, message: '密码长度必须在8到16位之间', trigger: 'blur' }
+  ],
+  confirmPassword: [
+    { required: true, message: '请输入确认密码', trigger: 'blur' },
+    {
+      validator: (_rule: any, value: string, callback: Function) => {
+        if (value !== passwordForm.password) {
+          callback(new Error('两次密码不一致'))
+        } else {
+          callback()
+        }
+      }, trigger: 'blur'
     }
-  },
-  computed: {
-    userInfo() {
-      return this.$store.state.auth.userInfo || {}
-    },
-    displayName() {
-      return this.userInfo.nickname || this.userInfo.username || '用户'
-    },
-    avatarText() {
-      return this.displayName ? this.displayName.charAt(0) : 'U'
-    },
-    avatarUrl() {
-      return this.avatarPreviewUrl
-    },
-    roleText() {
-      if (!this.userInfo.roleList || !this.userInfo.roleList.length) {
-        return '-'
-      }
-      return this.userInfo.roleList.map(item => item.roleName).join('、')
+  ]
+}
+
+const userInfo = computed(() => authStore.userInfo || {} as Record<string, any>)
+const displayName = computed(() => userInfo.value.nickname || userInfo.value.username || '用户')
+const avatarText = computed(() => displayName.value ? displayName.value.charAt(0) : 'U')
+const avatarUrl = computed(() => avatarPreviewUrl.value)
+const roleText = computed(() => {
+  if (!userInfo.value.roleList || !userInfo.value.roleList.length) {
+    return '-'
+  }
+  return userInfo.value.roleList.map((item: any) => item.roleName).join('、')
+})
+
+watch(userInfo, (info: any) => {
+  profileForm.username = info.username || ''
+  profileForm.nickname = info.nickname || ''
+  profileForm.email = info.email || ''
+  profileForm.phone = info.phone || ''
+  profileForm.sex = info.sex || '0'
+}, { immediate: true })
+
+watch(() => userInfo.value.avatar, () => {
+  loadAvatarPreview()
+}, { immediate: true })
+
+async function fetchUserInfo() {
+  try {
+    await authStore.fetchUserInfo(true)
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+async function fetchPublicKey() {
+  try {
+    publicKey.value = await getPublicKey()
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function revokeAvatarPreview() {
+  if (avatarPreviewUrl.value) {
+    URL.revokeObjectURL(avatarPreviewUrl.value)
+    avatarPreviewUrl.value = ''
+  }
+}
+
+async function loadAvatarPreview() {
+  if (!userInfo.value.avatar) {
+    revokeAvatarPreview()
+    return
+  }
+  try {
+    const blob = await getAvatarPreview()
+    if (!blob || !blob.size) {
+      revokeAvatarPreview()
+      return
     }
-  },
-  watch: {
-    userInfo: {
-      immediate: true,
-      handler(info) {
-        this.profileForm = {
-          username: info.username || '',
-          nickname: info.nickname || '',
-          email: info.email || '',
-          phone: info.phone || '',
-          sex: info.sex || '0'
-        }
-      }
-    },
-    'userInfo.avatar': {
-      immediate: true,
-      handler() {
-        this.loadAvatarPreview()
-      }
+    revokeAvatarPreview()
+    avatarPreviewUrl.value = URL.createObjectURL(blob)
+  } catch (error) {
+    console.error('加载头像失败:', error)
+    revokeAvatarPreview()
+  }
+}
+
+async function handleAvatarUpload(option: any) {
+  const formData = new FormData()
+  formData.append('file', option.file)
+  try {
+    await uploadAvatar(formData)
+    ElMessage.success('头像上传成功')
+    await fetchUserInfo()
+    if (option.onSuccess) {
+      option.onSuccess()
     }
-  },
-  created() {
-    this.loadDictOptions('USER_GENDER')
-    this.fetchUserInfo()
-    this.fetchPublicKey()
-  },
-  beforeDestroy() {
-    this.revokeAvatarPreview()
-  },
-  methods: {
-    async fetchUserInfo() {
-      try {
-        await this.$store.dispatch('auth/fetchUserInfo', {force: true})
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    async fetchPublicKey() {
-      try {
-        this.publicKey = await getPublicKey()
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    revokeAvatarPreview() {
-      if (this.avatarPreviewUrl) {
-        URL.revokeObjectURL(this.avatarPreviewUrl)
-        this.avatarPreviewUrl = ''
-      }
-    },
-    async loadAvatarPreview() {
-      if (!this.userInfo.avatar) {
-        this.revokeAvatarPreview()
-        return
-      }
-      try {
-        const blob = await getAvatarPreview()
-        if (!blob || !blob.size) {
-          this.revokeAvatarPreview()
-          return
-        }
-        this.revokeAvatarPreview()
-        this.avatarPreviewUrl = URL.createObjectURL(blob)
-      } catch (error) {
-        console.error('加载头像失败:', error)
-        this.revokeAvatarPreview()
-      }
-    },
-    async handleAvatarUpload(option) {
-      const formData = new FormData()
-      formData.append('file', option.file)
-      try {
-        await uploadAvatar(formData)
-        Message.success('头像上传成功')
-        await this.fetchUserInfo()
-        if (option.onSuccess) {
-          option.onSuccess()
-        }
-      } catch (error) {
-        console.error(error)
-        if (option.onError) {
-          option.onError(error)
-        }
-      }
-    },
-    submitProfile() {
-      this.$refs.profileFormRef.validate(async valid => {
-        if (!valid) {
-          return
-        }
-        try {
-          const payload = {
-            nickname: this.profileForm.nickname,
-            email: this.profileForm.email,
-            phone: this.profileForm.phone,
-            sex: this.profileForm.sex
-          }
-          await updateProfile(payload)
-          Message.success('保存成功')
-          await this.fetchUserInfo()
-        } catch (error) {
-          console.error(error)
-        }
-      })
-    },
-    submitPassword() {
-      this.$refs.passwordFormRef.validate(async valid => {
-        if (!valid) {
-          return
-        }
-        if (!this.publicKey) {
-          Message.warning('公钥加载失败，请刷新页面重试')
-          return
-        }
-        try {
-          const payload = {
-            // 密码需用后端公钥加密
-            oldPassword: rsaEncrypt(this.passwordForm.oldPassword, this.publicKey),
-            password: rsaEncrypt(this.passwordForm.password, this.publicKey),
-            confirmPassword: rsaEncrypt(this.passwordForm.confirmPassword, this.publicKey)
-          }
-          await updatePassword(payload)
-          Message.success('密码修改成功，请重新登录')
-          await logout()
-          await this.$store.dispatch('auth/clearToken')
-          this.$store.commit('permission/SET_ROUTES', [])
-          this.$store.commit('permission/SET_PERMISSIONS', [])
-          resetRouter()
-          await this.$router.replace('/login')
-        } catch (error) {
-          console.error(error)
-        }
-      })
+  } catch (error) {
+    console.error(error)
+    if (option.onError) {
+      option.onError(error)
     }
   }
 }
+
+function submitProfile() {
+  profileFormRef.value?.validate(async (valid: boolean) => {
+    if (!valid) {
+      return
+    }
+    try {
+      const payload = {
+        nickname: profileForm.nickname,
+        email: profileForm.email,
+        phone: profileForm.phone,
+        sex: profileForm.sex
+      }
+      await updateProfile(payload)
+      ElMessage.success('保存成功')
+      await fetchUserInfo()
+    } catch (error) {
+      console.error(error)
+    }
+  })
+}
+
+function submitPassword() {
+  passwordFormRef.value?.validate(async (valid: boolean) => {
+    if (!valid) {
+      return
+    }
+    if (!publicKey.value) {
+      ElMessage.warning('公钥加载失败，请刷新页面重试')
+      return
+    }
+    try {
+      const payload = {
+        // 密码需用后端公钥加密
+        oldPassword: rsaEncrypt(passwordForm.oldPassword, publicKey.value),
+        password: rsaEncrypt(passwordForm.password, publicKey.value),
+        confirmPassword: rsaEncrypt(passwordForm.confirmPassword, publicKey.value)
+      }
+      await updatePassword(payload)
+      ElMessage.success('密码修改成功，请重新登录')
+      await logout()
+      authStore.clearToken()
+      permissionStore.reset()
+      resetRouter()
+      await router.replace('/login')
+    } catch (error) {
+      console.error(error)
+    }
+  })
+}
+
+onBeforeUnmount(() => {
+  revokeAvatarPreview()
+})
+
+// created
+loadDictOptions('USER_GENDER')
+fetchUserInfo()
+fetchPublicKey()
 </script>
 
 <style scoped>

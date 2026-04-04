@@ -1,9 +1,7 @@
 <template>
-  <router-view/>
+  <router-view />
 </template>
 
-<script>
-export default {
-  name: 'ParentView'
-}
+<script setup lang="ts">
+defineOptions({ name: 'ParentView' })
 </script>

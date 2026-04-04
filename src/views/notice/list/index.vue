@@ -1,9 +1,11 @@
 <template>
   <div class="page-container">
     <el-card>
-      <div slot="header" class="card-header">
-        <span>通知公告</span>
-      </div>
+      <template #header>
+        <div class="card-header">
+          <span>通知公告</span>
+        </div>
+      </template>
 
       <el-form :inline="true" :model="queryParams" class="search-form" size="small">
         <el-form-item label="通知标题">
@@ -24,13 +26,13 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="el-icon-search" @click="handleSearch">查询</el-button>
-          <el-button icon="el-icon-refresh" @click="handleReset">重置</el-button>
+          <el-button type="primary" icon="Search" @click="handleSearch">查询</el-button>
+          <el-button icon="Refresh" @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
 
       <div class="table-toolbar">
-        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="PERMS.notice.add" @click="handleAdd">
+        <el-button type="primary" size="small" icon="Plus" v-perm="PERMS.notice.add" @click="handleAdd">
           新增
         </el-button>
       </div>
@@ -38,65 +40,63 @@
       <el-table :data="tableData" border stripe v-loading="loading">
         <el-table-column prop="noticeTitle" label="通知标题" min-width="160"/>
         <el-table-column label="通知类型" width="100">
-          <template slot-scope="scope">
+          <template #default="scope">
             {{ noticeTypeText(scope.row.noticeType) }}
           </template>
         </el-table-column>
         <el-table-column label="目标类型" width="120">
-          <template slot-scope="scope">
+          <template #default="scope">
             {{ targetTypeText(scope.row.targetType) }}
           </template>
         </el-table-column>
         <el-table-column label="状态" width="90">
-          <template slot-scope="scope">
-            <el-tag v-if="scope.row.status === '0'" size="mini">待发布</el-tag>
-            <el-tag v-else-if="scope.row.status === '1'" type="success" size="mini">已发布</el-tag>
-            <el-tag v-else type="info" size="mini">已撤回</el-tag>
+          <template #default="scope">
+            <el-tag v-if="scope.row.status === '0'" size="small">待发布</el-tag>
+            <el-tag v-else-if="scope.row.status === '1'" type="success" size="small">已发布</el-tag>
+            <el-tag v-else type="info" size="small">已撤回</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="publishTime" label="发布时间" min-width="160"/>
         <el-table-column label="操作" min-width="220" fixed="right">
-          <template slot-scope="scope">
+          <template #default="scope">
             <div class="action-buttons">
-              <el-tooltip v-perm="PERMS.notice.update" content="编辑" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-if="hasPerm(PERMS.notice.update)" content="编辑" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
-                  size="mini"
-                  icon="el-icon-edit"
+                  size="small"
+                  icon="Edit"
                   class="action-icon is-primary"
                   @click="handleEdit(scope.row)"/>
               </el-tooltip>
               <el-tooltip
-                v-if="scope.row.status === '0'"
-                v-perm="PERMS.notice.publish"
+                v-if="scope.row.status === '0' && hasPerm(PERMS.notice.publish)"
                 content="发布"
                 placement="top"
                 popper-class="action-tooltip">
                 <el-button
                   type="text"
-                  size="mini"
-                  icon="el-icon-upload2"
+                  size="small"
+                  icon="Upload"
                   class="action-icon is-success"
                   @click="handlePublish(scope.row)"/>
               </el-tooltip>
               <el-tooltip
-                v-if="scope.row.status === '1'"
-                v-perm="PERMS.notice.revoke"
+                v-if="scope.row.status === '1' && hasPerm(PERMS.notice.revoke)"
                 content="撤销"
                 placement="top"
                 popper-class="action-tooltip">
                 <el-button
                   type="text"
-                  size="mini"
-                  icon="el-icon-refresh"
+                  size="small"
+                  icon="Refresh"
                   class="action-icon is-warning"
                   @click="handleRevoke(scope.row)"/>
               </el-tooltip>
-              <el-tooltip v-perm="PERMS.notice.delete" content="删除" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-if="hasPerm(PERMS.notice.delete)" content="删除" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
-                  size="mini"
-                  icon="el-icon-delete"
+                  size="small"
+                  icon="Delete"
                   class="action-icon is-danger"
                   @click="handleDelete(scope.row)"/>
               </el-tooltip>
@@ -118,7 +118,7 @@
       </div>
     </el-card>
 
-    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="640px">
+    <el-dialog :title="dialogTitle" v-model="dialogVisible" width="640px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="通知标题" prop="noticeTitle">
           <el-input v-model="form.noticeTitle" placeholder="请输入通知标题"/>
@@ -149,28 +149,46 @@
         </el-form-item>
         <el-form-item label="通知内容" prop="noticeContent">
           <div class="notice-editor">
-            <div ref="noticeToolbar" class="notice-editor-toolbar"></div>
-            <div ref="noticeEditor" class="notice-editor-body"></div>
+            <Toolbar
+              class="notice-editor-toolbar"
+              :editor="editorInstance"
+              :default-config="toolbarConfig"
+              mode="simple"
+            />
+            <WangEditor
+              class="notice-editor-body"
+              v-model="form.noticeContent"
+              :default-config="editorConfig"
+              mode="simple"
+              @onCreated="handleEditorCreated"
+            />
           </div>
         </el-form-item>
         <el-form-item label="发布时间" prop="publishTime">
           <el-date-picker
             v-model="form.publishTime"
             type="datetime"
-            value-format="yyyy-MM-dd HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
             placeholder="为空则立即发布"/>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">确定</el-button>
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitForm">确定</el-button>
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>
 
-<script>
-import Editor from 'wangeditor'
+<script setup lang="ts">
+import { ref, reactive, computed, watch, nextTick, onBeforeUnmount, shallowRef } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import type { FormInstance } from 'element-plus'
+import { Editor as WangEditor, Toolbar } from '@wangeditor/editor-for-vue'
+import type { IDomEditor } from '@wangeditor/editor'
+import '@wangeditor/editor/dist/css/style.css'
 import {
   addNotice,
   deleteNotice,
@@ -180,287 +198,260 @@ import {
   revokeNotice,
   updateNotice
 } from '@/api/notice'
-import {getUserPageList} from '@/api/user'
-import {getRolePageList} from '@/api/role'
-import {getDeptList} from '@/api/dept'
-import {PERMS} from '@/utils/permCode'
-import {Message} from 'element-ui'
+import { getUserPageList } from '@/api/user'
+import { getRolePageList } from '@/api/role'
+import { getDeptList } from '@/api/dept'
+import { PERMS } from '@/utils/permCode'
+import { usePermission } from '@/composables/usePermission'
 
-export default {
-  name: 'NoticeListPage',
-  data() {
-    return {
-      loading: false,
-      total: 0,
-      queryParams: {
-        pageNum: 1,
-        pageSize: 10,
-        noticeTitle: '',
-        noticeType: '',
-        status: ''
-      },
-      tableData: [],
-      dialogVisible: false,
-      dialogTitle: '',
-      form: this.getDefaultForm(),
-      editor: null,
-      rules: {
-        noticeTitle: [{required: true, message: '请输入通知标题', trigger: 'blur'}],
-        noticeType: [{required: true, message: '请选择通知类型', trigger: 'change'}],
-        targetType: [{required: true, message: '请选择目标类型', trigger: 'change'}],
-        noticeContent: [{required: true, message: '请输入通知内容', trigger: 'blur'}]
-      },
-      userOptions: [],
-      roleOptions: [],
-      deptOptions: [],
-      PERMS
-    }
-  },
-  computed: {
-    targetOptions() {
-      if (this.form.targetType === 2) {
-        return this.userOptions
-      }
-      if (this.form.targetType === 3) {
-        return this.roleOptions
-      }
-      if (this.form.targetType === 4) {
-        return this.deptOptions
-      }
-      return []
-    }
-  },
-  watch: {
-    'form.targetType'(value) {
-      if (value === 1) {
-        this.form.targetIds = []
-      }
-    }
-  },
-  created() {
-    this.fetchList()
-    this.fetchTargets()
-  },
-  methods: {
-    getDefaultForm() {
-      return {
-        id: null,
-        noticeTitle: '',
-        noticeType: '1',
-        noticeContent: '',
-        targetType: 1,
-        targetIds: [],
-        publishTime: ''
-      }
-    },
-    noticeTypeText(value) {
-      const map = {1: '系统通知', 2: '公告', 3: '提醒'}
-      return map[value] || value
-    },
-    targetTypeText(value) {
-      const map = {1: '全部用户', 2: '指定用户', 3: '指定角色', 4: '指定部门'}
-      return map[value] || value
-    },
-    async fetchList() {
-      this.loading = true
-      try {
-        const data = await getNoticePageList(this.queryParams)
-        this.tableData = data.records || []
-        this.total = Number(data.total || 0)
-      } catch (error) {
-        console.error(error)
-      } finally {
-        this.loading = false
-      }
-    },
-    async fetchTargets() {
-      try {
-        const userData = await getUserPageList({pageNum: 1, pageSize: 1000})
-        this.userOptions = (userData.records || []).map(item => ({
-          label: item.nickname || item.username,
-          value: item.id
-        }))
-        const roleData = await getRolePageList({pageNum: 1, pageSize: 1000})
-        this.roleOptions = (roleData.records || []).map(item => ({
-          label: item.roleName,
-          value: item.id
-        }))
-        const deptData = await getDeptList({})
-        this.deptOptions = (deptData || []).map(item => ({
-          label: item.deptName,
-          value: item.id
-        }))
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    handleSearch() {
-      this.queryParams.pageNum = 1
-      this.fetchList()
-    },
-    handleReset() {
-      this.queryParams = {
-        pageNum: 1,
-        pageSize: 10,
-        noticeTitle: '',
-        noticeType: '',
-        status: ''
-      }
-      this.fetchList()
-    },
-    handlePageChange(page) {
-      this.queryParams.pageNum = page
-      this.fetchList()
-    },
-    handleSizeChange(size) {
-      this.queryParams.pageSize = size
-      this.queryParams.pageNum = 1
-      this.fetchList()
-    },
-    handleAdd() {
-      this.dialogTitle = '新增通知'
-      this.form = this.getDefaultForm()
-      this.dialogVisible = true
-      this.$nextTick(() => {
-        if (this.$refs.formRef) {
-          this.$refs.formRef.clearValidate()
-        }
-        this.initEditor()
-        this.setEditorContent(this.form.noticeContent)
-      })
-    },
-    async handleEdit(row) {
-      this.dialogTitle = '编辑通知'
-      try {
-        const detail = await getNoticeDetail(row.id)
-        let targetIds = []
-        if (Array.isArray(detail.targetIds)) {
-          targetIds = detail.targetIds
-        } else if (detail.targetIds) {
-          targetIds = detail.targetIds.split(',').map(item => Number(item))
-        }
-        this.form = {
-          id: detail.id,
-          noticeTitle: detail.noticeTitle,
-          noticeType: detail.noticeType,
-          noticeContent: detail.noticeContent,
-          targetType: detail.targetType,
-          targetIds,
-          publishTime: detail.publishTime || ''
-        }
-        this.dialogVisible = true
-        this.$nextTick(() => {
-          if (this.$refs.formRef) {
-            this.$refs.formRef.clearValidate()
-          }
-          this.initEditor()
-          this.setEditorContent(this.form.noticeContent)
-        })
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    initEditor() {
-      if (this.editor) {
-        return
-      }
-      if (!this.$refs.noticeEditor || !this.$refs.noticeToolbar) {
-        return
-      }
-      const editor = new Editor(this.$refs.noticeToolbar, this.$refs.noticeEditor)
-      editor.config.menus = [
-        'bold',
-        'italic',
-        'underline',
-        'head',
-        'list',
-        'link',
-        'quote',
-        'code',
-        'undo',
-        'redo'
-      ]
-      editor.config.showFullScreen = false
-      editor.config.onchange = html => {
-        const text = editor.txt.text().trim()
-        this.form.noticeContent = text ? html : ''
-      }
-      editor.config.linkCheck = (text, link) => {
-        if (!/^https?:\/\//i.test(link || '')) {
-          return '链接仅支持 http/https'
-        }
-        return true
-      }
-      editor.config.linkImgCallback = () => {}
-      editor.config.uploadImgShowBase64 = false
-      editor.config.uploadImgMaxLength = 0
-      editor.config.pasteFilterStyle = true
-      editor.create()
-      this.editor = editor
-    },
-    setEditorContent(content) {
-      if (this.editor) {
-        this.editor.txt.html(content || '')
-      }
-    },
-    submitForm() {
-      this.$refs.formRef.validate(async valid => {
-        if (!valid) {
-          return
-        }
-        try {
-          if (this.form.id) {
-            await updateNotice(this.form)
-            Message.success('修改成功')
-          } else {
-            await addNotice(this.form)
-            Message.success('新增成功')
-          }
-          this.dialogVisible = false
-          this.fetchList()
-        } catch (error) {
-          console.error(error)
-        }
-      })
-    },
-    handleDelete(row) {
-      this.$confirm(`确认删除通知 ${row.noticeTitle} 吗？`, '提示', {type: 'warning'})
-        .then(async () => {
-          await deleteNotice(row.id)
-          Message.success('删除成功')
-          this.fetchList()
-        })
-        .catch(() => {
-        })
-    },
-    handlePublish(row) {
-      this.$confirm(`确认发布通知 ${row.noticeTitle} 吗？`, '提示', {type: 'warning'})
-        .then(async () => {
-          await publishNotice(row.id)
-          Message.success('发布成功')
-          this.fetchList()
-        })
-        .catch(() => {
-        })
-    },
-    handleRevoke(row) {
-      this.$confirm(`确认撤销通知 ${row.noticeTitle} 吗？`, '提示', {type: 'warning'})
-        .then(async () => {
-          await revokeNotice(row.id)
-          Message.success('撤销成功')
-          this.fetchList()
-        })
-        .catch(() => {
-        })
-    }
-  },
-  beforeDestroy() {
-    if (this.editor) {
-      this.editor.destroy()
-      this.editor = null
-    }
+const { hasPerm } = usePermission()
+
+const loading = ref(false)
+const total = ref(0)
+const tableData = ref<any[]>([])
+const dialogVisible = ref(false)
+const dialogTitle = ref('')
+const userOptions = ref<any[]>([])
+const roleOptions = ref<any[]>([])
+const deptOptions = ref<any[]>([])
+
+const formRef = ref<FormInstance>()
+const editorInstance = shallowRef<IDomEditor>()
+
+const toolbarConfig = {
+  excludeKeys: ['uploadImage', 'uploadVideo', 'fullScreen', 'group-image', 'group-video']
+}
+
+const editorConfig = {
+  placeholder: '请输入通知内容...'
+}
+
+function handleEditorCreated(editor: IDomEditor) {
+  editorInstance.value = editor
+}
+
+const queryParams = reactive({
+  pageNum: 1,
+  pageSize: 10,
+  noticeTitle: '',
+  noticeType: '',
+  status: ''
+})
+
+function getDefaultForm() {
+  return {
+    id: null as number | null,
+    noticeTitle: '',
+    noticeType: '1',
+    noticeContent: '',
+    targetType: 1,
+    targetIds: [] as number[],
+    publishTime: ''
   }
 }
+
+const form = reactive(getDefaultForm())
+
+const rules = {
+  noticeTitle: [{ required: true, message: '请输入通知标题', trigger: 'blur' }],
+  noticeType: [{ required: true, message: '请选择通知类型', trigger: 'change' }],
+  targetType: [{ required: true, message: '请选择目标类型', trigger: 'change' }],
+  noticeContent: [{ required: true, message: '请输入通知内容', trigger: 'blur' }]
+}
+
+const targetOptions = computed(() => {
+  if (form.targetType === 2) {
+    return userOptions.value
+  }
+  if (form.targetType === 3) {
+    return roleOptions.value
+  }
+  if (form.targetType === 4) {
+    return deptOptions.value
+  }
+  return []
+})
+
+watch(() => form.targetType, (value) => {
+  if (value === 1) {
+    form.targetIds = []
+  }
+})
+
+function noticeTypeText(value: string | number) {
+  const map: Record<string | number, string> = { 1: '系统通知', 2: '公告', 3: '提醒' }
+  return map[value] || value
+}
+
+function targetTypeText(value: string | number) {
+  const map: Record<string | number, string> = { 1: '全部用户', 2: '指定用户', 3: '指定角色', 4: '指定部门' }
+  return map[value] || value
+}
+
+async function fetchList() {
+  loading.value = true
+  try {
+    const data = await getNoticePageList(queryParams)
+    tableData.value = data.records || []
+    total.value = Number(data.total || 0)
+  } catch (error) {
+    console.error(error)
+  } finally {
+    loading.value = false
+  }
+}
+
+async function fetchTargets() {
+  try {
+    const userData = await getUserPageList({ pageNum: 1, pageSize: 1000 })
+    userOptions.value = (userData.records || []).map((item: any) => ({
+      label: item.nickname || item.username,
+      value: item.id
+    }))
+    const roleData = await getRolePageList({ pageNum: 1, pageSize: 1000 })
+    roleOptions.value = (roleData.records || []).map((item: any) => ({
+      label: item.roleName,
+      value: item.id
+    }))
+    const deptData = await getDeptList({})
+    deptOptions.value = (deptData || []).map((item: any) => ({
+      label: item.deptName,
+      value: item.id
+    }))
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function handleSearch() {
+  queryParams.pageNum = 1
+  fetchList()
+}
+
+function handleReset() {
+  queryParams.pageNum = 1
+  queryParams.pageSize = 10
+  queryParams.noticeTitle = ''
+  queryParams.noticeType = ''
+  queryParams.status = ''
+  fetchList()
+}
+
+function handlePageChange(page: number) {
+  queryParams.pageNum = page
+  fetchList()
+}
+
+function handleSizeChange(size: number) {
+  queryParams.pageSize = size
+  queryParams.pageNum = 1
+  fetchList()
+}
+
+function handleAdd() {
+  dialogTitle.value = '新增通知'
+  Object.assign(form, getDefaultForm())
+  dialogVisible.value = true
+  nextTick(() => {
+    if (formRef.value) {
+      formRef.value.clearValidate()
+    }
+  })
+}
+
+async function handleEdit(row: any) {
+  dialogTitle.value = '编辑通知'
+  try {
+    const detail = await getNoticeDetail(row.id)
+    let targetIds: number[] = []
+    if (Array.isArray(detail.targetIds)) {
+      targetIds = detail.targetIds
+    } else if (detail.targetIds) {
+      targetIds = detail.targetIds.split(',').map((item: string) => Number(item))
+    }
+    Object.assign(form, {
+      id: detail.id,
+      noticeTitle: detail.noticeTitle,
+      noticeType: detail.noticeType,
+      noticeContent: detail.noticeContent,
+      targetType: detail.targetType,
+      targetIds,
+      publishTime: detail.publishTime || ''
+    })
+    dialogVisible.value = true
+    nextTick(() => {
+      if (formRef.value) {
+        formRef.value.clearValidate()
+      }
+    })
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function submitForm() {
+  formRef.value?.validate(async (valid: boolean) => {
+    if (!valid) {
+      return
+    }
+    try {
+      if (form.id) {
+        await updateNotice(form)
+        ElMessage.success('修改成功')
+      } else {
+        await addNotice(form)
+        ElMessage.success('新增成功')
+      }
+      dialogVisible.value = false
+      fetchList()
+    } catch (error) {
+      console.error(error)
+    }
+  })
+}
+
+function handleDelete(row: any) {
+  ElMessageBox.confirm(`确认删除通知 ${row.noticeTitle} 吗？`, '提示', { type: 'warning' })
+    .then(async () => {
+      await deleteNotice(row.id)
+      ElMessage.success('删除成功')
+      fetchList()
+    })
+    .catch(() => {
+    })
+}
+
+function handlePublish(row: any) {
+  ElMessageBox.confirm(`确认发布通知 ${row.noticeTitle} 吗？`, '提示', { type: 'warning' })
+    .then(async () => {
+      await publishNotice(row.id)
+      ElMessage.success('发布成功')
+      fetchList()
+    })
+    .catch(() => {
+    })
+}
+
+function handleRevoke(row: any) {
+  ElMessageBox.confirm(`确认撤销通知 ${row.noticeTitle} 吗？`, '提示', { type: 'warning' })
+    .then(async () => {
+      await revokeNotice(row.id)
+      ElMessage.success('撤销成功')
+      fetchList()
+    })
+    .catch(() => {
+    })
+}
+
+onBeforeUnmount(() => {
+  if (editorInstance.value) {
+    editorInstance.value.destroy()
+  }
+})
+
+// created
+fetchList()
+fetchTargets()
 </script>
 
 <style scoped>

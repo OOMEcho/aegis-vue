@@ -6,17 +6,17 @@
       </div>
       <div class="hero-quick">
         <button v-perm="PERMS.user.page" type="button" class="quick-item hero-quick-item" @click="go('/system/user')">
-          <i class="el-icon-user"></i>
+          <el-icon><User /></el-icon>
           <div class="quick-title">用户管理</div>
           <div class="quick-desc">账号与基础信息维护</div>
         </button>
         <button v-perm="PERMS.role.page" type="button" class="quick-item hero-quick-item" @click="go('/system/role')">
-          <i class="el-icon-s-custom"></i>
+          <el-icon><UserFilled /></el-icon>
           <div class="quick-title">角色管理</div>
           <div class="quick-desc">角色与分配策略</div>
         </button>
         <button v-perm="PERMS.permission.page" type="button" class="quick-item hero-quick-item" @click="go('/system/permission')">
-          <i class="el-icon-key"></i>
+          <el-icon><Key /></el-icon>
           <div class="quick-title">权限管理</div>
           <div class="quick-desc">权限与资源配置</div>
         </button>
@@ -27,7 +27,7 @@
       <el-col :span="6">
         <el-card class="stat-card">
           <div class="stat-head">
-            <i class="el-icon-user stat-icon"></i>
+            <el-icon class="stat-icon"><User /></el-icon>
             <span class="stat-title">用户总数</span>
           </div>
           <div class="stat-value">{{ stats.user }}</div>
@@ -37,7 +37,7 @@
       <el-col :span="6">
         <el-card class="stat-card">
           <div class="stat-head">
-            <i class="el-icon-s-custom stat-icon"></i>
+            <el-icon class="stat-icon"><UserFilled /></el-icon>
             <span class="stat-title">角色总数</span>
           </div>
           <div class="stat-value">{{ stats.role }}</div>
@@ -47,7 +47,7 @@
       <el-col :span="6">
         <el-card class="stat-card">
           <div class="stat-head">
-            <i class="el-icon-key stat-icon"></i>
+            <el-icon class="stat-icon"><Key /></el-icon>
             <span class="stat-title">权限总数</span>
           </div>
           <div class="stat-value">{{ stats.permission }}</div>
@@ -57,7 +57,7 @@
       <el-col :span="6">
         <el-card class="stat-card">
           <div class="stat-head">
-            <i class="el-icon-bell stat-icon"></i>
+            <el-icon class="stat-icon"><Bell /></el-icon>
             <span class="stat-title">通知总数</span>
           </div>
           <div class="stat-value">{{ stats.notice }}</div>
@@ -69,15 +69,17 @@
     <el-row :gutter="16" class="content-row">
       <el-col :span="16">
         <el-card class="trend-card">
-          <div slot="header" class="card-header">
-            <span>近 30 日访问趋势</span>
-            <div class="card-actions">
-              <el-button size="mini" :type="trendDays === 7 ? 'primary' : 'default'" :plain="trendDays !== 7" @click="setTrendDays(7)">近 7 日</el-button>
-              <el-button size="mini" :type="trendDays === 30 ? 'primary' : 'default'" :plain="trendDays !== 30" @click="setTrendDays(30)">近 30 日</el-button>
+          <template #header>
+            <div class="card-header">
+              <span>近 30 日访问趋势</span>
+              <div class="card-actions">
+                <el-button size="small" :type="trendDays === 7 ? 'primary' : 'default'" :plain="trendDays !== 7" @click="setTrendDays(7)">近 7 日</el-button>
+                <el-button size="small" :type="trendDays === 30 ? 'primary' : 'default'" :plain="trendDays !== 30" @click="setTrendDays(30)">近 30 日</el-button>
+              </div>
             </div>
-          </div>
+          </template>
           <div class="trend-body">
-            <v-chart class="trend-chart" :options="trendOption" autoresize/>
+            <v-chart class="trend-chart" :option="trendOption" autoresize/>
             <div class="trend-legend">
               <span class="legend-dot"></span>
               <span>访问量</span>
@@ -87,9 +89,11 @@
       </el-col>
       <el-col :span="8">
         <el-card class="tips-card">
-          <div slot="header" class="card-header">
-            <span>系统介绍</span>
-          </div>
+          <template #header>
+            <div class="card-header">
+              <span>系统介绍</span>
+            </div>
+          </template>
           <div class="intro-text">
             <p>
               Aegis 是一个企业级 RBAC 权限管理系统，采用前后端分离架构，以权限为核心组织用户、角色与资源。
@@ -112,134 +116,128 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, reactive, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import VChart from 'vue-echarts'
-import 'echarts'
-import {getDashboardAccessTrend, getDashboardStatistics} from '@/api/dashboard'
-import {PERMS} from '@/utils/permCode'
+import { use } from 'echarts/core'
+import { CanvasRenderer } from 'echarts/renderers'
+import { LineChart } from 'echarts/charts'
+import { GridComponent, TooltipComponent } from 'echarts/components'
+import { getDashboardAccessTrend, getDashboardStatistics } from '@/api/dashboard'
+import { PERMS } from '@/utils/permCode'
+import { useAuthStore } from '@/stores/auth'
 
-export default {
-  name: 'DashboardPage',
-  components: {
-    VChart
+use([CanvasRenderer, LineChart, GridComponent, TooltipComponent])
+
+const router = useRouter()
+const authStore = useAuthStore()
+
+const stats = reactive({
+  user: '--',
+  role: '--',
+  permission: '--',
+  notice: '--'
+})
+
+const growth = reactive({
+  user: '+0.0%',
+  role: '+0.0%',
+  permission: '+0.0%',
+  notice: '+0.0%'
+})
+
+const trendDays = ref(30)
+const trendLabels = ref<string[]>([])
+const trendValues = ref<number[]>([])
+
+const userInfo = computed(() => authStore.userInfo || {} as Record<string, any>)
+const displayName = computed(() => userInfo.value.nickname || userInfo.value.username || '用户')
+
+const trendOption = computed(() => ({
+  grid: { left: 12, right: 12, top: 12, bottom: 24, containLabel: true },
+  tooltip: { trigger: 'axis' },
+  xAxis: {
+    type: 'category',
+    boundaryGap: false,
+    data: trendLabels.value,
+    axisLine: { lineStyle: { color: '#dfe6f5' } },
+    axisLabel: { color: '#8b97ad' }
   },
-  data() {
-    return {
-      stats: {
-        user: '--',
-        role: '--',
-        permission: '--',
-        notice: '--'
-      },
-      growth: {
-        user: '+0.0%',
-        role: '+0.0%',
-        permission: '+0.0%',
-        notice: '+0.0%'
-      },
-      trendDays: 30,
-      trendLabels: [],
-      trendValues: [],
-      PERMS
-    }
+  yAxis: {
+    type: 'value',
+    axisLine: { show: false },
+    splitLine: { lineStyle: { color: '#eef2ff' } },
+    axisLabel: { color: '#8b97ad' }
   },
-  computed: {
-    userInfo() {
-      return this.$store.state.auth.userInfo || {}
-    },
-    displayName() {
-      return this.userInfo.nickname || this.userInfo.username || '用户'
-    },
-    trendOption() {
-      return {
-        grid: {left: 12, right: 12, top: 12, bottom: 24, containLabel: true},
-        tooltip: {trigger: 'axis'},
-        xAxis: {
-          type: 'category',
-          boundaryGap: false,
-          data: this.trendLabels,
-          axisLine: {lineStyle: {color: '#dfe6f5'}},
-          axisLabel: {color: '#8b97ad'}
-        },
-        yAxis: {
-          type: 'value',
-          axisLine: {show: false},
-          splitLine: {lineStyle: {color: '#eef2ff'}},
-          axisLabel: {color: '#8b97ad'}
-        },
-        series: [
-          {
-            name: '访问量',
-            type: 'line',
-            smooth: true,
-            symbol: 'circle',
-            symbolSize: 6,
-            data: this.trendValues,
-            lineStyle: {color: '#4f70ff', width: 2},
-            itemStyle: {color: '#4f70ff'},
-            areaStyle: {
-              color: {
-                type: 'linear',
-                x: 0,
-                y: 0,
-                x2: 0,
-                y2: 1,
-                colorStops: [
-                  {offset: 0, color: 'rgba(79, 112, 255, 0.25)'},
-                  {offset: 1, color: 'rgba(79, 112, 255, 0.02)'}
-                ]
-              }
-            }
-          }
-        ]
-      }
-    }
-  },
-  created() {
-    this.fetchStatistics()
-    this.fetchTrend()
-  },
-  methods: {
-    async fetchStatistics() {
-      try {
-        const data = await getDashboardStatistics()
-        this.stats = {
-          user: data.userCount || '0',
-          role: data.roleCount || '0',
-          permission: data.permissionCount || '0',
-          notice: data.noticeCount || '0'
+  series: [
+    {
+      name: '访问量',
+      type: 'line',
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 6,
+      data: trendValues.value,
+      lineStyle: { color: '#4f70ff', width: 2 },
+      itemStyle: { color: '#4f70ff' },
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [
+            { offset: 0, color: 'rgba(79, 112, 255, 0.25)' },
+            { offset: 1, color: 'rgba(79, 112, 255, 0.02)' }
+          ]
         }
-        this.growth = {
-          user: data.userGrowthRate || '+0.0%',
-          role: data.roleGrowthRate || '+0.0%',
-          permission: data.permissionGrowthRate || '+0.0%',
-          notice: data.noticeGrowthRate || '+0.0%'
-        }
-      } catch (error) {
-        console.error(error)
       }
-    },
-    async fetchTrend() {
-      try {
-        const data = await getDashboardAccessTrend(this.trendDays)
-        this.trendLabels = (data || []).map(item => item.date)
-        this.trendValues = (data || []).map(item => Number(item.count || 0))
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    setTrendDays(days) {
-      if (this.trendDays === days) {
-        return
-      }
-      this.trendDays = days
-      this.fetchTrend()
-    },
-    go(path) {
-      this.$router.push(path)
     }
+  ]
+}))
+
+async function fetchStatistics() {
+  try {
+    const data = await getDashboardStatistics()
+    stats.user = data.userCount || '0'
+    stats.role = data.roleCount || '0'
+    stats.permission = data.permissionCount || '0'
+    stats.notice = data.noticeCount || '0'
+    growth.user = data.userGrowthRate || '+0.0%'
+    growth.role = data.roleGrowthRate || '+0.0%'
+    growth.permission = data.permissionGrowthRate || '+0.0%'
+    growth.notice = data.noticeGrowthRate || '+0.0%'
+  } catch (error) {
+    console.error(error)
   }
 }
+
+async function fetchTrend() {
+  try {
+    const data = await getDashboardAccessTrend(trendDays.value)
+    trendLabels.value = (data || []).map((item: any) => item.date)
+    trendValues.value = (data || []).map((item: any) => Number(item.count || 0))
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function setTrendDays(days: number) {
+  if (trendDays.value === days) {
+    return
+  }
+  trendDays.value = days
+  fetchTrend()
+}
+
+function go(path: string) {
+  router.push(path)
+}
+
+// created
+fetchStatistics()
+fetchTrend()
 </script>
 
 <style scoped>

@@ -1,9 +1,11 @@
 <template>
   <div class="page-container">
     <el-card>
-      <div slot="header" class="card-header">
-        <span>角色管理</span>
-      </div>
+      <template #header>
+        <div class="card-header">
+          <span>角色管理</span>
+        </div>
+      </template>
 
       <el-form :inline="true" :model="queryParams" class="search-form" size="small">
         <el-form-item label="角色名称">
@@ -22,13 +24,13 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="el-icon-search" @click="handleSearch">查询</el-button>
-          <el-button icon="el-icon-refresh" @click="handleReset">重置</el-button>
+          <el-button type="primary" icon="Search" @click="handleSearch">查询</el-button>
+          <el-button icon="Refresh" @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
 
       <div class="table-toolbar">
-        <el-button type="primary" size="small" icon="el-icon-plus" v-perm="PERMS.role.add" @click="handleAdd">
+        <el-button type="primary" size="small" icon="Plus" v-perm="PERMS.role.add" @click="handleAdd">
           新增
         </el-button>
       </div>
@@ -38,69 +40,71 @@
         <el-table-column prop="roleCode" label="角色编码" min-width="120"/>
         <el-table-column prop="orderNum" label="排序" width="80"/>
         <el-table-column label="数据范围" min-width="120">
-          <template slot-scope="scope">
+          <template #default="scope">
             {{ dataScopeText(scope.row.dataScope) }}
           </template>
         </el-table-column>
         <el-table-column label="状态" width="80">
-          <template slot-scope="scope">
-            <el-tag :type="statusTagType(scope.row.status)" size="mini">
+          <template #default="scope">
+            <el-tag :type="statusTagType(scope.row.status)" size="small">
               {{ dictLabel('DATA_STATUS', scope.row.status) }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" min-width="220" fixed="right">
-          <template slot-scope="scope">
+          <template #default="scope">
             <div class="action-buttons">
-              <el-tooltip v-perm="PERMS.role.update" content="编辑" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-if="hasPerm(PERMS.role.update)" content="编辑" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
-                  size="mini"
-                  icon="el-icon-edit"
+                  size="small"
+                  icon="Edit"
                   class="action-icon is-primary"
                   @click="handleEdit(scope.row)"/>
               </el-tooltip>
               <el-tooltip
-                v-perm="PERMS.role.status"
+                v-if="hasPerm(PERMS.role.status)"
                 :content="scope.row.status === '0' ? '停用' : '启用'"
                 placement="top"
                 popper-class="action-tooltip">
                 <el-button
                   type="text"
-                  size="mini"
-                  :icon="scope.row.status === '0' ? 'el-icon-close' : 'el-icon-check'"
+                  size="small"
+                  :icon="scope.row.status === '0' ? Close : Check"
                   :class="['action-icon', scope.row.status === '0' ? 'is-warning' : 'is-success']"
                   @click="handleStatus(scope.row)"/>
               </el-tooltip>
-              <el-tooltip v-perm="PERMS.role.permList" content="权限配置" placement="top" popper-class="action-tooltip">
+              <el-tooltip v-if="hasPerm(PERMS.role.permList)" content="权限配置" placement="top" popper-class="action-tooltip">
                 <el-button
                   type="text"
-                  size="mini"
-                  icon="el-icon-lock"
+                  size="small"
+                  icon="Lock"
                   class="action-icon is-primary"
                   @click="openPermDialog(scope.row)"/>
               </el-tooltip>
               <el-dropdown
-                v-perm="[PERMS.role.assignUser, PERMS.role.dataScope, PERMS.role.delete]"
+                v-if="hasPerm([PERMS.role.assignUser, PERMS.role.dataScope, PERMS.role.delete])"
                 trigger="click"
                 popper-class="action-dropdown">
                 <span class="action-dropdown-trigger">
                   <el-tooltip content="更多操作" placement="top" popper-class="action-tooltip">
-                    <el-button type="text" size="mini" icon="el-icon-more" class="action-icon is-neutral"/>
+                    <el-button type="text" size="small" icon="MoreFilled" class="action-icon is-neutral"/>
                   </el-tooltip>
                 </span>
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item v-perm="PERMS.role.assignUser" @click.native="openAssignUser(scope.row)">
-                    分配用户
-                  </el-dropdown-item>
-                  <el-dropdown-item v-perm="PERMS.role.dataScope" @click.native="openDataScopeDialog(scope.row)">
-                    数据权限
-                  </el-dropdown-item>
-                  <el-dropdown-item v-perm="PERMS.role.delete" class="danger-item" @click.native="handleDelete(scope.row)">
-                    <span class="danger-dot"></span>
-                    删除
-                  </el-dropdown-item>
-                </el-dropdown-menu>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item v-if="hasPerm(PERMS.role.assignUser)" @click="openAssignUser(scope.row)">
+                      分配用户
+                    </el-dropdown-item>
+                    <el-dropdown-item v-if="hasPerm(PERMS.role.dataScope)" @click="openDataScopeDialog(scope.row)">
+                      数据权限
+                    </el-dropdown-item>
+                    <el-dropdown-item v-if="hasPerm(PERMS.role.delete)" class="danger-item" @click="handleDelete(scope.row)">
+                      <span class="danger-dot"></span>
+                      删除
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
               </el-dropdown>
             </div>
           </template>
@@ -120,7 +124,7 @@
       </div>
     </el-card>
 
-    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="520px">
+    <el-dialog :title="dialogTitle" v-model="dialogVisible" width="520px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="角色名称" prop="roleName">
           <el-input v-model="form.roleName" placeholder="请输入角色名称"/>
@@ -141,16 +145,18 @@
           </el-select>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" rows="3"/>
+          <el-input v-model="form.remark" type="textarea" :rows="3"/>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">确定</el-button>
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitForm">确定</el-button>
+        </div>
+      </template>
     </el-dialog>
 
-    <el-dialog title="权限配置" :visible.sync="permDialogVisible" width="680px">
+    <el-dialog title="权限配置" v-model="permDialogVisible" width="680px">
       <div class="perm-dialog">
         <div class="perm-toolbar">
           <el-input
@@ -158,13 +164,13 @@
             placeholder="搜索权限名称或编码"
             size="small"
             clearable
-            prefix-icon="el-icon-search"/>
+            prefix-icon="Search"/>
         </div>
         <el-collapse v-model="permCollapseActive" class="perm-collapse">
           <el-collapse-item name="M">
-            <template slot="title">
+            <template #title>
               <div class="perm-collapse-title">
-                <i class="el-icon-document"></i>
+                <el-icon><Document /></el-icon>
                 <span>页面</span>
                 <span class="perm-count">{{ permGroupStats.M.total }}</span>
                 <span v-if="permGroupStats.M.checked" class="perm-selected">已选 {{ permGroupStats.M.checked }}</span>
@@ -172,8 +178,8 @@
             </template>
             <div class="perm-group">
               <div class="perm-group-actions">
-                <el-button type="text" size="mini" :disabled="!permGroupStats.M.total" @click="selectPermGroup('M')">全选</el-button>
-                <el-button type="text" size="mini" :disabled="!permGroupStats.M.total" @click="clearPermGroup('M')">清空</el-button>
+                <el-button type="text" size="small" :disabled="!permGroupStats.M.total" @click="selectPermGroup('M')">全选</el-button>
+                <el-button type="text" size="small" :disabled="!permGroupStats.M.total" @click="clearPermGroup('M')">清空</el-button>
               </div>
               <el-checkbox-group v-model="permChecked" class="perm-grid">
                 <el-checkbox
@@ -188,9 +194,9 @@
             </div>
           </el-collapse-item>
           <el-collapse-item name="B">
-            <template slot="title">
+            <template #title>
               <div class="perm-collapse-title">
-                <i class="el-icon-s-operation"></i>
+                <el-icon><Operation /></el-icon>
                 <span>按钮</span>
                 <span class="perm-count">{{ permGroupStats.B.total }}</span>
                 <span v-if="permGroupStats.B.checked" class="perm-selected">已选 {{ permGroupStats.B.checked }}</span>
@@ -198,8 +204,8 @@
             </template>
             <div class="perm-group">
               <div class="perm-group-actions">
-                <el-button type="text" size="mini" :disabled="!permGroupStats.B.total" @click="selectPermGroup('B')">全选</el-button>
-                <el-button type="text" size="mini" :disabled="!permGroupStats.B.total" @click="clearPermGroup('B')">清空</el-button>
+                <el-button type="text" size="small" :disabled="!permGroupStats.B.total" @click="selectPermGroup('B')">全选</el-button>
+                <el-button type="text" size="small" :disabled="!permGroupStats.B.total" @click="clearPermGroup('B')">清空</el-button>
               </div>
               <el-checkbox-group v-model="permChecked" class="perm-grid">
                 <el-checkbox
@@ -214,9 +220,9 @@
             </div>
           </el-collapse-item>
           <el-collapse-item name="A">
-            <template slot="title">
+            <template #title>
               <div class="perm-collapse-title">
-                <i class="el-icon-link"></i>
+                <el-icon><Link /></el-icon>
                 <span>API</span>
                 <span class="perm-count">{{ permGroupStats.A.total }}</span>
                 <span v-if="permGroupStats.A.checked" class="perm-selected">已选 {{ permGroupStats.A.checked }}</span>
@@ -224,8 +230,8 @@
             </template>
             <div class="perm-group">
               <div class="perm-group-actions">
-                <el-button type="text" size="mini" :disabled="!permGroupStats.A.total" @click="selectPermGroup('A')">全选</el-button>
-                <el-button type="text" size="mini" :disabled="!permGroupStats.A.total" @click="clearPermGroup('A')">清空</el-button>
+                <el-button type="text" size="small" :disabled="!permGroupStats.A.total" @click="selectPermGroup('A')">全选</el-button>
+                <el-button type="text" size="small" :disabled="!permGroupStats.A.total" @click="clearPermGroup('A')">清空</el-button>
               </div>
               <el-checkbox-group v-model="permChecked" class="perm-grid">
                 <el-checkbox
@@ -241,13 +247,15 @@
           </el-collapse-item>
         </el-collapse>
       </div>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="permDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveRolePermissions">保存</el-button>
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="permDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="saveRolePermissions">保存</el-button>
+        </div>
+      </template>
     </el-dialog>
 
-    <el-dialog title="分配数据权限" :visible.sync="dataScopeDialogVisible" width="600px">
+    <el-dialog title="分配数据权限" v-model="dataScopeDialogVisible" width="600px">
       <el-form label-width="100px">
         <el-form-item label="数据范围">
           <el-select v-model="dataScopeForm.dataScope" placeholder="请选择">
@@ -271,24 +279,26 @@
               <el-checkbox v-model="parentChildLink">父子联动</el-checkbox>
             </div>
             <el-tree
-              ref="deptTree"
+              ref="deptTreeRef"
               :data="deptTreeData"
               node-key="id"
               show-checkbox
               :default-expand-all="dataScopeExpandAll"
-        :check-strictly="dataScopeForm.deptCheckStrictly !== 1"
+              :check-strictly="dataScopeForm.deptCheckStrictly !== 1"
               :default-checked-keys="deptChecked"
               @check-change="handleDeptCheckChange"/>
           </div>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dataScopeDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveDataScope">保存</el-button>
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dataScopeDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="saveDataScope">保存</el-button>
+        </div>
+      </template>
     </el-dialog>
 
-    <el-dialog :title="assignDialogTitle" :visible.sync="assignDialogVisible" width="900px">
+    <el-dialog :title="assignDialogTitle" v-model="assignDialogVisible" width="900px">
       <el-tabs v-model="assignActiveTab" @tab-click="handleAssignTabClick">
         <el-tab-pane label="已分配" name="allocated">
           <div class="assign-toolbar">
@@ -300,11 +310,11 @@
                 <el-input v-model="allocatedQuery.phone" placeholder="手机号" clearable/>
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" icon="el-icon-search" @click="handleAllocatedSearch">查询</el-button>
-                <el-button icon="el-icon-refresh" @click="handleAllocatedReset">重置</el-button>
+                <el-button type="primary" icon="Search" @click="handleAllocatedSearch">查询</el-button>
+                <el-button icon="Refresh" @click="handleAllocatedReset">重置</el-button>
                 <el-button
                   type="danger"
-                  icon="el-icon-close"
+                  icon="Close"
                   :disabled="!allocatedSelection.length"
                   @click="handleCancelAuthAll">
                   批量取消
@@ -321,31 +331,31 @@
             <el-table-column type="selection" width="50"/>
             <el-table-column prop="username" label="用户名" min-width="120"/>
             <el-table-column label="昵称" min-width="120">
-              <template slot-scope="scope">
+              <template #default="scope">
                 {{ scope.row.nickname || '-' }}
               </template>
             </el-table-column>
             <el-table-column prop="phone" label="手机号" min-width="120"/>
             <el-table-column label="状态" width="80">
-              <template slot-scope="scope">
-                <el-tag :type="statusTagType(scope.row.status)" size="mini">
+              <template #default="scope">
+                <el-tag :type="statusTagType(scope.row.status)" size="small">
                   {{ dictLabel('DATA_STATUS', scope.row.status) }}
                 </el-tag>
               </template>
             </el-table-column>
             <el-table-column label="创建时间" min-width="160">
-              <template slot-scope="scope">
+              <template #default="scope">
                 {{ scope.row.createTime || '-' }}
               </template>
             </el-table-column>
             <el-table-column label="操作" width="80">
-              <template slot-scope="scope">
+              <template #default="scope">
                 <div class="action-buttons">
                   <el-tooltip content="取消授权" placement="top" popper-class="action-tooltip">
                     <el-button
                       type="text"
-                      size="mini"
-                      icon="el-icon-close"
+                      size="small"
+                      icon="Close"
                       class="action-icon is-danger"
                       @click="handleCancelAuth(scope.row)"/>
                   </el-tooltip>
@@ -375,11 +385,11 @@
                 <el-input v-model="unallocatedQuery.phone" placeholder="手机号" clearable/>
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" icon="el-icon-search" @click="handleUnallocatedSearch">查询</el-button>
-                <el-button icon="el-icon-refresh" @click="handleUnallocatedReset">重置</el-button>
+                <el-button type="primary" icon="Search" @click="handleUnallocatedSearch">查询</el-button>
+                <el-button icon="Refresh" @click="handleUnallocatedReset">重置</el-button>
                 <el-button
                   type="primary"
-                  icon="el-icon-check"
+                  icon="Check"
                   :disabled="!unallocatedSelection.length"
                   @click="handleSelectAuthAll">
                   批量授权
@@ -396,31 +406,31 @@
             <el-table-column type="selection" width="50"/>
             <el-table-column prop="username" label="用户名" min-width="120"/>
             <el-table-column label="昵称" min-width="120">
-              <template slot-scope="scope">
+              <template #default="scope">
                 {{ scope.row.nickname || '-' }}
               </template>
             </el-table-column>
             <el-table-column prop="phone" label="手机号" min-width="120"/>
             <el-table-column label="状态" width="80">
-              <template slot-scope="scope">
-                <el-tag :type="statusTagType(scope.row.status)" size="mini">
+              <template #default="scope">
+                <el-tag :type="statusTagType(scope.row.status)" size="small">
                   {{ dictLabel('DATA_STATUS', scope.row.status) }}
                 </el-tag>
               </template>
             </el-table-column>
             <el-table-column label="创建时间" min-width="160">
-              <template slot-scope="scope">
+              <template #default="scope">
                 {{ scope.row.createTime || '-' }}
               </template>
             </el-table-column>
             <el-table-column label="操作" width="80">
-              <template slot-scope="scope">
+              <template #default="scope">
                 <div class="action-buttons">
                   <el-tooltip content="授权" placement="top" popper-class="action-tooltip">
                     <el-button
                       type="text"
-                      size="mini"
-                      icon="el-icon-check"
+                      size="small"
+                      icon="Check"
                       class="action-icon is-primary"
                       @click="handleSelectAuth(scope.row)"/>
                   </el-tooltip>
@@ -441,14 +451,19 @@
           </div>
         </el-tab-pane>
       </el-tabs>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="assignDialogVisible = false">关闭</el-button>
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="assignDialogVisible = false">关闭</el-button>
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, computed, nextTick } from 'vue'
+import type { FormInstance } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   addRole,
   cancelAuth,
@@ -465,562 +480,621 @@ import {
   assignRolePermissions,
   selectAuthAll
 } from '@/api/role'
-import {getPermissionList} from '@/api/permission'
-import {PERMS} from '@/utils/permCode'
-import {Message} from 'element-ui'
-import dictMixin from '@/mixins/dict'
+import { getPermissionList } from '@/api/permission'
+import { PERMS } from '@/utils/permCode'
+import { usePermission } from '@/composables/usePermission'
+import { useDict } from '@/composables/useDict'
+import { Close, Check } from '@element-plus/icons-vue'
 
-export default {
-  name: 'RolePage',
-  mixins: [dictMixin],
-  data() {
-    return {
-      loading: false,
-      total: 0,
-      queryParams: {
-        pageNum: 1,
-        pageSize: 10,
-        roleName: '',
-        roleCode: '',
-        status: ''
-      },
-      tableData: [],
-      dialogVisible: false,
-      dialogTitle: '',
-      form: this.getDefaultForm(),
-      rules: {
-        roleName: [{required: true, message: '请输入角色名称', trigger: 'blur'}],
-        roleCode: [{required: true, message: '请输入角色编码', trigger: 'blur'}]
-      },
-      permDialogVisible: false,
-      permOptions: [],
-      permChecked: [],
-      permKeyword: '',
-      permCollapseActive: ['M'],
-      currentRoleId: null,
-      dataScopeDialogVisible: false,
-      deptTreeData: [],
-      deptChecked: [],
-      dataScopeExpandAll: true,
-      dataScopeCheckAll: false,
-      dataScopeCheckHalf: false,
-      dataScopeForm: {
-        id: null,
-        dataScope: '1',
-        deptCheckStrictly: 1
-      },
-      assignDialogVisible: false,
-      assignActiveTab: 'allocated',
-      assignRole: {
-        id: null,
-        roleName: ''
-      },
-      allocatedLoading: false,
-      allocatedTotal: 0,
-      allocatedList: [],
-      allocatedSelection: [],
-      allocatedQuery: {
-        pageNum: 1,
-        pageSize: 10,
-        username: '',
-        phone: ''
-      },
-      unallocatedLoading: false,
-      unallocatedTotal: 0,
-      unallocatedList: [],
-      unallocatedSelection: [],
-      unallocatedQuery: {
-        pageNum: 1,
-        pageSize: 10,
-        username: '',
-        phone: ''
-      },
-      PERMS
-    }
-  },
-  computed: {
-    assignDialogTitle() {
-      return this.assignRole.roleName ? `分配用户 - ${this.assignRole.roleName}` : '分配用户'
-    },
-    parentChildLink: {
-      get() {
-        return this.dataScopeForm.deptCheckStrictly === 1
-      },
-      set(value) {
-        this.dataScopeForm.deptCheckStrictly = value ? 1 : 0
-      }
-    },
-    filteredPermOptions() {
-      const keyword = this.permKeyword.trim().toLowerCase()
-      if (!keyword) {
-        return this.permOptions
-      }
-      return this.permOptions.filter(item => {
-        const name = (item.permName || '').toLowerCase()
-        const code = (item.permCode || '').toLowerCase()
-        return name.includes(keyword) || code.includes(keyword)
-      })
-    },
-    permGrouped() {
-      const groups = {M: [], B: [], A: []}
-      this.filteredPermOptions.forEach(item => {
-        const type = item.permType || 'M'
-        if (groups[type]) {
-          groups[type].push(item)
-        }
-      })
-      return groups
-    },
-    permGroupStats() {
-      const checkedSet = new Set(this.permChecked || [])
-      const stats = {M: {total: 0, checked: 0}, B: {total: 0, checked: 0}, A: {total: 0, checked: 0}}
-      Object.keys(stats).forEach(type => {
-        const list = this.permGrouped[type] || []
-        stats[type].total = list.length
-        stats[type].checked = list.reduce((count, item) => count + (checkedSet.has(item.permCode) ? 1 : 0), 0)
-      })
-      return stats
-    }
-  },
-  created() {
-    this.loadDictOptions('DATA_STATUS')
-    this.fetchList()
-    this.fetchPermissionOptions()
-  },
-  methods: {
-    getDefaultForm() {
-      return {
-        id: null,
-        roleName: '',
-        roleCode: '',
-        orderNum: 0,
-        status: '0',
-        remark: ''
-      }
-    },
-    dataScopeText(value) {
-      const map = {
-        '1': '全部数据',
-        '2': '自定数据',
-        '3': '本部门',
-        '4': '本部门及以下',
-        '5': '仅本人数据权限'
-      }
-      return map[value] || '-'
-    },
-    async fetchList() {
-      this.loading = true
-      try {
-        const data = await getRolePageList(this.queryParams)
-        this.tableData = data.records || []
-        this.total = Number(data.total || 0)
-      } catch (error) {
-        console.error(error)
-      } finally {
-        this.loading = false
-      }
-    },
-    async fetchPermissionOptions() {
-      try {
-        this.permOptions = await getPermissionList({})
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    handleSearch() {
-      this.queryParams.pageNum = 1
-      this.fetchList()
-    },
-    handleReset() {
-      this.queryParams = {
-        pageNum: 1,
-        pageSize: 10,
-        roleName: '',
-        roleCode: '',
-        status: ''
-      }
-      this.fetchList()
-    },
-    handlePageChange(page) {
-      this.queryParams.pageNum = page
-      this.fetchList()
-    },
-    handleSizeChange(size) {
-      this.queryParams.pageSize = size
-      this.queryParams.pageNum = 1
-      this.fetchList()
-    },
-    handleAdd() {
-      this.dialogTitle = '新增角色'
-      this.form = this.getDefaultForm()
-      this.dialogVisible = true
-      this.$nextTick(() => this.$refs.formRef && this.$refs.formRef.clearValidate())
-    },
-    handleEdit(row) {
-      this.dialogTitle = '编辑角色'
-      this.form = {
-        id: row.id,
-        roleName: row.roleName,
-        roleCode: row.roleCode,
-        orderNum: row.orderNum || 0,
-        status: row.status,
-        remark: row.remark
-      }
-      this.dialogVisible = true
-      this.$nextTick(() => this.$refs.formRef && this.$refs.formRef.clearValidate())
-    },
-    submitForm() {
-      this.$refs.formRef.validate(async valid => {
-        if (!valid) {
-          return
-        }
-        try {
-          if (this.form.id) {
-            await updateRole(this.form)
-            Message.success('修改成功')
-          } else {
-            await addRole(this.form)
-            Message.success('新增成功')
-          }
-          this.dialogVisible = false
-          this.fetchList()
-        } catch (error) {
-          console.error(error)
-        }
-      })
-    },
-    handleDelete(row) {
-      this.$confirm(`确认删除角色 ${row.roleName} 吗？`, '提示', {type: 'warning'})
-        .then(async () => {
-          await deleteRole(row.id)
-          Message.success('删除成功')
-          this.fetchList()
-        })
-        .catch(() => {
-        })
-    },
-    handleStatus(row) {
-      const actionText = row.status === '0' ? '停用' : '启用'
-      this.$confirm(`确认${actionText}角色 ${row.roleName} 吗？`, '提示', {type: 'warning'})
-        .then(async () => {
-          await updateRoleStatus(row.id)
-          Message.success('操作成功')
-          this.fetchList()
-        })
-        .catch(() => {
-        })
-    },
-    async openPermDialog(row) {
-      this.currentRoleId = row.id
-      try {
-        this.permChecked = await getRolePermissions(row.id)
-        this.permKeyword = ''
-        this.permCollapseActive = ['M']
-        this.permDialogVisible = true
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    async saveRolePermissions() {
-      try {
-        await assignRolePermissions(this.currentRoleId, this.permChecked)
-        Message.success('权限配置成功')
-        this.permDialogVisible = false
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    selectPermGroup(type) {
-      const list = this.permGrouped[type] || []
-      const next = new Set(this.permChecked || [])
-      list.forEach(item => next.add(item.permCode))
-      this.permChecked = Array.from(next)
-    },
-    clearPermGroup(type) {
-      const list = this.permGrouped[type] || []
-      const next = new Set(this.permChecked || [])
-      list.forEach(item => next.delete(item.permCode))
-      this.permChecked = Array.from(next)
-    },
-    async openDataScopeDialog(row) {
-      try {
-        const data = await getRoleWithDeptTree(row.id)
-        this.deptTreeData = data.trees || []
-        this.deptChecked = data.checkedKeys || []
-        this.dataScopeForm = {
-          id: row.id,
-          dataScope: row.dataScope || '1',
-          deptCheckStrictly: row.deptCheckStrictly == null ? 1 : row.deptCheckStrictly
-        }
-        this.dataScopeExpandAll = true
-        this.dataScopeDialogVisible = true
-        this.$nextTick(() => {
-          if (this.$refs.deptTree) {
-            this.$refs.deptTree.setCheckedKeys(this.deptChecked)
-            this.updateTreeExpand(true)
-            this.updateCheckAllState()
-          }
-        })
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    openAssignUser(row) {
-      this.assignRole = {
-        id: row.id,
-        roleName: row.roleName
-      }
-      this.assignActiveTab = 'allocated'
-      this.resetAllocatedQuery()
-      this.resetUnallocatedQuery()
-      this.allocatedList = []
-      this.unallocatedList = []
-      this.allocatedTotal = 0
-      this.unallocatedTotal = 0
-      this.assignDialogVisible = true
-      this.fetchAllocatedList()
-    },
-    async fetchAllocatedList() {
-      if (!this.assignRole.id) {
-        return
-      }
-      this.allocatedLoading = true
-      try {
-        const data = await getAllocatedList({
-          ...this.allocatedQuery,
-          roleId: this.assignRole.id
-        })
-        this.allocatedList = data.records || []
-        this.allocatedTotal = Number(data.total || 0)
-        this.allocatedSelection = []
-      } catch (error) {
-        console.error(error)
-      } finally {
-        this.allocatedLoading = false
-      }
-    },
-    async fetchUnallocatedList() {
-      if (!this.assignRole.id) {
-        return
-      }
-      this.unallocatedLoading = true
-      try {
-        const data = await getUnallocatedList({
-          ...this.unallocatedQuery,
-          roleId: this.assignRole.id
-        })
-        this.unallocatedList = data.records || []
-        this.unallocatedTotal = Number(data.total || 0)
-        this.unallocatedSelection = []
-      } catch (error) {
-        console.error(error)
-      } finally {
-        this.unallocatedLoading = false
-      }
-    },
-    handleAssignTabClick(tab) {
-      if (tab.name === 'allocated') {
-        this.fetchAllocatedList()
-      } else if (tab.name === 'unallocated') {
-        this.fetchUnallocatedList()
-      }
-    },
-    handleAllocatedSearch() {
-      this.allocatedQuery.pageNum = 1
-      this.fetchAllocatedList()
-    },
-    handleAllocatedReset() {
-      this.resetAllocatedQuery()
-      this.fetchAllocatedList()
-    },
-    handleUnallocatedSearch() {
-      this.unallocatedQuery.pageNum = 1
-      this.fetchUnallocatedList()
-    },
-    handleUnallocatedReset() {
-      this.resetUnallocatedQuery()
-      this.fetchUnallocatedList()
-    },
-    handleAllocatedPageChange(page) {
-      this.allocatedQuery.pageNum = page
-      this.fetchAllocatedList()
-    },
-    handleAllocatedSizeChange(size) {
-      this.allocatedQuery.pageSize = size
-      this.allocatedQuery.pageNum = 1
-      this.fetchAllocatedList()
-    },
-    handleUnallocatedPageChange(page) {
-      this.unallocatedQuery.pageNum = page
-      this.fetchUnallocatedList()
-    },
-    handleUnallocatedSizeChange(size) {
-      this.unallocatedQuery.pageSize = size
-      this.unallocatedQuery.pageNum = 1
-      this.fetchUnallocatedList()
-    },
-    handleAllocatedSelectionChange(selection) {
-      this.allocatedSelection = selection || []
-    },
-    handleUnallocatedSelectionChange(selection) {
-      this.unallocatedSelection = selection || []
-    },
-    async handleCancelAuth(row) {
-      const roleId = this.assignRole.id
-      const userId = row ? (row.id || row.userId) : null
-      if (!roleId || !userId) {
-        return
-      }
-      this.$confirm(`确认取消用户 ${row.username || row.nickname || ''} 的授权吗？`, '提示', {type: 'warning'})
-        .then(async () => {
-          await cancelAuth({roleId, userId})
-          Message.success('取消授权成功')
-          this.fetchAllocatedList()
-        })
-        .catch(() => {
-        })
-    },
-    async handleCancelAuthAll() {
-      const roleId = this.assignRole.id
-      const userIds = this.allocatedSelection.map(item => item.id || item.userId).filter(Boolean)
-      if (!roleId || userIds.length === 0) {
-        return
-      }
-      this.$confirm('确认批量取消授权吗？', '提示', {type: 'warning'})
-        .then(async () => {
-          await cancelAuthAll({roleId, userIds})
-          Message.success('批量取消成功')
-          this.fetchAllocatedList()
-        })
-        .catch(() => {
-        })
-    },
-    async handleSelectAuth(row) {
-      const roleId = this.assignRole.id
-      const userId = row ? (row.id || row.userId) : null
-      if (!roleId || !userId) {
-        return
-      }
-      await selectAuthAll({roleId, userIds: [userId]})
-      Message.success('授权成功')
-      this.fetchUnallocatedList()
-    },
-    async handleSelectAuthAll() {
-      const roleId = this.assignRole.id
-      const userIds = this.unallocatedSelection.map(item => item.id || item.userId).filter(Boolean)
-      if (!roleId || userIds.length === 0) {
-        return
-      }
-      await selectAuthAll({roleId, userIds})
-      Message.success('批量授权成功')
-      this.fetchUnallocatedList()
-    },
-    resetAllocatedQuery() {
-      this.allocatedQuery = {
-        pageNum: 1,
-        pageSize: 10,
-        username: '',
-        phone: ''
-      }
-    },
-    resetUnallocatedQuery() {
-      this.unallocatedQuery = {
-        pageNum: 1,
-        pageSize: 10,
-        username: '',
-        phone: ''
-      }
-    },
-    async saveDataScope() {
-      try {
-        const tree = this.$refs.deptTree
-        const checkedKeys = tree ? tree.getCheckedKeys() : []
-        const halfCheckedKeys = tree ? tree.getHalfCheckedKeys() : []
-        const deptIds = this.dataScopeForm.deptCheckStrictly === 1
-          ? Array.from(new Set([...checkedKeys, ...halfCheckedKeys]))
-          : checkedKeys
-        const payload = {
-          id: this.dataScopeForm.id,
-          dataScope: this.dataScopeForm.dataScope,
-          deptIds,
-          deptCheckStrictly: this.dataScopeForm.deptCheckStrictly
-        }
-        await updateRoleDataScope(payload)
-        Message.success('数据权限已更新')
-        this.dataScopeDialogVisible = false
-        this.fetchList()
-      } catch (error) {
-        console.error(error)
-      }
-    },
-    handleExpandChange(value) {
-      this.dataScopeExpandAll = value
-      this.updateTreeExpand(value)
-    },
-    handleCheckAllChange(value) {
-      const tree = this.$refs.deptTree
-      if (!tree) {
-        return
-      }
-      if (value) {
-        const allKeys = this.collectDeptIds(this.deptTreeData)
-        tree.setCheckedKeys(allKeys)
-        this.dataScopeCheckHalf = false
-      } else {
-        tree.setCheckedKeys([])
-        this.dataScopeCheckHalf = false
-      }
-    },
-    handleDeptCheckChange() {
-      this.updateCheckAllState()
-    },
-    updateCheckAllState() {
-      const tree = this.$refs.deptTree
-      if (!tree) {
-        this.dataScopeCheckAll = false
-        this.dataScopeCheckHalf = false
-        return
-      }
-      const checkedKeys = tree.getCheckedKeys() || []
-      const allKeys = this.collectDeptIds(this.deptTreeData)
-      if (allKeys.length === 0) {
-        this.dataScopeCheckAll = false
-        this.dataScopeCheckHalf = false
-        return
-      }
-      this.dataScopeCheckAll = checkedKeys.length === allKeys.length
-      this.dataScopeCheckHalf = checkedKeys.length > 0 && checkedKeys.length < allKeys.length
-    },
-    updateTreeExpand(expand) {
-      const tree = this.$refs.deptTree
-      if (!tree || !tree.store) {
-        return
-      }
-      const nodes = typeof tree.store._getAllNodes === 'function'
-        ? tree.store._getAllNodes()
-        : Object.values(tree.store.nodesMap || {})
-      nodes.forEach(node => {
-        node.expanded = !!expand
-      })
-    },
-    collectDeptIds(tree = []) {
-      const ids = []
-      const walk = nodes => {
-        nodes.forEach(node => {
-          ids.push(node.id)
-          if (node.children && node.children.length) {
-            walk(node.children)
-          }
-        })
-      }
-      walk(tree)
-      return ids
-    },
-    statusTagType(value) {
-      return value === '0' ? 'success' : 'info'
-    }
+const { dicts, loadDictOptions, dictLabel } = useDict()
+const { hasPerm } = usePermission()
+
+const loading = ref(false)
+const total = ref(0)
+const queryParams = ref({
+  pageNum: 1,
+  pageSize: 10,
+  roleName: '',
+  roleCode: '',
+  status: ''
+})
+const tableData = ref<any[]>([])
+const dialogVisible = ref(false)
+const dialogTitle = ref('')
+
+const formRef = ref<FormInstance>()
+const deptTreeRef = ref<InstanceType<any>>()
+
+function getDefaultForm() {
+  return {
+    id: null as number | null,
+    roleName: '',
+    roleCode: '',
+    orderNum: 0,
+    status: '0',
+    remark: ''
   }
 }
+
+const form = ref(getDefaultForm())
+
+const rules = {
+  roleName: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
+  roleCode: [{ required: true, message: '请输入角色编码', trigger: 'blur' }]
+}
+
+// Permission dialog
+const permDialogVisible = ref(false)
+const permOptions = ref<any[]>([])
+const permChecked = ref<string[]>([])
+const permKeyword = ref('')
+const permCollapseActive = ref(['M'])
+const currentRoleId = ref<number | null>(null)
+
+// Data scope dialog
+const dataScopeDialogVisible = ref(false)
+const deptTreeData = ref<any[]>([])
+const deptChecked = ref<number[]>([])
+const dataScopeExpandAll = ref(true)
+const dataScopeCheckAll = ref(false)
+const dataScopeCheckHalf = ref(false)
+const dataScopeForm = ref({
+  id: null as number | null,
+  dataScope: '1',
+  deptCheckStrictly: 1
+})
+
+// Assign users dialog
+const assignDialogVisible = ref(false)
+const assignActiveTab = ref('allocated')
+const assignRole = ref({
+  id: null as number | null,
+  roleName: ''
+})
+const allocatedLoading = ref(false)
+const allocatedTotal = ref(0)
+const allocatedList = ref<any[]>([])
+const allocatedSelection = ref<any[]>([])
+const allocatedQuery = ref({
+  pageNum: 1,
+  pageSize: 10,
+  username: '',
+  phone: ''
+})
+const unallocatedLoading = ref(false)
+const unallocatedTotal = ref(0)
+const unallocatedList = ref<any[]>([])
+const unallocatedSelection = ref<any[]>([])
+const unallocatedQuery = ref({
+  pageNum: 1,
+  pageSize: 10,
+  username: '',
+  phone: ''
+})
+
+// Computed
+const assignDialogTitle = computed(() => {
+  return assignRole.value.roleName ? `分配用户 - ${assignRole.value.roleName}` : '分配用户'
+})
+
+const parentChildLink = computed({
+  get() {
+    return dataScopeForm.value.deptCheckStrictly === 1
+  },
+  set(value: boolean) {
+    dataScopeForm.value.deptCheckStrictly = value ? 1 : 0
+  }
+})
+
+const filteredPermOptions = computed(() => {
+  const keyword = permKeyword.value.trim().toLowerCase()
+  if (!keyword) {
+    return permOptions.value
+  }
+  return permOptions.value.filter(item => {
+    const name = (item.permName || '').toLowerCase()
+    const code = (item.permCode || '').toLowerCase()
+    return name.includes(keyword) || code.includes(keyword)
+  })
+})
+
+const permGrouped = computed(() => {
+  const groups: Record<string, any[]> = { M: [], B: [], A: [] }
+  filteredPermOptions.value.forEach(item => {
+    const type = item.permType || 'M'
+    if (groups[type]) {
+      groups[type].push(item)
+    }
+  })
+  return groups
+})
+
+const permGroupStats = computed(() => {
+  const checkedSet = new Set(permChecked.value || [])
+  const stats: Record<string, { total: number; checked: number }> = {
+    M: { total: 0, checked: 0 },
+    B: { total: 0, checked: 0 },
+    A: { total: 0, checked: 0 }
+  }
+  Object.keys(stats).forEach(type => {
+    const list = permGrouped.value[type] || []
+    stats[type].total = list.length
+    stats[type].checked = list.reduce((count: number, item: any) => count + (checkedSet.has(item.permCode) ? 1 : 0), 0)
+  })
+  return stats
+})
+
+// Methods
+function dataScopeText(value: string) {
+  const map: Record<string, string> = {
+    '1': '全部数据',
+    '2': '自定数据',
+    '3': '本部门',
+    '4': '本部门及以下',
+    '5': '仅本人数据权限'
+  }
+  return map[value] || '-'
+}
+
+async function fetchList() {
+  loading.value = true
+  try {
+    const data = await getRolePageList(queryParams.value)
+    tableData.value = data.records || []
+    total.value = Number(data.total || 0)
+  } catch (error) {
+    console.error(error)
+  } finally {
+    loading.value = false
+  }
+}
+
+async function fetchPermissionOptions() {
+  try {
+    permOptions.value = await getPermissionList({})
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function handleSearch() {
+  queryParams.value.pageNum = 1
+  fetchList()
+}
+
+function handleReset() {
+  queryParams.value = {
+    pageNum: 1,
+    pageSize: 10,
+    roleName: '',
+    roleCode: '',
+    status: ''
+  }
+  fetchList()
+}
+
+function handlePageChange(page: number) {
+  queryParams.value.pageNum = page
+  fetchList()
+}
+
+function handleSizeChange(size: number) {
+  queryParams.value.pageSize = size
+  queryParams.value.pageNum = 1
+  fetchList()
+}
+
+function handleAdd() {
+  dialogTitle.value = '新增角色'
+  form.value = getDefaultForm()
+  dialogVisible.value = true
+  nextTick(() => formRef.value?.clearValidate())
+}
+
+function handleEdit(row: any) {
+  dialogTitle.value = '编辑角色'
+  form.value = {
+    id: row.id,
+    roleName: row.roleName,
+    roleCode: row.roleCode,
+    orderNum: row.orderNum || 0,
+    status: row.status,
+    remark: row.remark
+  }
+  dialogVisible.value = true
+  nextTick(() => formRef.value?.clearValidate())
+}
+
+function submitForm() {
+  formRef.value?.validate(async (valid) => {
+    if (!valid) {
+      return
+    }
+    try {
+      if (form.value.id) {
+        await updateRole(form.value)
+        ElMessage.success('修改成功')
+      } else {
+        await addRole(form.value)
+        ElMessage.success('新增成功')
+      }
+      dialogVisible.value = false
+      fetchList()
+    } catch (error) {
+      console.error(error)
+    }
+  })
+}
+
+function handleDelete(row: any) {
+  ElMessageBox.confirm(`确认删除角色 ${row.roleName} 吗？`, '提示', { type: 'warning' })
+    .then(async () => {
+      await deleteRole(row.id)
+      ElMessage.success('删除成功')
+      fetchList()
+    })
+    .catch(() => {
+    })
+}
+
+function handleStatus(row: any) {
+  const actionText = row.status === '0' ? '停用' : '启用'
+  ElMessageBox.confirm(`确认${actionText}角色 ${row.roleName} 吗？`, '提示', { type: 'warning' })
+    .then(async () => {
+      await updateRoleStatus(row.id)
+      ElMessage.success('操作成功')
+      fetchList()
+    })
+    .catch(() => {
+    })
+}
+
+async function openPermDialog(row: any) {
+  currentRoleId.value = row.id
+  try {
+    permChecked.value = await getRolePermissions(row.id)
+    permKeyword.value = ''
+    permCollapseActive.value = ['M']
+    permDialogVisible.value = true
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+async function saveRolePermissions() {
+  try {
+    await assignRolePermissions(currentRoleId.value!, permChecked.value)
+    ElMessage.success('权限配置成功')
+    permDialogVisible.value = false
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function selectPermGroup(type: string) {
+  const list = permGrouped.value[type] || []
+  const next = new Set(permChecked.value || [])
+  list.forEach((item: any) => next.add(item.permCode))
+  permChecked.value = Array.from(next)
+}
+
+function clearPermGroup(type: string) {
+  const list = permGrouped.value[type] || []
+  const next = new Set(permChecked.value || [])
+  list.forEach((item: any) => next.delete(item.permCode))
+  permChecked.value = Array.from(next)
+}
+
+async function openDataScopeDialog(row: any) {
+  try {
+    const data = await getRoleWithDeptTree(row.id)
+    deptTreeData.value = data.trees || []
+    deptChecked.value = data.checkedKeys || []
+    dataScopeForm.value = {
+      id: row.id,
+      dataScope: row.dataScope || '1',
+      deptCheckStrictly: row.deptCheckStrictly == null ? 1 : row.deptCheckStrictly
+    }
+    dataScopeExpandAll.value = true
+    dataScopeDialogVisible.value = true
+    nextTick(() => {
+      if (deptTreeRef.value) {
+        deptTreeRef.value.setCheckedKeys(deptChecked.value)
+        updateTreeExpand(true)
+        updateCheckAllState()
+      }
+    })
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function openAssignUser(row: any) {
+  assignRole.value = {
+    id: row.id,
+    roleName: row.roleName
+  }
+  assignActiveTab.value = 'allocated'
+  resetAllocatedQuery()
+  resetUnallocatedQuery()
+  allocatedList.value = []
+  unallocatedList.value = []
+  allocatedTotal.value = 0
+  unallocatedTotal.value = 0
+  assignDialogVisible.value = true
+  fetchAllocatedList()
+}
+
+async function fetchAllocatedList() {
+  if (!assignRole.value.id) {
+    return
+  }
+  allocatedLoading.value = true
+  try {
+    const data = await getAllocatedList({
+      ...allocatedQuery.value,
+      roleId: assignRole.value.id
+    })
+    allocatedList.value = data.records || []
+    allocatedTotal.value = Number(data.total || 0)
+    allocatedSelection.value = []
+  } catch (error) {
+    console.error(error)
+  } finally {
+    allocatedLoading.value = false
+  }
+}
+
+async function fetchUnallocatedList() {
+  if (!assignRole.value.id) {
+    return
+  }
+  unallocatedLoading.value = true
+  try {
+    const data = await getUnallocatedList({
+      ...unallocatedQuery.value,
+      roleId: assignRole.value.id
+    })
+    unallocatedList.value = data.records || []
+    unallocatedTotal.value = Number(data.total || 0)
+    unallocatedSelection.value = []
+  } catch (error) {
+    console.error(error)
+  } finally {
+    unallocatedLoading.value = false
+  }
+}
+
+function handleAssignTabClick(tab: any) {
+  if (tab.paneName === 'allocated') {
+    fetchAllocatedList()
+  } else if (tab.paneName === 'unallocated') {
+    fetchUnallocatedList()
+  }
+}
+
+function handleAllocatedSearch() {
+  allocatedQuery.value.pageNum = 1
+  fetchAllocatedList()
+}
+
+function handleAllocatedReset() {
+  resetAllocatedQuery()
+  fetchAllocatedList()
+}
+
+function handleUnallocatedSearch() {
+  unallocatedQuery.value.pageNum = 1
+  fetchUnallocatedList()
+}
+
+function handleUnallocatedReset() {
+  resetUnallocatedQuery()
+  fetchUnallocatedList()
+}
+
+function handleAllocatedPageChange(page: number) {
+  allocatedQuery.value.pageNum = page
+  fetchAllocatedList()
+}
+
+function handleAllocatedSizeChange(size: number) {
+  allocatedQuery.value.pageSize = size
+  allocatedQuery.value.pageNum = 1
+  fetchAllocatedList()
+}
+
+function handleUnallocatedPageChange(page: number) {
+  unallocatedQuery.value.pageNum = page
+  fetchUnallocatedList()
+}
+
+function handleUnallocatedSizeChange(size: number) {
+  unallocatedQuery.value.pageSize = size
+  unallocatedQuery.value.pageNum = 1
+  fetchUnallocatedList()
+}
+
+function handleAllocatedSelectionChange(selection: any[]) {
+  allocatedSelection.value = selection || []
+}
+
+function handleUnallocatedSelectionChange(selection: any[]) {
+  unallocatedSelection.value = selection || []
+}
+
+function handleCancelAuth(row: any) {
+  const roleId = assignRole.value.id
+  const userId = row ? (row.id || row.userId) : null
+  if (!roleId || !userId) {
+    return
+  }
+  ElMessageBox.confirm(`确认取消用户 ${row.username || row.nickname || ''} 的授权吗？`, '提示', { type: 'warning' })
+    .then(async () => {
+      await cancelAuth({ roleId, userId })
+      ElMessage.success('取消授权成功')
+      fetchAllocatedList()
+    })
+    .catch(() => {
+    })
+}
+
+function handleCancelAuthAll() {
+  const roleId = assignRole.value.id
+  const userIds = allocatedSelection.value.map(item => item.id || item.userId).filter(Boolean)
+  if (!roleId || userIds.length === 0) {
+    return
+  }
+  ElMessageBox.confirm('确认批量取消授权吗？', '提示', { type: 'warning' })
+    .then(async () => {
+      await cancelAuthAll({ roleId, userIds })
+      ElMessage.success('批量取消成功')
+      fetchAllocatedList()
+    })
+    .catch(() => {
+    })
+}
+
+async function handleSelectAuth(row: any) {
+  const roleId = assignRole.value.id
+  const userId = row ? (row.id || row.userId) : null
+  if (!roleId || !userId) {
+    return
+  }
+  await selectAuthAll({ roleId, userIds: [userId] })
+  ElMessage.success('授权成功')
+  fetchUnallocatedList()
+}
+
+async function handleSelectAuthAll() {
+  const roleId = assignRole.value.id
+  const userIds = unallocatedSelection.value.map(item => item.id || item.userId).filter(Boolean)
+  if (!roleId || userIds.length === 0) {
+    return
+  }
+  await selectAuthAll({ roleId, userIds })
+  ElMessage.success('批量授权成功')
+  fetchUnallocatedList()
+}
+
+function resetAllocatedQuery() {
+  allocatedQuery.value = {
+    pageNum: 1,
+    pageSize: 10,
+    username: '',
+    phone: ''
+  }
+}
+
+function resetUnallocatedQuery() {
+  unallocatedQuery.value = {
+    pageNum: 1,
+    pageSize: 10,
+    username: '',
+    phone: ''
+  }
+}
+
+async function saveDataScope() {
+  try {
+    const tree = deptTreeRef.value
+    const checkedKeys = tree ? tree.getCheckedKeys() : []
+    const halfCheckedKeys = tree ? tree.getHalfCheckedKeys() : []
+    const deptIds = dataScopeForm.value.deptCheckStrictly === 1
+      ? Array.from(new Set([...checkedKeys, ...halfCheckedKeys]))
+      : checkedKeys
+    const payload = {
+      id: dataScopeForm.value.id,
+      dataScope: dataScopeForm.value.dataScope,
+      deptIds,
+      deptCheckStrictly: dataScopeForm.value.deptCheckStrictly
+    }
+    await updateRoleDataScope(payload)
+    ElMessage.success('数据权限已更新')
+    dataScopeDialogVisible.value = false
+    fetchList()
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function handleExpandChange(value: any) {
+  dataScopeExpandAll.value = value
+  updateTreeExpand(value)
+}
+
+function handleCheckAllChange(value: any) {
+  const tree = deptTreeRef.value
+  if (!tree) {
+    return
+  }
+  if (value) {
+    const allKeys = collectDeptIds(deptTreeData.value)
+    tree.setCheckedKeys(allKeys)
+    dataScopeCheckHalf.value = false
+  } else {
+    tree.setCheckedKeys([])
+    dataScopeCheckHalf.value = false
+  }
+}
+
+function handleDeptCheckChange() {
+  updateCheckAllState()
+}
+
+function updateCheckAllState() {
+  const tree = deptTreeRef.value
+  if (!tree) {
+    dataScopeCheckAll.value = false
+    dataScopeCheckHalf.value = false
+    return
+  }
+  const checkedKeys = tree.getCheckedKeys() || []
+  const allKeys = collectDeptIds(deptTreeData.value)
+  if (allKeys.length === 0) {
+    dataScopeCheckAll.value = false
+    dataScopeCheckHalf.value = false
+    return
+  }
+  dataScopeCheckAll.value = checkedKeys.length === allKeys.length
+  dataScopeCheckHalf.value = checkedKeys.length > 0 && checkedKeys.length < allKeys.length
+}
+
+function updateTreeExpand(expand: boolean) {
+  const tree = deptTreeRef.value
+  if (!tree || !tree.store) {
+    return
+  }
+  const nodes = typeof tree.store._getAllNodes === 'function'
+    ? tree.store._getAllNodes()
+    : Object.values(tree.store.nodesMap || {})
+  ;(nodes as any[]).forEach(node => {
+    node.expanded = !!expand
+  })
+}
+
+function collectDeptIds(tree: any[] = []) {
+  const ids: number[] = []
+  const walk = (nodes: any[]) => {
+    nodes.forEach(node => {
+      ids.push(node.id)
+      if (node.children && node.children.length) {
+        walk(node.children)
+      }
+    })
+  }
+  walk(tree)
+  return ids
+}
+
+function statusTagType(value: string) {
+  return value === '0' ? 'success' : 'info'
+}
+
+// created
+loadDictOptions('DATA_STATUS')
+fetchList()
+fetchPermissionOptions()
 </script>
 
 <style scoped>

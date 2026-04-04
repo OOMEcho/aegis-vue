@@ -17,137 +17,107 @@
         <span class="tag-title">{{ tag.title }}</span>
         <i
           v-if="!isAffix(tag)"
-          class="el-icon-close tag-close"
+          class="tag-close"
           @click.stop="handleClose(tag)"
-        />
+        >x</i>
       </div>
     </div>
     <div v-if="menuVisible" class="context-menu" :style="menuStyle">
-      <button type="button" @click="refreshSelected">
-        <i class="el-icon-refresh menu-icon"></i>
-        刷新页面
-      </button>
-      <button type="button" @click="closeSelected">
-        <i class="el-icon-close menu-icon"></i>
-        关闭当前
-      </button>
-      <button type="button" @click="closeOthers">
-        <i class="el-icon-remove-outline menu-icon"></i>
-        关闭其他
-      </button>
-      <button type="button" @click="closeAll">
-        <i class="el-icon-circle-close menu-icon"></i>
-        全部关闭
-      </button>
+      <button type="button" @click="refreshSelected">刷新页面</button>
+      <button type="button" @click="closeSelected">关闭当前</button>
+      <button type="button" @click="closeOthers">关闭其他</button>
+      <button type="button" @click="closeAll">全部关闭</button>
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'TagsView',
-  data() {
-    return {
-      menuVisible: false,
-      menuLeft: 0,
-      menuTop: 0,
-      selectedTag: null,
-      affixTags: [
-        {path: '/dashboard', name: 'Dashboard', meta: {title: '首页', affix: true}}
-      ]
-    }
-  },
-  computed: {
-    visitedViews() {
-      return this.$store.state.tagsView.visitedViews
-    },
-    menuStyle() {
-      return {
-        left: `${this.menuLeft}px`,
-        top: `${this.menuTop}px`
-      }
-    }
-  },
-  mounted() {
-    this.initAffixTags()
-    document.body.addEventListener('click', this.closeMenu)
-  },
-  beforeDestroy() {
-    document.body.removeEventListener('click', this.closeMenu)
-  },
-  methods: {
-    initAffixTags() {
-      this.affixTags.forEach(tag => {
-        this.$store.dispatch('tagsView/addView', tag)
-      })
-    },
-    isActive(tag) {
-      return tag.path === this.$route.path
-    },
-    isAffix(tag) {
-      return tag.meta && tag.meta.affix
-    },
-    handleClick(tag) {
-      if (this.$route.path !== tag.path) {
-        this.$router.push(tag.path)
-      }
-    },
-    handleClose(tag) {
-      this.$store.dispatch('tagsView/delView', tag)
-      if (this.isActive(tag)) {
-        const latest = this.visitedViews.slice(-1)[0]
-        if (latest) {
-          this.$router.push(latest.path)
-        } else {
-          this.$router.push('/dashboard')
-        }
-      }
-    },
-    openMenu(tag, event) {
-      this.selectedTag = tag
-      const menuWidth = 120
-      const menuHeight = 150
-      const rect = event.currentTarget.getBoundingClientRect()
-      let left = rect.right + 8
-      let top = rect.top
-      if (left + menuWidth > window.innerWidth) {
-        left = rect.left - menuWidth - 8
-      }
-      if (top + menuHeight > window.innerHeight) {
-        top = window.innerHeight - menuHeight - 8
-      }
-      this.menuLeft = Math.max(left, 8)
-      this.menuTop = Math.max(top, 8)
-      this.menuVisible = true
-    },
-    closeMenu() {
-      this.menuVisible = false
-    },
-    async refreshSelected() {
-      if (!this.selectedTag) return
-      await this.$store.dispatch('tagsView/refreshView', this.selectedTag)
-      this.closeMenu()
-    },
-    closeSelected() {
-      if (!this.selectedTag || this.isAffix(this.selectedTag)) return
-      this.handleClose(this.selectedTag)
-      this.closeMenu()
-    },
-    closeOthers() {
-      if (!this.selectedTag) return
-      this.$store.dispatch('tagsView/delOthers', this.selectedTag)
-      if (!this.isActive(this.selectedTag)) {
-        this.$router.push(this.selectedTag.path)
-      }
-      this.closeMenu()
-    },
-    closeAll() {
-      this.$store.dispatch('tagsView/delAll')
-      this.$router.push('/dashboard')
-      this.closeMenu()
-    }
+<script setup lang="ts">
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useTagsViewStore } from '@/stores/tagsView'
+import type { TagView } from '@/types/store'
+
+defineOptions({ name: 'TagsView' })
+
+const route = useRoute()
+const router = useRouter()
+const tagsViewStore = useTagsViewStore()
+
+const menuVisible = ref(false)
+const menuLeft = ref(0)
+const menuTop = ref(0)
+const selectedTag = ref<TagView | null>(null)
+
+const visitedViews = computed(() => tagsViewStore.visitedViews)
+const menuStyle = computed(() => ({ left: `${menuLeft.value}px`, top: `${menuTop.value}px` }))
+
+const affixTags: TagView[] = [
+  { path: '/dashboard', name: 'Dashboard', fullPath: '/dashboard', meta: { title: '首页', affix: true }, title: '首页' }
+]
+
+function isActive(tag: TagView) { return tag.path === route.path }
+function isAffix(tag: TagView) { return tag.meta && tag.meta.affix }
+
+function handleClick(tag: TagView) {
+  if (route.path !== tag.path) router.push(tag.path)
+}
+
+function handleClose(tag: TagView) {
+  tagsViewStore.delView(tag)
+  if (isActive(tag)) {
+    const latest = visitedViews.value.slice(-1)[0]
+    router.push(latest ? latest.path : '/dashboard')
   }
 }
+
+function openMenu(tag: TagView, event: MouseEvent) {
+  selectedTag.value = tag
+  const menuWidth = 120
+  const menuHeight = 150
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+  let left = rect.right + 8
+  let top = rect.top
+  if (left + menuWidth > window.innerWidth) left = rect.left - menuWidth - 8
+  if (top + menuHeight > window.innerHeight) top = window.innerHeight - menuHeight - 8
+  menuLeft.value = Math.max(left, 8)
+  menuTop.value = Math.max(top, 8)
+  menuVisible.value = true
+}
+
+function closeMenu() { menuVisible.value = false }
+
+async function refreshSelected() {
+  if (!selectedTag.value) return
+  tagsViewStore.refreshView(selectedTag.value)
+  closeMenu()
+}
+
+function closeSelected() {
+  if (!selectedTag.value || isAffix(selectedTag.value)) return
+  handleClose(selectedTag.value)
+  closeMenu()
+}
+
+function closeOthers() {
+  if (!selectedTag.value) return
+  tagsViewStore.delOthers(selectedTag.value)
+  if (!isActive(selectedTag.value)) router.push(selectedTag.value.path)
+  closeMenu()
+}
+
+function closeAll() {
+  tagsViewStore.delAll()
+  router.push('/dashboard')
+  closeMenu()
+}
+
+onMounted(() => {
+  affixTags.forEach(tag => tagsViewStore.addView(tag))
+  document.body.addEventListener('click', closeMenu)
+})
+onBeforeUnmount(() => {
+  document.body.removeEventListener('click', closeMenu)
+})
 </script>
 
 <style scoped>
@@ -162,18 +132,8 @@ export default {
   align-items: center;
   padding: 0 12px;
 }
-
-.tags-scroll {
-  display: flex;
-  gap: 8px;
-  overflow: auto;
-  width: 100%;
-}
-
-.tags-scroll::-webkit-scrollbar {
-  height: 0;
-}
-
+.tags-scroll { display: flex; gap: 8px; overflow: auto; width: 100%; }
+.tags-scroll::-webkit-scrollbar { height: 0; }
 .tag-item {
   display: inline-flex;
   align-items: center;
@@ -187,27 +147,14 @@ export default {
   font-size: 12px;
   white-space: nowrap;
 }
-
 .tag-item.active {
   color: #1f2d3d;
   border-color: rgba(90, 122, 214, 0.5);
   background: rgba(90, 122, 214, 0.12);
 }
-
-.tag-icon {
-  font-size: 14px;
-  color: inherit;
-}
-
-.tag-close {
-  font-size: 12px;
-  color: #9aa6bf;
-}
-
-.tag-close:hover {
-  color: #4f70ff;
-}
-
+.tag-icon { font-size: 14px; color: inherit; }
+.tag-close { font-size: 12px; color: #9aa6bf; cursor: pointer; font-style: normal; }
+.tag-close:hover { color: #4f70ff; }
 .context-menu {
   position: fixed;
   background: #ffffff;
@@ -220,7 +167,6 @@ export default {
   flex-direction: column;
   min-width: 120px;
 }
-
 .context-menu button {
   border: none;
   background: transparent;
@@ -236,14 +182,5 @@ export default {
   justify-content: center;
   width: 100%;
 }
-
-.context-menu .menu-icon {
-  font-size: 14px;
-  color: #6b7a99;
-}
-
-.context-menu button:hover {
-  background: #eef2ff;
-  color: #1f2d3d;
-}
+.context-menu button:hover { background: #eef2ff; color: #1f2d3d; }
 </style>
