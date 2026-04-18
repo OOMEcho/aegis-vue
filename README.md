@@ -211,7 +211,7 @@ src/
 
 ## 👥 团队
 
-- **南常** - 项目负责人 - [228389787@qq.com](mailto:228389787@qq.com)
+- **OOMEcho** - 项目负责人 - [228389787@qq.com](mailto:228389787@qq.com)
 
 ## 🙏 致谢
 
@@ -240,6 +240,6 @@ src/
 
 **如果这个项目对您有帮助，请给它一个 ⭐ Star！**
 
-Made with ❤️ by [南常](https://github.com/OOMEcho)
+Made with ❤️ by [OOMEcho](https://github.com/OOMEcho)
 
 </div>
