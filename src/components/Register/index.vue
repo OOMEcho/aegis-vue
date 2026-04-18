@@ -9,11 +9,13 @@
         <div class="hero-content">
           <h1 class="hero-title">创建你的账号</h1>
           <p class="hero-subtitle">快速开通团队空间，配置权限与角色</p>
-          <div class="hero-illustration">
-            <div class="panel-card"></div>
-            <div class="panel-card"></div>
-            <div class="panel-card"></div>
-          </div>
+        </div>
+        <div class="hero-characters">
+          <animated-characters
+            :focused-field="characterFocusedField"
+            :password-length="characterPasswordLength"
+            :is-password-visible="characterPasswordVisible"
+            :error-signal="errorSignal"/>
         </div>
         <div class="hero-caption">安全验证与敏感操作全程保护</div>
       </section>
@@ -34,6 +36,8 @@
                 placeholder="请输入用户名"
                 prefix-icon="el-icon-user"
                 :disabled="showCaptcha"
+                @focus="focusedField = 'username'"
+                @blur="focusedField = null"
               />
             </el-form-item>
 
@@ -43,6 +47,8 @@
                 placeholder="请输入邮箱"
                 prefix-icon="el-icon-message"
                 :disabled="showCaptcha"
+                @focus="focusedField = 'email'"
+                @blur="focusedField = null"
               />
             </el-form-item>
 
@@ -53,6 +59,8 @@
                   placeholder="请输入验证码"
                   prefix-icon="el-icon-key"
                   :disabled="showCaptcha"
+                  @focus="focusedField = 'code'"
+                  @blur="focusedField = null"
                 />
                 <el-button
                   class="send-code-btn"
@@ -67,24 +75,40 @@
             <el-form-item prop="password">
               <el-input
                 v-model="registerForm.password"
-                type="password"
+                :type="showPassword ? 'text' : 'password'"
                 placeholder="请输入密码"
                 prefix-icon="el-icon-lock"
-                show-password
                 :disabled="showCaptcha"
-              />
+                @focus="focusedField = 'password'"
+                @blur="focusedField = null"
+              >
+                <i
+                  slot="suffix"
+                  class="el-input__icon el-icon-view password-toggle"
+                  :class="{ 'is-active': showPassword }"
+                  @click="showPassword = !showPassword"
+                />
+              </el-input>
             </el-form-item>
 
             <el-form-item prop="confirmPassword">
               <el-input
                 v-model="registerForm.confirmPassword"
-                type="password"
+                :type="showConfirmPassword ? 'text' : 'password'"
                 placeholder="请确认密码"
                 prefix-icon="el-icon-lock"
-                show-password
                 :disabled="showCaptcha"
+                @focus="focusedField = 'confirmPassword'"
+                @blur="focusedField = null"
                 @keyup.enter.native="handleRegisterClick"
-              />
+              >
+                <i
+                  slot="suffix"
+                  class="el-input__icon el-icon-view password-toggle"
+                  :class="{ 'is-active': showConfirmPassword }"
+                  @click="showConfirmPassword = !showConfirmPassword"
+                />
+              </el-input>
             </el-form-item>
 
             <el-form-item>
@@ -136,6 +160,7 @@
 
 <script>
 import SlideCaptcha from '@/components/SlideCaptcha/index.vue';
+import AnimatedCharacters from '@/components/Login/AnimatedCharacters.vue';
 import {register, sendEmailCode} from '@/api/profile';
 import {getPublicKey} from '@/api/profile';
 import {rsaEncrypt} from '@/utils/encrypt';
@@ -143,7 +168,8 @@ import {rsaEncrypt} from '@/utils/encrypt';
 export default {
   name: 'RegisterPage',
   components: {
-    SlideCaptcha
+    SlideCaptcha,
+    AnimatedCharacters
   },
   data() {
     // 邮箱验证规则
@@ -209,8 +235,28 @@ export default {
       isRegistering: false,
       publicKey: '',
       countdown: 0,
-      timer: null
+      timer: null,
+      focusedField: null,
+      showPassword: false,
+      showConfirmPassword: false,
+      errorSignal: 0
     };
+  },
+  computed: {
+    characterFocusedField() {
+      if (this.focusedField === 'confirmPassword') return 'password';
+      return this.focusedField;
+    },
+    characterPasswordLength() {
+      if (this.focusedField === 'confirmPassword') {
+        return this.registerForm.confirmPassword.length;
+      }
+      return this.registerForm.password.length;
+    },
+    characterPasswordVisible() {
+      if (this.focusedField === 'confirmPassword') return this.showConfirmPassword;
+      return this.showPassword;
+    }
   },
   created() {
     this.fetchPublicKey();
@@ -270,6 +316,7 @@ export default {
           // 表单验证通过，显示滑块验证码
           this.showCaptcha = true;
         } else {
+          this.errorSignal++;
           return false;
         }
       });
@@ -309,6 +356,7 @@ export default {
         }, 1500);
 
       } catch (error) {
+        this.errorSignal++;
         // 刷新验证码
         this.$nextTick(() => {
           if (this.$refs.slideCaptcha) {
@@ -454,35 +502,15 @@ export default {
   margin: 0;
 }
 
-.hero-illustration {
-  margin-top: 16px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-
-.panel-card {
-  height: 90px;
-  border-radius: 18px;
-  background: #ffffff;
-  box-shadow: 0 16px 30px rgba(58, 82, 160, 0.12);
-  position: relative;
-}
-
-.panel-card::after {
-  content: '';
-  position: absolute;
-  width: 50%;
-  height: 6px;
-  left: 16px;
-  top: 18px;
-  border-radius: 6px;
-  background: #d7e0ff;
-  box-shadow: 0 14px 0 #e7ecff, 0 28px 0 #f0f3ff;
+.hero-characters {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 360px;
 }
 
 .hero-caption {
-  margin-top: auto;
   color: #7c8aa5;
   font-size: 13px;
 }
@@ -514,6 +542,17 @@ export default {
 .send-code-btn {
   width: 120px;
   flex-shrink: 0;
+}
+
+.password-toggle {
+  cursor: pointer;
+  color: #c0c4cc;
+  transition: color 0.2s;
+}
+
+.password-toggle:hover,
+.password-toggle.is-active {
+  color: #4f70ff;
 }
 
 .back-to-login {
