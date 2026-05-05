@@ -7,7 +7,7 @@
         </div>
       </template>
 
-      <el-form :inline="true" :model="queryParams" class="search-form" size="small">
+      <el-form :inline="true" :model="queryParams" class="search-form">
         <el-form-item label="登录名">
           <el-input v-model="queryParams.loginUsername" placeholder="登录名" clearable/>
         </el-form-item>

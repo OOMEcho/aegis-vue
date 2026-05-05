@@ -15,18 +15,32 @@
           :class="tag.meta.icon"
         />
         <span class="tag-title">{{ tag.title }}</span>
-        <i
+        <el-icon
           v-if="!isAffix(tag)"
           class="tag-close"
           @click.stop="handleClose(tag)"
-        >x</i>
+        >
+          <Close />
+        </el-icon>
       </div>
     </div>
     <div v-if="menuVisible" class="context-menu" :style="menuStyle">
-      <button type="button" @click="refreshSelected">刷新页面</button>
-      <button type="button" @click="closeSelected">关闭当前</button>
-      <button type="button" @click="closeOthers">关闭其他</button>
-      <button type="button" @click="closeAll">全部关闭</button>
+      <button type="button" @click="refreshSelected">
+        <el-icon class="menu-icon"><Refresh /></el-icon>
+        刷新页面
+      </button>
+      <button type="button" @click="closeSelected">
+        <el-icon class="menu-icon"><Close /></el-icon>
+        关闭当前
+      </button>
+      <button type="button" @click="closeOthers">
+        <el-icon class="menu-icon"><Remove /></el-icon>
+        关闭其他
+      </button>
+      <button type="button" @click="closeAll">
+        <el-icon class="menu-icon"><CircleClose /></el-icon>
+        全部关闭
+      </button>
     </div>
   </div>
 </template>
@@ -34,6 +48,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { Close, Refresh, Remove, CircleClose } from '@element-plus/icons-vue'
 import { useTagsViewStore } from '@/stores/tagsView'
 import type { TagView } from '@/types/store'
 
@@ -132,8 +147,18 @@ onBeforeUnmount(() => {
   align-items: center;
   padding: 0 12px;
 }
-.tags-scroll { display: flex; gap: 8px; overflow: auto; width: 100%; }
-.tags-scroll::-webkit-scrollbar { height: 0; }
+
+.tags-scroll {
+  display: flex;
+  gap: 8px;
+  overflow: auto;
+  width: 100%;
+}
+
+.tags-scroll::-webkit-scrollbar {
+  height: 0;
+}
+
 .tag-item {
   display: inline-flex;
   align-items: center;
@@ -147,14 +172,28 @@ onBeforeUnmount(() => {
   font-size: 12px;
   white-space: nowrap;
 }
+
 .tag-item.active {
   color: #1f2d3d;
   border-color: rgba(90, 122, 214, 0.5);
   background: rgba(90, 122, 214, 0.12);
 }
-.tag-icon { font-size: 14px; color: inherit; }
-.tag-close { font-size: 12px; color: #9aa6bf; cursor: pointer; font-style: normal; }
-.tag-close:hover { color: #4f70ff; }
+
+.tag-icon {
+  font-size: 14px;
+  color: inherit;
+}
+
+.tag-close {
+  font-size: 12px;
+  color: #9aa6bf;
+  cursor: pointer;
+}
+
+.tag-close:hover {
+  color: #4f70ff;
+}
+
 .context-menu {
   position: fixed;
   background: #ffffff;
@@ -167,6 +206,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   min-width: 120px;
 }
+
 .context-menu button {
   border: none;
   background: transparent;
@@ -182,5 +222,14 @@ onBeforeUnmount(() => {
   justify-content: center;
   width: 100%;
 }
-.context-menu button:hover { background: #eef2ff; color: #1f2d3d; }
+
+.context-menu .menu-icon {
+  font-size: 14px;
+  color: #6b7a99;
+}
+
+.context-menu button:hover {
+  background: #eef2ff;
+  color: #1f2d3d;
+}
 </style>

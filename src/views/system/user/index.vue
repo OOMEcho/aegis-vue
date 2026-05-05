@@ -7,7 +7,7 @@
         </div>
       </template>
 
-      <el-form :inline="true" :model="queryParams" class="search-form" size="small">
+      <el-form :inline="true" :model="queryParams" class="search-form">
         <el-form-item label="用户名">
           <el-input v-model="queryParams.username" placeholder="用户名" clearable/>
         </el-form-item>
@@ -33,7 +33,7 @@
             <div class="dept-tree-search">
               <el-input
                 v-model="deptQueryFilter"
-                size="small"
+
                 placeholder="搜索部门"
                 clearable/>
             </div>
@@ -84,7 +84,7 @@
       </el-form>
 
       <div class="table-toolbar">
-        <el-button type="primary" size="small" icon="Plus" v-perm="PERMS.user.add" @click="handleAdd">
+        <el-button type="primary" icon="Plus" v-perm="PERMS.user.add" @click="handleAdd">
           新增
         </el-button>
       </div>
@@ -166,14 +166,12 @@
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item v-if="hasPerm(PERMS.user.delete)" command="delete" class="danger-item">
-                      <span class="danger-dot"></span>
                       删除
                     </el-dropdown-item>
                     <el-dropdown-item
                       v-if="scope.row.online && hasPerm(PERMS.user.kick)"
                       command="kick"
                       class="danger-item">
-                      <span class="danger-dot"></span>
                       踢下线
                     </el-dropdown-item>
                   </el-dropdown-menu>
@@ -209,7 +207,7 @@
             <div class="dept-tree-search">
               <el-input
                 v-model="deptFormFilter"
-                size="small"
+
                 placeholder="搜索部门"
                 clearable/>
             </div>

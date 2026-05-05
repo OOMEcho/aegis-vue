@@ -7,7 +7,7 @@
         </div>
       </template>
 
-      <el-form :inline="true" :model="queryParams" class="search-form" size="small">
+      <el-form :inline="true" :model="queryParams" class="search-form">
         <el-form-item label="原始名称">
           <el-input v-model="queryParams.originalFileName" placeholder="原始名称" clearable/>
         </el-form-item>
@@ -38,13 +38,13 @@
             action="#"
             :show-file-list="false"
             :http-request="handleSingleUpload">
-            <el-button type="primary" size="small" v-perm="PERMS.file.upload">单文件上传</el-button>
+            <el-button type="primary" v-perm="PERMS.file.upload">单文件上传</el-button>
           </el-upload>
           <el-upload
             action="#"
             :show-file-list="false"
             :http-request="handlePresignedUpload">
-            <el-button type="warning" size="small" v-perm="PERMS.file.upload">预签名上传</el-button>
+            <el-button type="warning" v-perm="PERMS.file.upload">预签名上传</el-button>
           </el-upload>
         </div>
         <div class="upload-row">
@@ -56,9 +56,9 @@
             :file-list="batchFileList"
             :on-change="handleBatchChange"
             :on-remove="handleBatchRemove">
-            <el-button size="small" v-perm="PERMS.file.uploadBatch">选择批量文件</el-button>
+            <el-button v-perm="PERMS.file.uploadBatch">选择批量文件</el-button>
           </el-upload>
-          <el-button type="success" size="small" v-perm="PERMS.file.uploadBatch" @click="submitBatchUpload">
+          <el-button type="success" v-perm="PERMS.file.uploadBatch" @click="submitBatchUpload">
             批量上传
           </el-button>
         </div>
@@ -150,7 +150,6 @@
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item class="danger-item" @click="handleDelete(scope.row)">
-                      <span class="danger-dot"></span>
                       删除
                     </el-dropdown-item>
                   </el-dropdown-menu>

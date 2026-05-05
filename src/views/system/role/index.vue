@@ -7,7 +7,7 @@
         </div>
       </template>
 
-      <el-form :inline="true" :model="queryParams" class="search-form" size="small">
+      <el-form :inline="true" :model="queryParams" class="search-form">
         <el-form-item label="角色名称">
           <el-input v-model="queryParams.roleName" placeholder="角色名称" clearable/>
         </el-form-item>
@@ -30,7 +30,7 @@
       </el-form>
 
       <div class="table-toolbar">
-        <el-button type="primary" size="small" icon="Plus" v-perm="PERMS.role.add" @click="handleAdd">
+        <el-button type="primary" icon="Plus" v-perm="PERMS.role.add" @click="handleAdd">
           新增
         </el-button>
       </div>
@@ -100,7 +100,6 @@
                       数据权限
                     </el-dropdown-item>
                     <el-dropdown-item v-if="hasPerm(PERMS.role.delete)" class="danger-item" @click="handleDelete(scope.row)">
-                      <span class="danger-dot"></span>
                       删除
                     </el-dropdown-item>
                   </el-dropdown-menu>
@@ -162,7 +161,7 @@
           <el-input
             v-model="permKeyword"
             placeholder="搜索权限名称或编码"
-            size="small"
+
             clearable
             prefix-icon="Search"/>
         </div>
@@ -302,7 +301,7 @@
       <el-tabs v-model="assignActiveTab" @tab-click="handleAssignTabClick">
         <el-tab-pane label="已分配" name="allocated">
           <div class="assign-toolbar">
-            <el-form :inline="true" :model="allocatedQuery" size="small">
+            <el-form :inline="true" :model="allocatedQuery">
               <el-form-item label="用户名">
                 <el-input v-model="allocatedQuery.username" placeholder="用户名" clearable/>
               </el-form-item>
@@ -377,7 +376,7 @@
         </el-tab-pane>
         <el-tab-pane label="未分配" name="unallocated">
           <div class="assign-toolbar">
-            <el-form :inline="true" :model="unallocatedQuery" size="small">
+            <el-form :inline="true" :model="unallocatedQuery">
               <el-form-item label="用户名">
                 <el-input v-model="unallocatedQuery.username" placeholder="用户名" clearable/>
               </el-form-item>

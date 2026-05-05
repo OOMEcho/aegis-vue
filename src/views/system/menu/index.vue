@@ -7,7 +7,7 @@
         </div>
       </template>
 
-      <el-form :inline="true" :model="queryParams" class="search-form" size="small">
+      <el-form :inline="true" :model="queryParams" class="search-form">
         <el-form-item label="菜单名称">
           <el-input v-model="queryParams.menuName" placeholder="菜单名称" clearable/>
         </el-form-item>
@@ -36,10 +36,10 @@
       </el-form>
 
       <div class="table-toolbar">
-        <el-button type="primary" size="small" icon="Plus" v-perm="PERMS.menu.add" @click="handleAdd">
+        <el-button type="primary" icon="Plus" v-perm="PERMS.menu.add" @click="handleAdd">
           新增
         </el-button>
-        <el-button size="small" icon="Fold" @click="toggleExpand">
+        <el-button icon="Fold" @click="toggleExpand">
           {{ expandAll ? '折叠全部' : '展开全部' }}
         </el-button>
       </div>
@@ -158,7 +158,7 @@
               <i v-if="form.icon && form.icon !== '#'" class="iconfont" :class="form.icon"></i>
               <span v-else>无</span>
             </div>
-            <el-button size="small" @click="iconDialogVisible = true">选择图标</el-button>
+            <el-button @click="iconDialogVisible = true">选择图标</el-button>
             <el-input v-model="form.icon" placeholder="请输入图标 class" class="icon-input"/>
           </div>
         </el-form-item>
@@ -189,7 +189,7 @@
           <el-input
             v-model="permKeyword"
             placeholder="搜索权限名称或编码"
-            size="small"
+
             clearable
             prefix-icon="Search"/>
         </div>
@@ -233,7 +233,7 @@
         <el-input
           v-model="iconKeyword"
           placeholder="搜索图标"
-          size="small"
+
           clearable
           class="icon-search"
           @focus="loadIconOptions"

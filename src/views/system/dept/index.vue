@@ -7,7 +7,7 @@
         </div>
       </template>
 
-      <el-form :inline="true" :model="queryParams" class="search-form" size="small">
+      <el-form :inline="true" :model="queryParams" class="search-form">
         <el-form-item label="部门名称">
           <el-input v-model="queryParams.deptName" placeholder="部门名称" clearable/>
         </el-form-item>
@@ -27,10 +27,10 @@
       </el-form>
 
       <div class="table-toolbar">
-        <el-button type="primary" size="small" icon="Plus" v-perm="PERMS.dept.add" @click="handleAdd">
+        <el-button type="primary" icon="Plus" v-perm="PERMS.dept.add" @click="handleAdd">
           新增
         </el-button>
-        <el-button size="small" icon="Fold" @click="toggleExpand">
+        <el-button icon="Fold" @click="toggleExpand">
           {{ expandAll ? '折叠全部' : '展开全部' }}
         </el-button>
       </div>
@@ -96,7 +96,7 @@
             <div class="dept-tree-search">
               <el-input
                 v-model="parentFilter"
-                size="small"
+
                 placeholder="搜索上级部门"
                 clearable/>
             </div>

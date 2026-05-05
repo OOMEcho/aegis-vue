@@ -7,7 +7,7 @@
         </div>
       </template>
 
-      <el-form :inline="true" :model="queryParams" class="search-form" size="small">
+      <el-form :inline="true" :model="queryParams" class="search-form">
         <el-form-item label="字典名称">
           <el-input v-model="queryParams.dictName" placeholder="字典名称" clearable/>
         </el-form-item>
@@ -33,7 +33,7 @@
       </el-form>
 
       <div class="table-toolbar">
-        <el-button type="primary" size="small" icon="Plus" v-perm="PERMS.dict.add" @click="handleAdd">
+        <el-button type="primary" icon="Plus" v-perm="PERMS.dict.add" @click="handleAdd">
           新增
         </el-button>
       </div>

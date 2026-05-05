@@ -7,7 +7,7 @@
         </div>
       </template>
 
-      <el-form :inline="true" :model="queryParams" class="search-form" size="small">
+      <el-form :inline="true" :model="queryParams" class="search-form">
         <el-form-item label="模块标题">
           <el-input v-model="queryParams.moduleTitle" placeholder="模块标题" clearable/>
         </el-form-item>

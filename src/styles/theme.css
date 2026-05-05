@@ -78,8 +78,7 @@ body {
   color: var(--brand-primary) !important;
 }
 
-.el-menu-item:hover,
-.el-submenu__title:hover {
+.el-menu-item:hover {
   background-color: #eef2ff !important;
 }
 
@@ -89,50 +88,56 @@ body {
   box-shadow: inset 3px 0 0 rgba(90, 122, 214, 0.85);
 }
 
-.layout-aside .el-menu-vertical-demo .el-menu-item:hover,
-.layout-aside .el-menu-vertical-demo .el-submenu__title:hover {
+.layout-aside .el-menu-vertical-demo .el-menu-item:hover {
   background: rgba(58, 86, 168, 0.16) !important;
   color: #ffffff !important;
 }
 
 .layout-aside .el-menu-vertical-demo .el-menu-item.is-active .menu-icon,
-.layout-aside .el-menu-vertical-demo .el-menu-item:hover .menu-icon,
-.layout-aside .el-menu-vertical-demo .el-submenu__title:hover .menu-icon {
+.layout-aside .el-menu-vertical-demo .el-menu-item:hover .menu-icon {
   color: #ffffff !important;
 }
 
+/* === 折叠侧栏 hover 弹出菜单 (Element Plus el-sub-menu popper) === */
+/* 需要用 .el-popper.sidebar-submenu-popper 提高优先级，覆盖 EP 默认浅色 popper */
+.el-popper.sidebar-submenu-popper,
 .sidebar-submenu-popper {
-  background: #1f2738;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 20px 44px rgba(15, 22, 40, 0.45);
-  border-radius: 14px;
-  padding: 8px 8px 8px 0;
-  width: 150px;
+  background: #1f2738 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 20px 44px rgba(15, 22, 40, 0.45) !important;
+  border-radius: 14px !important;
+  padding: 8px !important;
+  width: auto !important;
+  min-width: 150px;
   box-sizing: border-box;
   background-clip: padding-box;
+  /* 隐藏 el-popper 自带的箭头 */
 }
 
-.sidebar-submenu-popper .el-menu {
-  background: transparent !important;
-  border-right: none;
-  padding: 0;
-  width: 100%;
-  min-width: 0;
+/* 隐藏 EP popper 自带的小箭头（折叠菜单不需要） */
+.el-popper.sidebar-submenu-popper .el-popper__arrow,
+.sidebar-submenu-popper .el-popper__arrow {
+  display: none !important;
 }
 
+.sidebar-submenu-popper .el-menu,
 .sidebar-submenu-popper .el-menu--popup,
 .sidebar-submenu-popper .el-menu--popup-container {
   background: transparent !important;
-  border: none;
-  min-width: 0;
-  width: 100%;
-  box-shadow: none;
+  border: none !important;
+  border-right: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  box-shadow: none !important;
 }
 
-.sidebar-submenu-popper .el-menu-item {
-  height: 40px;
-  line-height: 40px;
-  color: #d7e1f2;
+.sidebar-submenu-popper .el-menu-item,
+.sidebar-submenu-popper .el-sub-menu__title {
+  height: 40px !important;
+  line-height: 40px !important;
+  color: #d7e1f2 !important;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -141,19 +146,25 @@ body {
   width: 100%;
   margin: 0;
   background: transparent !important;
+  min-width: 0 !important;
 }
 
 .sidebar-submenu-popper .el-menu-item .menu-icon,
-.sidebar-submenu-popper .el-menu-item .iconfont {
+.sidebar-submenu-popper .el-menu-item .iconfont,
+.sidebar-submenu-popper .el-sub-menu__title .menu-icon,
+.sidebar-submenu-popper .el-sub-menu__title .iconfont {
   margin-right: 0 !important;
   font-size: 16px;
+  color: inherit;
 }
 
-.sidebar-submenu-popper .el-menu-item span {
+.sidebar-submenu-popper .el-menu-item span,
+.sidebar-submenu-popper .el-sub-menu__title span {
   line-height: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: inherit;
 }
 
 .sidebar-submenu-popper .el-menu-item.is-active {
@@ -162,7 +173,8 @@ body {
   box-shadow: inset 3px 0 0 rgba(90, 122, 214, 0.85);
 }
 
-.sidebar-submenu-popper .el-menu-item:hover {
+.sidebar-submenu-popper .el-menu-item:hover,
+.sidebar-submenu-popper .el-sub-menu__title:hover {
   background: rgba(58, 86, 168, 0.16) !important;
   color: #ffffff !important;
 }
@@ -180,8 +192,17 @@ body {
   color: var(--text-muted);
 }
 
+/* === Element Plus 2.7+ 表格圆角修复 ===
+ * EP 在 .el-table 内部新增了 .el-table__inner-wrapper，外层的 border-radius
+ * 不会传递给它，导致表头/表底是方角。需要手动让内层继承外层的圆角。
+ */
 .el-table {
   border-radius: var(--radius-medium);
+  overflow: hidden;
+}
+
+.el-table .el-table__inner-wrapper {
+  border-radius: inherit;
   overflow: hidden;
 }
 
@@ -190,13 +211,22 @@ body {
   color: var(--text-secondary);
 }
 
-/* Element Plus 输入框样式兼容 */
-.el-input__wrapper {
+/* Element Plus 输入框 / 选择器 / 日期 / 级联 等表单控件 - 统一圆角和边框 */
+.el-input__wrapper,
+.el-select__wrapper,
+.el-textarea__inner,
+.el-cascader .el-input__wrapper,
+.el-date-editor .el-input__wrapper,
+.el-input-number .el-input__wrapper {
   border-radius: 10px;
   box-shadow: 0 0 0 1px #d9e2f5 inset;
 }
 
-.el-textarea__inner {
+/* 日期范围输入 (el-date-editor--daterange / datetimerange) 走的是另一个根元素 */
+.el-date-editor.el-input__wrapper,
+.el-date-editor--daterange,
+.el-date-editor--datetimerange,
+.el-date-editor--monthrange {
   border-radius: 10px;
   box-shadow: 0 0 0 1px #d9e2f5 inset;
 }
@@ -211,7 +241,7 @@ body {
 
 /* ===== Element Plus 兼容样式 ===== */
 
-/* el-submenu → el-sub-menu 类名对齐 */
+/* el-sub-menu 类名 (Element Plus，无连字符的 el-submenu 是 Element UI 2 的旧名) */
 .el-sub-menu__title:hover {
   background-color: #eef2ff !important;
 }
@@ -250,20 +280,73 @@ body {
 
 .action-icon:hover { opacity: 0.75; }
 
-/* Element Plus Dialog 样式 */
+/* === Element Plus Dialog 样式 (对齐 Vue2 Element UI 2 经典外观) === */
 .el-dialog {
   border-radius: var(--radius-medium);
+  /* EP 2.x 默认无明显投影；EUI 2 有柔和投影 */
+  box-shadow: 0 12px 32px 4px rgba(0, 0, 0, 0.04),
+              0 8px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  padding: 0;
 }
 
 .el-dialog__header {
+  padding: 16px 20px;
+  margin: 0;
   border-bottom: 1px solid var(--brand-border);
-  margin-right: 0;
-  padding-bottom: 16px;
+  background: var(--surface-soft);
+  display: flex;
+  align-items: center;
+}
+
+.el-dialog__title {
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.el-dialog__headerbtn {
+  top: 14px;
+  right: 16px;
+  font-size: 18px;
+}
+
+.el-dialog__headerbtn .el-dialog__close {
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+.el-dialog__headerbtn:hover .el-dialog__close {
+  color: var(--brand-primary);
+}
+
+.el-dialog__body {
+  padding: 24px 20px;
+  color: var(--text-primary);
+  font-size: 14px;
 }
 
 .el-dialog__footer {
+  padding: 12px 20px 16px;
+  text-align: right;
   border-top: 1px solid var(--brand-border);
-  padding-top: 16px;
+  background: var(--surface-soft);
+}
+
+/* 业务页面里写的 .dialog-footer 包装盒 - 右对齐 */
+.dialog-footer {
+  text-align: right;
+}
+
+/* center 模式 (登录滑块验证等) - 标题和 footer 居中 */
+.el-dialog.is-fullscreen .el-dialog__header,
+.el-dialog--center .el-dialog__header {
+  text-align: center;
+  justify-content: center;
+}
+.el-dialog--center .el-dialog__footer,
+.el-dialog--center .dialog-footer {
+  text-align: center;
 }
 
 /* Element Plus Tag 样式 */
@@ -301,10 +384,16 @@ body {
   gap: 8px;
 }
 
-/* 分页 */
+/* 分页：EP el-pagination 自身是 display:flex 撑满父级，
+ * EUI2 的 inline-block 不一样。用 flex 把它靠右推。 */
 .page-pagination {
   margin-top: 16px;
-  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+}
+.page-pagination .el-pagination {
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 /* code-input-wrapper for login/register */
@@ -317,6 +406,33 @@ body {
 /* Element Plus 表单内联间距 */
 .search-form .el-form-item {
   margin-bottom: 12px;
+}
+
+/* === 内联搜索表单中下拉/输入控件默认宽度 ===
+ * Element UI 2 的 el-select/el-input 自带 240/178px 默认宽度,
+ * Element Plus 改成 width:100% 后在 inline-form 里会被压扁。
+ * 这里恢复一个合理的默认宽度，与 Vue2 视觉对齐。
+ */
+.search-form .el-select,
+.search-form .el-date-editor.el-input,
+.search-form .el-date-editor--daterange,
+.search-form .el-date-editor--datetimerange,
+.search-form .el-cascader {
+  width: 220px;
+}
+.search-form .el-input {
+  width: 200px;
+}
+.search-form .el-date-editor--daterange,
+.search-form .el-date-editor--datetimerange {
+  width: 320px;
+}
+/* 弹窗里的表单项不要这个限制 (label-width 模式下要撑满) */
+.el-dialog .el-select,
+.el-dialog .el-input,
+.el-dialog .el-date-editor.el-input,
+.el-dialog .el-cascader {
+  width: 100%;
 }
 
 /* Element Plus Tabs */

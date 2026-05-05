@@ -14,7 +14,7 @@
           action="#"
           :show-file-list="false"
           :http-request="handleAvatarUpload">
-          <el-button size="small" type="primary">上传头像</el-button>
+          <el-button type="primary">上传头像</el-button>
         </el-upload>
       </div>
     </el-card>

@@ -10,10 +10,11 @@
     <el-container>
       <el-header class="layout-header">
         <div class="header-left">
-          <i
-            :class="isCollapse ? 'icon-zhankai' : 'icon-shouqi'"
-            class="collapse-trigger iconfont"
-            @click="toggleCollapse"/>
+          <el-icon
+            class="collapse-trigger"
+            @click="toggleCollapse">
+            <component :is="isCollapse ? Expand : Fold" />
+          </el-icon>
           <el-breadcrumb separator="/" class="breadcrumb">
             <el-breadcrumb-item
               v-for="item in breadcrumbs"
@@ -25,16 +26,17 @@
         <div class="header-right">
           <el-badge :value="unreadCount" :max="99" :hidden="!unreadCount" class="badge-item">
             <el-button text @click="goNotice">
-              <i class="iconfont icon-tongzhi"></i>
+              <el-icon><Bell /></el-icon>
             </el-button>
           </el-badge>
           <el-button text class="menu-search-trigger" @click="openMenuSearch">
-            <i class="iconfont icon-sousuo"></i>
+            <el-icon><Search /></el-icon>
           </el-button>
           <el-dropdown trigger="click">
             <span class="user-info">
               <el-avatar :src="avatarUrl" :size="28">{{ avatarText }}</el-avatar>
               <span class="username">{{ displayName }}</span>
+              <el-icon class="user-arrow"><ArrowDown /></el-icon>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
@@ -54,6 +56,7 @@
               v-model="menuSearchKeyword"
               placeholder="菜单搜索，支持标题、URL模糊查询"
               clearable
+              :prefix-icon="SearchIcon"
               @keydown="handleSearchKeydown($event as KeyboardEvent)"/>
             <div v-if="menuSearchResults.length" class="menu-search-list">
               <div
@@ -64,11 +67,13 @@
                 @click="selectMenuSearch(item)">
                 <div class="menu-search-icon">
                   <i v-if="item.icon" class="iconfont" :class="item.icon"></i>
+                  <el-icon v-else><Menu /></el-icon>
                 </div>
                 <div class="menu-search-text">
                   <div class="menu-search-title">{{ item.breadcrumb || item.title }}</div>
                   <div class="menu-search-path">{{ item.path }}</div>
                 </div>
+                <el-icon v-if="index === menuSearchActiveIndex" class="menu-search-enter"><Right /></el-icon>
               </div>
             </div>
             <div v-else class="menu-search-empty">无匹配菜单</div>
@@ -86,8 +91,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick, markRaw } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import {
+  Expand, Fold, Bell, Search, ArrowDown, Menu, Right
+} from '@element-plus/icons-vue'
 import AsideComponent from '@/components/Aside/index.vue'
 import TagsView from '@/components/TagsView/index.vue'
 import { getAvatarPreview, logout } from '@/api/profile'
@@ -96,9 +104,10 @@ import { resetRouter } from '@/router'
 import { useAuthStore } from '@/stores/auth'
 import { usePermissionStore } from '@/stores/permission'
 import { useTagsViewStore } from '@/stores/tagsView'
-import type { RouteItem } from '@/types/store'
 
 defineOptions({ name: 'LayoutComponent' })
+
+const SearchIcon = markRaw(Search)
 
 const route = useRoute()
 const router = useRouter()
@@ -135,7 +144,7 @@ interface FlatMenuItem {
 
 const menuSearchResults = computed(() => {
   const keyword = menuSearchKeyword.value.trim().toLowerCase()
-  const list = flattenMenuRoutes(permissionStore.routes || [])
+  const list = flattenMenuRoutes((permissionStore.routes || []) as unknown as MenuRouteLike[])
   if (!keyword) return list
   return list.filter(item => {
     const title = (item.title || '').toLowerCase()
@@ -145,13 +154,21 @@ const menuSearchResults = computed(() => {
   })
 })
 
-function flattenMenuRoutes(routes: RouteItem[], parentPath = '', parentTitle = ''): FlatMenuItem[] {
+// 与 Vue2 一致：menu 路由形状为 { path, meta:{ title, icon }, hidden, children }
+interface MenuRouteLike {
+  path: string
+  hidden?: boolean
+  meta?: { title?: string; icon?: string; hidden?: boolean }
+  children?: MenuRouteLike[]
+}
+
+function flattenMenuRoutes(routes: MenuRouteLike[], parentPath = '', parentTitle = ''): FlatMenuItem[] {
   const list: FlatMenuItem[] = []
   routes.forEach(r => {
     if (!r) return
-    const hidden = r.hidden
-    const title = r.title
-    const icon = r.icon
+    const hidden = r.hidden || r.meta?.hidden
+    const title = r.meta?.title || ''
+    const icon = r.meta?.icon || ''
     const path = resolveMenuPath(parentPath, r.path)
     const breadcrumb = title ? (parentTitle ? `${parentTitle} / ${title}` : title) : parentTitle
     if (title && !hidden) {
@@ -325,6 +342,7 @@ onBeforeUnmount(() => {
 .header-right { display: flex; align-items: center; gap: 12px; }
 .menu-search-trigger { color: #4f70ff; }
 .user-info { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.user-arrow { color: #909399; font-size: 12px; }
 .username { font-size: 14px; }
 .layout-main { background-color: #f4f7ff; padding: 0; flex: 1; overflow: auto; min-height: 0; }
 .menu-search-mask {
@@ -368,6 +386,7 @@ onBeforeUnmount(() => {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .menu-search-item.active .menu-search-path { color: rgba(255, 255, 255, 0.85); }
+.menu-search-enter { margin-left: auto; font-size: 16px; color: inherit; }
 .menu-search-empty { text-align: center; color: #8b97ad; font-size: 12px; padding: 24px 0; }
 .menu-search-fade-enter-active,
 .menu-search-fade-leave-active { transition: opacity 0.2s ease; }

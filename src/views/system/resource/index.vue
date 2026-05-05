@@ -7,7 +7,7 @@
         </div>
       </template>
 
-      <el-form :inline="true" :model="queryParams" class="search-form" size="small">
+      <el-form :inline="true" :model="queryParams" class="search-form">
         <el-form-item label="请求方法">
           <el-select v-model="queryParams.requestMethod" placeholder="请求方法" clearable>
             <el-option label="GET" value="GET"/>
@@ -39,7 +39,7 @@
       </el-form>
 
       <div class="table-toolbar">
-        <el-button type="primary" size="small" icon="Plus" v-perm="PERMS.resource.add" @click="handleAdd">
+        <el-button type="primary" icon="Plus" v-perm="PERMS.resource.add" @click="handleAdd">
           新增
         </el-button>
       </div>
@@ -128,7 +128,7 @@
                 <el-input
                   v-model="permKeyword"
                   placeholder="搜索权限名称或编码"
-                  size="small"
+
                   clearable
                   prefix-icon="Search"/>
               </div>

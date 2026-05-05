@@ -3,10 +3,14 @@
     <el-menu-item
       v-if="!item.children || item.children.length === 0"
       :index="resolvePath(item.path)"
-      :class="{'submenu-title-noDropdown':!isNest}">
-      <i v-if="itemIcon" :class="itemIcon" class="menu-icon iconfont"></i>
-      <template #title>
-        <span v-if="!collapse || isNest">{{ itemTitle }}</span>
+      :class="{'submenu-title-noDropdown':!isNest}"
+      :title="item.meta && item.meta.title">
+      <i v-if="item.meta && item.meta.icon" :class="item.meta.icon" class="menu-icon iconfont"></i>
+      <!-- 仅在展开侧栏 或 处于折叠子菜单弹窗内 时才提供 #title 插槽。
+           Element Plus 的 el-menu-item 仅在 slots.title 存在时才会给折叠态根级 item
+           包一个 el-tooltip 弹出标题——不提供这个插槽就不会弹。 -->
+      <template v-if="!collapse || isNest" #title>
+        <span>{{ item.meta && item.meta.title }}</span>
       </template>
     </el-menu-item>
 
@@ -14,9 +18,12 @@
       <el-menu-item
         v-for="node in flattenChildren(item.children)"
         :key="node.path"
-        :index="resolvePath(node.path)">
-        <i v-if="getIcon(node)" :class="getIcon(node)" class="menu-icon iconfont"></i>
-        <template #title><span>{{ getTitle(node) }}</span></template>
+        :index="resolvePath(node.path)"
+        :title="node.meta && node.meta.title">
+        <i v-if="node.meta && node.meta.icon" :class="node.meta.icon" class="menu-icon iconfont"></i>
+        <template #title>
+          <span>{{ node.meta && node.meta.title }}</span>
+        </template>
       </el-menu-item>
     </template>
 
@@ -25,8 +32,8 @@
       :index="resolvePath(item.path)"
       :popper-class="collapse ? 'sidebar-submenu-popper' : ''">
       <template #title>
-        <i v-if="itemIcon" :class="itemIcon" class="menu-icon iconfont"></i>
-        <span v-if="!collapse || isNest">{{ itemTitle }}</span>
+        <i v-if="item.meta && item.meta.icon" :class="item.meta.icon" class="menu-icon iconfont"></i>
+        <span v-if="!collapse || isNest">{{ item.meta && item.meta.title }}</span>
       </template>
       <sidebar-item
         v-for="child in item.children"
@@ -42,16 +49,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-
 defineOptions({ name: 'SidebarItem' })
 
 interface MenuItem {
   path: string
-  name?: string
+  name?: string | symbol
   hidden?: boolean
-  title?: string
-  icon?: string
   meta?: { title?: string; icon?: string }
   children?: MenuItem[]
 }
@@ -66,18 +69,6 @@ const props = withDefaults(defineProps<{
   basePath: '',
   collapse: false
 })
-
-// 兼容 RouteItem (title/icon 在顶层) 和 RouteRecordRaw (title/icon 在 meta 中)
-const itemTitle = computed(() => props.item.title || props.item.meta?.title || '')
-const itemIcon = computed(() => props.item.icon || props.item.meta?.icon || '')
-
-function getTitle(node: MenuItem): string {
-  return node.title || node.meta?.title || ''
-}
-
-function getIcon(node: MenuItem): string {
-  return node.icon || node.meta?.icon || ''
-}
 
 function flattenChildren(children: MenuItem[] = []): MenuItem[] {
   const list: MenuItem[] = []

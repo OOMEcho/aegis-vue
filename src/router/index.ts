@@ -43,7 +43,10 @@ export const staticRoutes: RouteRecordRaw[] = [
         path: '404',
         name: 'NotFound',
         component: NotFoundPage,
-        meta: { title: '页面不存在', hidden: true }
+        meta: { title: '页面不存在' },
+        // 与 Vue2 一致：hidden 放路由顶层供 Aside 过滤
+        // @ts-expect-error 顶层 hidden 为约定字段
+        hidden: true
       }
     ]
   }

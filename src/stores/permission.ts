@@ -7,17 +7,21 @@ import ParentView from '@/components/ParentView/index.vue'
 const viewModules = import.meta.glob<{ default: Component }>('@/views/**/index.vue')
 
 const DASHBOARD_PATH = '/dashboard'
-const DASHBOARD_MENU: RouteItem = {
+// 与 Vue2 menu 形状保持一致：title/icon 在 meta 内，hidden 放路由顶层
+const DASHBOARD_MENU = {
   path: DASHBOARD_PATH,
   name: 'Dashboard',
-  title: '首页',
-  icon: 'icon-pingtaizijiankong',
+  meta: {
+    title: '首页',
+    icon: 'icon-pingtaizijiankong'
+  },
   hidden: false
-}
+} as unknown as RouteRecordRaw
 
 export const usePermissionStore = defineStore('permission', {
   state: () => ({
-    routes: [] as RouteItem[],
+    // 与 Vue2 一致：保存 buildRoutes 后的菜单形状（meta.title / meta.icon / hidden）
+    routes: [] as RouteRecordRaw[],
     permissions: [] as string[]
   }),
   actions: {
@@ -25,7 +29,7 @@ export const usePermissionStore = defineStore('permission', {
       const routerVoList = userInfo?.routerVoList || []
       const permissions = userInfo?.permissions || []
       const accessedRoutes = buildRoutes(routerVoList)
-      const menuRoutes = ensureDashboardFirst(routerVoList)
+      const menuRoutes = ensureDashboardFirst(accessedRoutes)
       this.routes = menuRoutes
       this.permissions = permissions || []
       return accessedRoutes
@@ -37,7 +41,7 @@ export const usePermissionStore = defineStore('permission', {
   }
 })
 
-function ensureDashboardFirst(routes: RouteItem[] = []): RouteItem[] {
+function ensureDashboardFirst(routes: RouteRecordRaw[] = []): RouteRecordRaw[] {
   const list = Array.isArray(routes) ? routes.slice() : []
   const dashboardIndex = list.findIndex(route => normalizePath(route.path) === DASHBOARD_PATH)
   const dashboardRoute = dashboardIndex > -1
@@ -46,18 +50,22 @@ function ensureDashboardFirst(routes: RouteItem[] = []): RouteItem[] {
   return [dashboardRoute, ...list]
 }
 
-function createDashboardMenu(route?: RouteItem): RouteItem {
+function createDashboardMenu(route?: RouteRecordRaw): RouteRecordRaw {
   if (!route) {
-    return { ...DASHBOARD_MENU }
+    return { ...DASHBOARD_MENU } as RouteRecordRaw
   }
   return {
     ...route,
     path: DASHBOARD_PATH,
     name: 'Dashboard',
-    title: DASHBOARD_MENU.title,
-    icon: DASHBOARD_MENU.icon,
+    meta: {
+      ...(route.meta || {}),
+      title: '首页',
+      icon: 'icon-pingtaizijiankong'
+    },
+    // @ts-expect-error 与 Vue2 行为对齐：hidden 放在路由顶层供 Aside 过滤
     hidden: false
-  }
+  } as RouteRecordRaw
 }
 
 function buildRoutes(routes: RouteItem[] = []): RouteRecordRaw[] {
@@ -68,6 +76,7 @@ function buildRoutes(routes: RouteItem[] = []): RouteRecordRaw[] {
     const tmp: RouteRecordRaw = {
       path,
       name: route.name,
+      // 目录节点使用 ParentView，叶子节点按约定路径加载页面
       component: hasChildren ? ParentView : loadView(path),
       meta: {
         title: route.title,
@@ -76,9 +85,9 @@ function buildRoutes(routes: RouteItem[] = []): RouteRecordRaw[] {
       children: undefined as unknown as RouteRecordRaw[]
     }
 
-    if (route.hidden) {
-      tmp.meta!.hidden = true
-    }
+    // 与 Vue2 一致：hidden 字段放路由顶层（SidebarItem 按 item.hidden 过滤）
+    // @ts-expect-error 顶层 hidden 为约定字段
+    tmp.hidden = !!route.hidden
 
     if (hasChildren) {
       tmp.children = buildRoutes(route.children!)
